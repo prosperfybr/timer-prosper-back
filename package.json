@@ -1,0 +1,46 @@
+{
+  "name": "prosperify-api",
+  "version": "1.0.0",
+  "description": "Prosperify Appointment Scheduling API",
+  "author": {
+    "name": "Raylson Alves Marques"
+  },
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "dev": "ts-node -r dotenv/config -r tsconfig-paths/register server.ts",
+    "build": "tsc",
+    "typeorm:cli": "ts-node -r dotenv/config -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "migration:create": "bash -c 'npm run typeorm:cli -- migration:create ./src/shared/infra/database/migrations/$0' $1", 
+    "migration:generate": "bash -c 'npm run typeorm:cli -- -d ./ormconfig.ts migration:generate ./src/shared/infra/database/migrations/$0' $1",
+    "migration:run": "npm run typeorm:cli -- -d ./ormconfig.ts migration:run"
+  },
+  "dependencies": {
+    "axios": "^1.12.2",
+    "bcryptjs": "^3.0.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.21.2",
+    "express-async-errors": "^3.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "moment": "^2.30.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.9",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.27",
+    "uuid": "^13.0.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/moment": "^2.11.29",
+    "@types/node": "^24.9.1",
+    "@types/uuid": "^10.0.0",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.3.2"
+  }
+}

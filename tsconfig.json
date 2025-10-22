@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "esModuleInterop": true,
+    "target": "es2020",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "./dist",
+
+    "resolveJsonModule": true,
+    "lib": ["es2020"],
+    "strict": false,
+    "skipLibCheck": true,
+
+    "types": ["node", "jest", "reflect-metadata"],
+    "typeRoots": ["./config/@types"],
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@modules/*": ["src/modules/*"],
+      "@shared/*": ["src/shared/*"],
+      "@config/*": ["src/config/*"]
+    }
+  }
+}

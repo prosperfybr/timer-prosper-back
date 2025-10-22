@@ -1,0 +1,21 @@
+services:
+  pg:
+    image: postgres:17.5
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: prosperify
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    ports:
+      - 5434:5432
+    healthcheck:
+      test: ["CMD", "pg_isready"]
+      start_period: 1s
+      start_interval: 5s
+      interval: 1m
+      timeout: 2s
+      retries: 4
+
+volumes:
+  pg-data:
