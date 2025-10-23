@@ -8,16 +8,18 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "dev": "ts-node -r dotenv/config -r tsconfig-paths/register server.ts",
+    "dev": "ts-node -r dotenv/config -r tsconfig-paths/register ./src/ProsperifyApplication.ts",
     "build": "tsc",
-    "typeorm:cli": "ts-node -r dotenv/config -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
-    "migration:create": "bash -c 'npm run typeorm:cli -- migration:create ./src/shared/infra/database/migrations/$0' $1", 
+    "typeorm:cli": "ts-node -r dotenv/config -r tsconfig-paths/register --project tsconfig.migration.json ./node_modules/typeorm/cli.js",
+    "migration:create": "bash -c 'npm run typeorm:cli -- migration:create ./src/shared/infra/database/migrations/$0' $1",
     "migration:generate": "bash -c 'npm run typeorm:cli -- -d ./ormconfig.ts migration:generate ./src/shared/infra/database/migrations/$0' $1",
     "migration:run": "npm run typeorm:cli -- -d ./ormconfig.ts migration:run"
   },
   "dependencies": {
+    "@types/cookie-parser": "^1.4.9",
     "axios": "^1.12.2",
     "bcryptjs": "^3.0.2",
+    "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^4.21.2",
@@ -28,6 +30,7 @@
     "nodemailer": "^7.0.9",
     "pg": "^8.16.3",
     "reflect-metadata": "^0.2.2",
+    "typedi": "^0.10.0",
     "typeorm": "^0.3.27",
     "uuid": "^13.0.0"
   },

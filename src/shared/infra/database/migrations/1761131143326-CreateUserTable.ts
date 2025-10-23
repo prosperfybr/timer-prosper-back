@@ -5,7 +5,7 @@ const userRoleEnum: string = 'user_role_enum';
 export class CreateUserTable1761131143326 implements MigrationInterface {
 
     public async up(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.query(`CREATE TYPE ${userRoleEnum} AS ENUM('ADMIN', 'OWNER', 'CLIENT');`);
+        await queryRunner.query(`CREATE TYPE ${userRoleEnum} AS ENUM('admin', 'proprietario', 'colaborador', 'cliente');`);
 
         await queryRunner.createTable(
             new Table({
@@ -41,8 +41,8 @@ export class CreateUserTable1761131143326 implements MigrationInterface {
                         name: 'role',
                         type: userRoleEnum,
                         isNullable: false,
-                        default: "'CLIENT'",
-                        comment: "Perfil do usuário na aplicação (os perfis possíveis são 'ADMIN' | 'OWNER' | 'CLIENT')"
+                        default: "'cliente'",
+                        comment: "Perfil do usuário na aplicação (os perfis possíveis são 'admin' | 'proprietario' | 'colaborador' | 'cliente')"
                     },
                 ],
             }),
