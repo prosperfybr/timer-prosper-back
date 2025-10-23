@@ -14,6 +14,7 @@ import { GetMapping } from "@shared/decorators/router/get-mapping.decorator";
 import { PatchMapping } from "@shared/decorators/router/patch-mapping.decorator";
 import { DeleteMapping } from "@shared/decorators/router/delete-mapping.decorator";
 import { RequestMapping } from "@shared/decorators/router/request-mapping.decorator";
+import { RolesEnum } from "./dto/RolesEnum";
 
 @RequestMapping("users")
 @RestController()
@@ -49,11 +50,11 @@ export class UserController {
     }
   }
 
-  @GetMapping("/:id")
+  @GetMapping("", { authenticated: true })
   public async getUser(req: Request, res: Response, next: NextFunction) {
     try {
       log.info("Finding user informations");
-      const id: string = req.params["id"];
+      const { id } = req.user;
       const user: UserResponseDTO = await this.findUserService.getUser(id);
       log.info("User informations loaded successfully");
       return res.status(HttpStatusCode.Ok).json({ message: "Usuário encontrado com sucesso", payload: user });
@@ -63,7 +64,7 @@ export class UserController {
     }
   }
 
-  @GetMapping("/adm/all")
+  @GetMapping("/adm/all", { authenticated: true, roles: [RolesEnum.ADMIN] })
   public async getAllUsers(req: Request, res: Response, next: NextFunction) {
     try {
       log.info("Finding all users");
@@ -76,7 +77,7 @@ export class UserController {
     }
   }
 
-  @PatchMapping("")
+  @PatchMapping("", { authenticated: true })
   public async update(req: Request, res: Response, next: NextFunction) {
     try {
       log.info("Updating user informations");
@@ -92,7 +93,7 @@ export class UserController {
     }
   }
 
-  @PatchMapping("/adm")
+  @PatchMapping("/adm", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
   public async updateOtherUser(req: Request, res: Response, next: NextFunction) {
     try {
       log.info("Updating other user informations");
@@ -107,7 +108,7 @@ export class UserController {
     }
   }
 
-  @DeleteMapping("/:id")
+  @DeleteMapping("/:id", { authenticated: true })
   public async delete(req: Request, res: Response, next: NextFunction) {
     try {
       log.info("Excluding user");
