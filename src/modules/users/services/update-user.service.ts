@@ -5,9 +5,9 @@ import { UserEntity } from "../user.entity";
 import { UserRepository } from "../users.repository";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { ValidatorUtils } from "@shared/utils/validator.utils";
-import { UpdateResult } from "typeorm";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { Service } from "@shared/decorators/service.decorator";
+import { hash } from "bcryptjs";
 
 @Service()
 export class UpdateUserService {
@@ -35,7 +35,11 @@ export class UpdateUserService {
         throw new BadRequestException("Não há nenhuma informação do usuário para atualizar");
       }
 
-      const result: UpdateResult = await this.userRepository.update(user.id, fieldsToUpdate);
+      if (fieldsToUpdate.password) {
+        fieldsToUpdate.password = await hash(fieldsToUpdate.password, 10);
+      }
+
+      await this.userRepository.update(user.id, fieldsToUpdate);
       return null;
     } else {
       log.debug(`Another user wants to update this user`);
@@ -51,7 +55,11 @@ export class UpdateUserService {
         throw new BadRequestException("Não há nenhuma informação do usuário para atualizar");
       }
 
-      const result: UpdateResult = await this.userRepository.update(user.id, fieldsToUpdate);
+      if (fieldsToUpdate.password) {
+        fieldsToUpdate.password = await hash(fieldsToUpdate.password, 10);
+      }
+
+      await this.userRepository.update(user.id, fieldsToUpdate);
       return null;
     }
   }

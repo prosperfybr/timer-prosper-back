@@ -28,7 +28,7 @@ export class ValidatorUtils {
 		const updatedFields: Partial<T> = {};
 
 		for (const key in updateData) {
-			if (updateData[key] == null || updateData[key] == undefined) {
+			if (updateData[key] == null || updateData[key] == undefined || key === 'userId') {
 				continue;
 			}
 
