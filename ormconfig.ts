@@ -1,19 +1,19 @@
 import { DataSource, DataSourceOptions } from "typeorm";
-import * as path from "path";
 
 const { DATABASE_URL, NODE_ENV } = process.env;
 
-const migrationsPath: string = path.join(__dirname, 'src', 'shared', 'infra', 'database', 'migrations', '*{.ts,.js}');
-const entitiesPath: string = path.join(__dirname, "src", "modules", "**", "*.entity.{ts,js}")
+const migrationsPath: string = "src/shared/infra/database/migrations";
+const entitiesPath: string = "src/modules";
 
 export const AppDataSource: DataSource = new DataSource({
   type: "postgres",
   url: DATABASE_URL,
-  entities: [entitiesPath],
-  migrations: [migrationsPath],
+  entities: [`${entitiesPath}/**/*.entity.{ts,js}`],
+  migrations: [`${migrationsPath}/*{.ts, .js}`],
   synchronize: false,
-  logging: NODE_ENV === 'dev' ? ['query', 'error'] : ['error'],
+  //logging: NODE_ENV === 'dev' ? ['query', 'error'] : ['error'],
+  logging: ['error'],
   cli: {
-    migrationsDir: 'src/shared/infra/database/migrations'
+    migrationsDir: migrationsPath
   }
 } as DataSourceOptions);
