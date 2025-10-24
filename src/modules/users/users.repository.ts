@@ -2,6 +2,7 @@ import { Repository, UpdateResult } from "typeorm";
 import { AppDataSource } from "../../../ormconfig";
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
 import { UserEntity } from "./user.entity";
+import { EstablishmentEntity } from "@modules/establishment/establishment.entity";
 
 @RepositoryDec()
 export class UserRepository {
@@ -45,5 +46,16 @@ export class UserRepository {
 
   public async delete(id: string): Promise<void> {
     await this.repository.delete(id);
+  }
+
+  public async findUserEstablishments(id: string): Promise<EstablishmentEntity[]> {
+    const userWithEstablishments: UserEntity = await this.repository.findOne({
+      where: {id},
+      relations: ['establishments'],
+      order: { establishments: { tradeName: 'ASC' }},
+    });
+
+    if (!userWithEstablishments) return [];
+    return userWithEstablishments.establishments;
   }
 }
