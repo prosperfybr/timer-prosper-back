@@ -22,7 +22,7 @@ export function RequestMapping(routerPrefix: string): Function {
 			if (route.config) {
 				const midds = [];
 				if (route.config.authenticated) midds.push(ensureAuthenticated());
-				if (route.config.roles) route.config.roles.forEach((role: string) => midds.push(can(role)));
+				if (route.config.roles) midds.push(can(route.config.roles));
 				router[route.method](`${routerPrefix}${route.path}`, midds, instance[route.methodName].bind(instance));
 			} else {
 				router[route.method](`${routerPrefix}${route.path}`, instance[route.methodName].bind(instance));
