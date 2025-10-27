@@ -9,6 +9,7 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { UnauthorizedException } from "@shared/exceptions/UnauthorizedException";
 import { ForbiddenException } from "@shared/exceptions/ForbiddenException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import swaggerUi from 'swagger-ui-express';
 
 class ProsperifyApplication {
 	public async main(): Promise<void> {
@@ -33,6 +34,11 @@ class ProsperifyApplication {
 			if (error instanceof Error) return res.status(HttpStatusCode.BadRequest).json({ message: error.message, payload: error });
 			return res.status(HttpStatusCode.InternalServerError).json({ message: "Internal server error" });
 		});
+
+		log.info("[SWAGGER] Import swagger schema and define documentation route");
+		const { swaggerDocs } = await import("../docs/swagger/swagger");
+		app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
+		log.info("[SWAGGER] Routed defined: '/api/docs to see Swagger documentation");
 
 		log.info("[DATABASE] Iniciando conexão com banco de dados");
 		await AppDataSource.initialize();
