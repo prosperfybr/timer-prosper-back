@@ -32,7 +32,7 @@ export class ServicesEntity {
   public updatedAt: Date;
 
   @ManyToOne(() => ServiceTypeEntity, serviceType => serviceType.services)
-  @JoinColumn({ name: "service_type_id "})
+  @JoinColumn({ name: "service_type_id"})
   public serviceType: ServiceTypeEntity;
 
   @ManyToOne(() => EstablishmentEntity, establishment => establishment.services)
