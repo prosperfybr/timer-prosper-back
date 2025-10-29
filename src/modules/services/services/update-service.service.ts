@@ -6,16 +6,7 @@ import { ServicesEntity } from "../services.entity";
 import { log } from "@config/Logger";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { ValidatorUtils } from "@shared/utils/validator.utils";
-import { ConverterUtils } from "@shared/utils/converter.utils";
 
-interface ComparisonUpdateService {
-  id: string;
-  name?: string;
-  description?: string;
-  price?: number;
-  duration?: number;
-  serviceTypeId?: string;
-}
 @Service()
 export class UpdateServiceService {
 
@@ -23,7 +14,6 @@ export class UpdateServiceService {
     private readonly servicesRepository: ServicesRepository,
     //- Utils
     private readonly validatorUtils: ValidatorUtils,
-    private readonly converterUtils: ConverterUtils
   ) {}
 
   public async execute(payload: UpdateServiceDTO): Promise<ServiceResponseDTO> {
@@ -34,16 +24,7 @@ export class UpdateServiceService {
       throw new BadRequestException("Serviço não encontrado");
     }
 
-    const comparisonServiceUpdate: ComparisonUpdateService = {
-      id: payload.id,
-      name: payload.name,
-      description: payload.description,
-      price: payload.price ? this.converterUtils.convertFloatToCents(payload.price) : service.price,
-      duration: payload.duration ? this.converterUtils.convertDurationInMinutes(payload.duration): service.duration,
-      serviceTypeId: payload.serviceTypeId
-    };
-
-    const fieldsToUpdate = this.validatorUtils.filterUpdatedFields(service, comparisonServiceUpdate);
+    const fieldsToUpdate = this.validatorUtils.filterUpdatedFields(service, payload);
 
     if (Object.keys(fieldsToUpdate).length === 0) {
       log.warn(`Nothing to udpate for service [${payload.name}]`);

@@ -3,6 +3,6 @@ export interface UpdateServiceDTO {
   name?: string;
   description?: string;
   price?: number;
-  duration?: string;
+  duration?: number;
   serviceTypeId?: string;
 }

@@ -1,5 +1,6 @@
+import { SegmentEntity } from "@modules/segment/segment.entity";
 import { ServicesEntity } from "@modules/services/services.entity";
-import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 
 @Entity("service_types")
 export class ServiceTypeEntity {
@@ -19,5 +20,12 @@ export class ServiceTypeEntity {
   public updatedAt: Date;
 
   @OneToMany(() => ServicesEntity, services => services.serviceType)
-  services: ServicesEntity[];
+  public services: ServicesEntity[];
+
+  @Column({ name: "segment_id", type: "uuid", nullable: false })
+  public segmentId: string;
+
+  @ManyToOne(() => SegmentEntity, segment => segment.establishments)
+  @JoinColumn({ name: "segment_id" })
+  public segment: SegmentEntity;
 }

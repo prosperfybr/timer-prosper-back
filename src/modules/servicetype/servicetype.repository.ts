@@ -16,11 +16,11 @@ export class ServiceTypeRepository {
 	}
 
 	public async findById(id: string): Promise<ServiceTypeEntity> {
-		return await this.repository.findOne({ where: { id }, relations: ['services'] });
+		return await this.repository.findOne({ where: { id }, relations: ['services', 'segment'] });
 	}
 
 	public async findAll(): Promise<ServiceTypeEntity[]> {
-		return await this.repository.find();
+		return await this.repository.find({ relations: ['segment']});
 	}
 
 	public async findByEstablishment(establishmentId: string): Promise<ServiceTypeEntity[]> {
@@ -31,6 +31,10 @@ export class ServiceTypeRepository {
 			.distinct(true)
 			.orderBy("serviceType.name", "ASC");
 		return await query.getMany();
+	}
+
+	public async findBySegment(segmentId: string): Promise<ServiceTypeEntity[]> {
+		return await this.repository.find({ where: { segmentId }, relations: ['services', 'segment']});
 	}
 
 	public async update(id: string, data: Partial<ServiceTypeEntity>): Promise<UpdateResult> {

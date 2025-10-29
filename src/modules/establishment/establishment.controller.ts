@@ -26,7 +26,7 @@ export class EstablishmentController {
 		private readonly updateEstablishmentService: UpdateEstablishmentService
 	) {}
 
-	@PostMapping("", { authenticated: true })
+	@PostMapping("")
 	public async create(req: Request, res: Response, next: NextFunction) {
 		try {
 			log.info("Creating a new establishment");

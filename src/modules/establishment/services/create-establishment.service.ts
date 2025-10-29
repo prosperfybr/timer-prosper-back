@@ -10,6 +10,9 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { ValidatorUtils } from "@shared/utils/validator.utils";
 import { EstablishmentEntity } from "../establishment.entity";
 import { RolesEnum } from "@modules/users/dto/RolesEnum";
+import { SegmentEntity } from "@modules/segment/segment.entity";
+import { SegmentRepository } from "@modules/segment/segment.repository";
+import { SegmentResponseDTO } from "@modules/segment/dto/segment-response.dto";
 
 @Service()
 export class CreateEstablishmentService {
@@ -28,12 +31,13 @@ export class CreateEstablishmentService {
 		//- Repositories
 		private readonly establishmentRepository: EstablishmentRepository,
 		private readonly userRepository: UserRepository,
+		private readonly segmentRepository: SegmentRepository,
 		//- Utils
 		private readonly validatorUtils: ValidatorUtils
 	) {}
 
 	public async execute(payload: CreateEstablishmentDTO): Promise<EstablishmentResponseDTO> {
-		const { userId, tradeName, logo, logoDark, zipCode, street, number, complement, neighborhood, city, state, mainPhone, website, instagram, linkedin, tiktok, youtube } = payload;
+		const { userId, tradeName, logo, logoDark, zipCode, street, number, complement, neighborhood, city, state, mainPhone, website, instagram, linkedin, tiktok, youtube, segmentId } = payload;
 
 		if (!userId || userId.trim().length === 0) {
 			log.error(`User id is invalid. User ID is required, but value receved is [${userId}]`);
@@ -44,6 +48,12 @@ export class CreateEstablishmentService {
 		if (!user) {
 			log.error(`User not found`);
 			throw new BadRequestException("Proprietário não encontrado para o estabelecimento");
+		}
+
+		const segment: SegmentEntity = await this.segmentRepository.findById(segmentId);
+		if (!segment) {
+			log.error(`Segment not found`);
+			throw new BadRequestException("Segmento nao encontrado para o estabelecimento");
 		}
 
 		this.validateEstablishment(payload);
@@ -67,6 +77,7 @@ export class CreateEstablishmentService {
 		establishmentToSave.linkedin = linkedin;
 		establishmentToSave.tiktok = tiktok;
 		establishmentToSave.youtube = youtube;
+		establishmentToSave.segmentId = segment.id;
 
 		const establishmentSaved: EstablishmentEntity = await this.establishmentRepository.save(establishmentToSave);
 
@@ -103,6 +114,11 @@ export class CreateEstablishmentService {
 			createdAt: establishmentSaved.createdAt,
 			user: null,
 			services: [],
+			segment: {
+				id: segment.id,
+				name: segment.name,
+				active: segment.isActive
+			} as SegmentResponseDTO
 		} as EstablishmentResponseDTO;
 	}
 

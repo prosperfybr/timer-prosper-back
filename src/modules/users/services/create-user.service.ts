@@ -43,7 +43,16 @@ export class CreateUserService {
     userToSave.password = await hash(password, 10);
     userToSave.role = RolesEnum.CLIENT;
 
-    const { id, role }: UserEntity = await this.userRepository.save(userToSave);
+    let id: string = null;
+    let role: any = null;
+    try {
+      const { id: userCreatedId, role: userCreatedRole }: UserEntity = await this.userRepository.save(userToSave);
+      id = userCreatedId;
+      role = userCreatedRole;
+    } catch (error) {
+      log.error(`An error has occurred while save user [${email}]. DATABASE ERROR: `, error);
+      throw new BadRequestException("Usuário já cadastrado");
+    }
 
     return {
       id,

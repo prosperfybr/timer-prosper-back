@@ -1,11 +1,15 @@
-import { MigrationInterface, QueryRunner, Table } from "typeorm";
+import { MigrationInterface, QueryRunner, Table, TableForeignKey } from "typeorm";
 
 export class CreateServicesTypeTable1761131201930 implements MigrationInterface {
+
+    private readonly SERVICE_TYPES_TABLE = 'service_types';
+    private readonly SEGMENTS_TABLE = 'segments';
+    private readonly SEGMENT_FK_COLUMN = 'segment_id';
 
     public async up(queryRunner: QueryRunner): Promise<void> {
         await queryRunner.createTable(
             new Table({
-                name: 'service_types',
+                name: this.SERVICE_TYPES_TABLE,
                 columns: [
                     {
                         name: 'id',
@@ -26,6 +30,11 @@ export class CreateServicesTypeTable1761131201930 implements MigrationInterface 
                         isNullable: true,
                     },
                     {
+                        name: this.SEGMENT_FK_COLUMN,
+                        type: 'uuid',
+                        isNullable: true,
+                    },
+                    {
                         name: 'created_at',
                         type: 'timestamp',
                         default: 'now()',
@@ -41,6 +50,6 @@ export class CreateServicesTypeTable1761131201930 implements MigrationInterface 
     }
 
     public async down(queryRunner: QueryRunner): Promise<void> {
-        await queryRunner.dropTable('service_types');
+        await queryRunner.dropTable(this.SERVICE_TYPES_TABLE);
     }
 }

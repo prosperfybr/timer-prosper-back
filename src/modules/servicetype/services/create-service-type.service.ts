@@ -5,16 +5,19 @@ import { ServiceTypeResponseDTO } from "../dto/service-type-response.dto";
 import { log } from "@config/Logger";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { ServiceTypeEntity } from "../servicetype.entity";
+import { SegmentRepository } from "@modules/segment/segment.repository";
+import { SegmentEntity } from "@modules/segment/segment.entity";
 
 @Service()
 export class CreateServiceTypeService {
 
   constructor(
-    private readonly serviceTypeRepository: ServiceTypeRepository
+    private readonly serviceTypeRepository: ServiceTypeRepository,
+    private readonly segmentRepository: SegmentRepository
   ) {}
 
   public async execute(payload: CreateServiceTypeDTO): Promise<ServiceTypeResponseDTO> {
-    const { name, description } = payload;
+    const { name, description, segmentId } = payload;
 
     if (!name || name.trim().length < 3) {
       log.error("Service type name is invalid. Must be contains at least 3 characters");
@@ -26,9 +29,16 @@ export class CreateServiceTypeService {
       throw new InvalidArgumentException("A descrição do tipo de serviço é inválida");
     }
 
+    const segment: SegmentEntity = await this.segmentRepository.findById(segmentId);
+    if (!segment) {
+      log.error(`Segment not found with ID [${segmentId}]`);
+      throw new InvalidArgumentException("O ID do segmento é inválido");
+    }
+
     const serviceType: ServiceTypeEntity = new ServiceTypeEntity();
     serviceType.name = name;
     serviceType.description = description;
+    serviceType.segmentId = segment.id;
 
     const serviceTypeSaved: ServiceTypeEntity = await this.serviceTypeRepository.save(serviceType);
 
@@ -36,6 +46,8 @@ export class CreateServiceTypeService {
       id: serviceTypeSaved.id,
       name: serviceTypeSaved.name,
       description: serviceTypeSaved.description,
+      segmentId: segment.id,
+      segmentName: segment.name,
       services: null
     } as ServiceTypeResponseDTO
   }

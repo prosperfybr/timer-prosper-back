@@ -31,6 +31,8 @@ export class FindServiceTypeService {
 			id: serviceType.id,
 			name: serviceType.name,
 			description: serviceType.description,
+			segmentId: serviceType.segment.id,
+			segmentName: serviceType.segment.name,
 			services: serviceType.services.map(
 				service =>
 					({
@@ -65,7 +67,36 @@ export class FindServiceTypeService {
 				({
 					id: serviceType.id,
 					name: serviceType.name,
-					description: serviceType.description
+					description: serviceType.description,
+					segmentId: serviceType.segment.id,
+					segmentName: serviceType.segment.name,
+				} as ServiceTypeResponseDTO)
+		);
+	}
+
+	public async findBySegment(segmentId: string): Promise<ServiceTypeResponseDTO[]> {
+		log.info("Listing all service type by segment");
+
+		if (!segmentId) {
+			log.error(`SegmentId ID is required, but ID is [${segmentId}]`);
+			throw new InvalidArgumentException("O ID do segmento é obrigatório");
+		}
+
+		const servicesType: ServiceTypeEntity[] = await this.serviceTypeRepository.findBySegment(segmentId);
+
+		if (servicesType.length === 0) {
+			log.error("The segment does not yet have service types.");
+			throw new BadRequestException("O segmento ainda não tem tipos de serviço");
+		}
+
+		return servicesType.map(
+			serviceType =>
+				({
+					id: serviceType.id,
+					name: serviceType.name,
+					description: serviceType.description,
+					segmentId: serviceType.segment.id,
+					segmentName: serviceType.segment.name,
 				} as ServiceTypeResponseDTO)
 		);
 	}
@@ -83,7 +114,9 @@ export class FindServiceTypeService {
 				({
 					id: serviceType.id,
 					name: serviceType.name,
-					description: serviceType.description
+					description: serviceType.description,
+					segmentId: serviceType.segment.id,
+					segmentName: serviceType.segment.name,
 				} as ServiceTypeResponseDTO)
 		);
 	}
