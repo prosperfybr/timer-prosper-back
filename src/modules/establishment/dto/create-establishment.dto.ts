@@ -1,5 +1,6 @@
 export interface CreateEstablishmentDTO {
   userId: string;
+  segmentId: string;
   tradeName: string;
   logo?: string;
   logoDark?: string;

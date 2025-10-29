@@ -11,6 +11,8 @@ import { UserResponseDTO } from "@modules/users/dto/user-response.dto";
 import { ConverterUtils } from "@shared/utils/converter.utils";
 import { ServiceResponseDTO } from "@modules/services/dto/service-response.dto";
 import { UserRepository } from "@modules/users/users.repository";
+import { SegmentEntity } from "@modules/segment/segment.entity";
+import { SegmentResponseDTO } from "@modules/segment/dto/segment-response.dto";
 
 @Service()
 export class FindEstablishmentService {
@@ -55,10 +57,12 @@ export class FindEstablishmentService {
 	private treatData(establishment: EstablishmentEntity): EstablishmentResponseDTO {
 		const user: UserEntity = establishment.user ? establishment.user : null;
 		const services: ServicesEntity[] = establishment.services ? establishment.services : null;
+		const estabSegment: SegmentEntity = establishment.segment ? establishment.segment : null;
 
 		return {
 			id: establishment.id,
 			userId: establishment.userId,
+			segmentId: establishment.segmentId,
 			tradeName: establishment.tradeName,
 			logo: establishment.logo,
 			logoDark: establishment.logoDark,
@@ -94,6 +98,11 @@ export class FindEstablishmentService {
 						durationFormated: this.converterUtils.convertMinutesInTime(service.duration),
 					} as ServiceResponseDTO)
 			) : null,
+			segment: estabSegment ? {
+				id: estabSegment.id,
+				name: estabSegment.name,
+				active: estabSegment.isActive
+			} as SegmentResponseDTO : null
 		} as EstablishmentResponseDTO;
 	}
 }

@@ -1,9 +1,11 @@
+import { SegmentResponseDTO } from "@modules/segment/dto/segment-response.dto";
 import { ServiceResponseDTO } from "@modules/services/dto/service-response.dto";
 import { UserResponseDTO } from "@modules/users/dto/user-response.dto";
 
 export interface EstablishmentResponseDTO {
   id: string;
   userId: string;
+  segmentId: string;
   tradeName: string;
   logo: string;
   logoDark: string;
@@ -24,4 +26,5 @@ export interface EstablishmentResponseDTO {
   updatedAt?: Date;
   user?: UserResponseDTO;
   services?: ServiceResponseDTO[];
+  segment?: SegmentResponseDTO;
 }

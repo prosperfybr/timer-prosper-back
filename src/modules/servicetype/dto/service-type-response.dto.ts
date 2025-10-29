@@ -4,5 +4,7 @@ export interface ServiceTypeResponseDTO {
   id: string;
   name: string;
   description: string;
+  segmentId: string;
+  segmentName: string;
   services: ServiceResponseDTO[];
 }

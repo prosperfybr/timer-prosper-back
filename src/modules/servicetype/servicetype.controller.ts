@@ -81,6 +81,20 @@ export class ServiceTypeController {
 		}
 	}
 
+	@GetMapping("/segment/:segmentId", { authenticated: true })
+	public async findBySegment(req: Request, res: Response, next: NextFunction) {
+		try {
+			log.info("Listing all services type by segment");
+			const segmentId: string = req.params.segmentId;
+			const servicesType: ServiceTypeResponseDTO[] = await this.findServiceTypeService.findBySegment(segmentId);
+			log.info("All Services type by segment is listed successfully");
+			return res.status(HttpStatusCode.Ok).json({ message: "Tipos de serviços do segmeto listados com sucesso.", payload: servicesType });
+		} catch (error) {
+			log.error("An error has occurred while listing services type by segment. ERROR: ", error);
+			next(error);
+		}
+	}
+
 	@PatchMapping("", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
 	public async update(req: Request, res: Response, next: NextFunction) {
 		try {

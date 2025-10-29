@@ -2,7 +2,7 @@ export interface CreateServiceDTO {
   name: string;
   description?: string;
   price: number;
-  duration: string;
+  duration: number;
   serviceTypeId: string;
   establishmentId: string;
 }

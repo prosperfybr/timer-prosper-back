@@ -1,3 +1,4 @@
+import { SegmentEntity } from "@modules/segment/segment.entity";
 import { ServicesEntity } from "@modules/services/services.entity";
 import { UserEntity } from "@modules/users/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
@@ -63,6 +64,13 @@ export class EstablishmentEntity {
 
 	@UpdateDateColumn({ name: "updated_at" })
 	public updatedAt: Date;
+
+	@Column({ name: "segment_id", type: "uuid", nullable: false })
+	public segmentId: string;
+
+	@ManyToOne(() => SegmentEntity, segment => segment.establishments)
+	@JoinColumn({ name: "segment_id" })
+	public segment: SegmentEntity;
 
 	@ManyToOne(() => UserEntity, user => user.establishments)
 	@JoinColumn({ name: "user_id" })

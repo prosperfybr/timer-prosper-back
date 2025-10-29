@@ -29,8 +29,8 @@ export class CreateServiceService {
     const { name, description, price, duration, serviceTypeId, establishmentId } = payload;
     this.validateService(name, description, price);
 
-    const durationInMinutes: number = this.converterUtils.convertDurationInMinutes(duration);
-    if (durationInMinutes === 0) {
+    //const durationInMinutes: number = this.converterUtils.convertDurationInMinutes(duration);
+    if (duration === 0) {
       log.error(`Service duration is invalid or in format invalid. [${duration}]`);
       throw new BadRequestException("O tempo de execução do serviço é inválido");
     }
@@ -47,12 +47,12 @@ export class CreateServiceService {
       throw new BadRequestException("Estabelecimento não encontrado com o ID inforamdo");
     }
 
-    const priceInCents: number = this.converterUtils.convertFloatToCents(price);
+    // const priceInCents: number = this.converterUtils.convertFloatToCents(price);
     const newService: ServicesEntity = new ServicesEntity();
     newService.name = name;
     newService.description = description;
-    newService.price = priceInCents;
-    newService.duration = durationInMinutes;
+    newService.price = price;
+    newService.duration = duration;
     newService.serviceTypeId = serviceType.id;
     newService.establishmentId = establishment.id;
 

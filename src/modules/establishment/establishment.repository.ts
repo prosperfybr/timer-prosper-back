@@ -19,7 +19,7 @@ export class EstablishmentRepository {
 	public async findById(id: string): Promise<EstablishmentEntity> {
 		const establishment = await this.repository.findOne({
 			where: { id },
-			relations: ["user", "services"],
+			relations: ["user", "services", 'segment'],
 			order: {
 				services: { name: "ASC" },
 			},
@@ -42,5 +42,9 @@ export class EstablishmentRepository {
 
 	public async update(id: string, fieldsToUpdate: Partial<EstablishmentEntity>) {
 		return await this.repository.update(id, fieldsToUpdate);
+	}
+
+	public async findBySegment(segmentId: string): Promise<EstablishmentEntity[]> {
+		return await this.repository.find({ where: { segmentId }, relations: ['user', 'segment']});
 	}
 }
