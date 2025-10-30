@@ -63,6 +63,7 @@ export class FindEstablishmentService {
 			id: establishment.id,
 			userId: establishment.userId,
 			segmentId: establishment.segmentId,
+			code: establishment.code,
 			tradeName: establishment.tradeName,
 			logo: establishment.logo,
 			logoDark: establishment.logoDark,

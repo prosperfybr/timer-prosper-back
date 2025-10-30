@@ -59,6 +59,9 @@ export class EstablishmentEntity {
 	@Column({ type: "varchar", nullable: true })
 	public youtube: string;
 
+	@Column({ type: "varchar", nullable: true, length: 15 })
+	public code: string;
+
 	@CreateDateColumn({ name: "created_at" })
 	public createdAt: Date;
 

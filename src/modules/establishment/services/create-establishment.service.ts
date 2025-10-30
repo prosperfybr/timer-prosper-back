@@ -13,6 +13,7 @@ import { RolesEnum } from "@modules/users/dto/RolesEnum";
 import { SegmentEntity } from "@modules/segment/segment.entity";
 import { SegmentRepository } from "@modules/segment/segment.repository";
 import { SegmentResponseDTO } from "@modules/segment/dto/segment-response.dto";
+import { GeneratorUtils } from "@shared/utils/generator.utils";
 
 @Service()
 export class CreateEstablishmentService {
@@ -33,7 +34,8 @@ export class CreateEstablishmentService {
 		private readonly userRepository: UserRepository,
 		private readonly segmentRepository: SegmentRepository,
 		//- Utils
-		private readonly validatorUtils: ValidatorUtils
+		private readonly validatorUtils: ValidatorUtils,
+		private readonly generatorUtils: GeneratorUtils
 	) {}
 
 	public async execute(payload: CreateEstablishmentDTO): Promise<EstablishmentResponseDTO> {
@@ -61,6 +63,7 @@ export class CreateEstablishmentService {
 		//- Save establishment
 		const establishmentToSave: EstablishmentEntity = new EstablishmentEntity();
 		establishmentToSave.userId = user.id;
+		establishmentToSave.code = this.generatorUtils.generateUniqueCode(segment.name, tradeName);
 		establishmentToSave.tradeName = tradeName;
 		establishmentToSave.logo = logo;
 		establishmentToSave.logoDark = logoDark;
@@ -95,6 +98,7 @@ export class CreateEstablishmentService {
 		return {
 			id: establishmentSaved.id,
 			userId: user.id,
+			code: establishmentSaved.code,
 			tradeName: establishmentSaved.tradeName,
 			logo: establishmentSaved.logo,
 			logoDark: establishmentSaved.logoDark,

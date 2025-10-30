@@ -6,6 +6,7 @@ export interface EstablishmentResponseDTO {
   id: string;
   userId: string;
   segmentId: string;
+  code: string;
   tradeName: string;
   logo: string;
   logoDark: string;
