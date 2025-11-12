@@ -33,7 +33,7 @@ export class UserRepository {
   }
 
   public async findByEmail(email: string): Promise<UserEntity> {
-    return await this.repository.findOne({ where: { email }});
+    return await this.repository.findOne({ where: { email }, relations: ['establishments']});
   }
 
   public async findAll(): Promise<UserEntity[]> {

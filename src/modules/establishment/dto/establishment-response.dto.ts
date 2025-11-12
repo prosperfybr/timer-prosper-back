@@ -1,6 +1,7 @@
 import { SegmentResponseDTO } from "@modules/segment/dto/segment-response.dto";
 import { ServiceResponseDTO } from "@modules/services/dto/service-response.dto";
 import { UserResponseDTO } from "@modules/users/dto/user-response.dto";
+import {ClientEstablishmentResponseDTO} from "@modules/establishment/dto/client-establishment-response.dto";
 
 export interface EstablishmentResponseDTO {
   id: string;
@@ -28,4 +29,5 @@ export interface EstablishmentResponseDTO {
   user?: UserResponseDTO;
   services?: ServiceResponseDTO[];
   segment?: SegmentResponseDTO;
+  clients?: ClientEstablishmentResponseDTO[];
 }

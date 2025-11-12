@@ -15,6 +15,13 @@ import { PatchMapping } from "@shared/decorators/router/patch-mapping.decorator"
 import { DeleteEstablishmentService } from "./services/delete-establishment.service";
 import { UpdateEstablishmentService } from "./services/update-establishment.service";
 import { UpdateEstablishmentDTO } from "./dto/update-establishment.dto";
+import {FindClientEstablishmentService} from "@modules/establishment/services/find-client-establishment.service";
+import {ClientEstablishmentResponseDTO} from "@modules/establishment/dto/client-establishment-response.dto";
+import {PutMapping} from "@shared/decorators/router/put-mapping.decorator";
+import {InviteClientDTO} from "@modules/establishment/dto/invite-client.dto";
+import {InviteService} from "@modules/establishment/services/invite.service";
+import {ClientEstablishmentEntity} from "@modules/establishment/client-establishment.entity";
+import {RespondInviteDTO} from "@modules/establishment/dto/respond-invite.dto";
 
 @RequestMapping("establishment")
 @RestController()
@@ -23,7 +30,11 @@ export class EstablishmentController {
 		private readonly createEstablishmentService: CreateEstablishmentService,
 		private readonly findEstablishmentService: FindEstablishmentService,
 		private readonly deleteEstablishmentService: DeleteEstablishmentService,
-		private readonly updateEstablishmentService: UpdateEstablishmentService
+		private readonly updateEstablishmentService: UpdateEstablishmentService,
+		//- Clients
+		private readonly findClientEstablishmentService: FindClientEstablishmentService,
+		//- Invites
+		private readonly inviteService: InviteService
 	) {}
 
 	@PostMapping("")
@@ -40,7 +51,7 @@ export class EstablishmentController {
 		}
 	}
 
-	@GetMapping("/detail/:id", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
+	@GetMapping("/detail/:id", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER, RolesEnum.CLIENT, RolesEnum.COLLABORATOR] })
 	public async findEstablishmentById(req: Request, res: Response, next: NextFunction) {
 		try {
 			log.info("Finding a establishment by id");
@@ -82,6 +93,34 @@ export class EstablishmentController {
 		}
 	}
 
+	@GetMapping("/filter", { authenticated: true })
+	public async filterEstablishments(req: Request, res: Response, next: NextFunction) {
+		try {
+			log.info("Filtering establishments by query");
+			const identifier: string = req.query.code as string || req.query.name as string;
+			const establishments: EstablishmentResponseDTO[] = await this.findEstablishmentService.filterEstablishmentByIdentifier(identifier);
+			log.info("Establishments filtered successfully")
+			return res.status(HttpStatusCode.Ok).json({ message: "Estabelecimentos filtrados com sucesso.", payload: establishments })
+		} catch (error) {
+			log.error("An error has occurred while filter establishments. ERROR: ", error);
+			next(error);
+		}
+	}
+
+	@GetMapping("/clients/:establishmentId", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER ]})
+	public async getEstablishmentClients(req: Request, res: Response, next: NextFunction) {
+		try {
+			log.info("Finding all establishment clients");
+			const establishmentId: string = req.params.establishmentId;
+			const clients: ClientEstablishmentResponseDTO[] = await this.findClientEstablishmentService.findClientsEstablishment(establishmentId);
+			log.info("All establishment clients founded successfully");
+			return res.status(HttpStatusCode.Ok).json({ message: "Clientes do estabelecimento listados com sucesso", payload: clients });
+		} catch (error) {
+			log.error("An error has occurred while find all establishment clients. ERROR: ", error);
+			next(error);
+		}
+	}
+
 	@DeleteMapping("/:id", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
 	public async delete(req: Request, res: Response, next: NextFunction) {
 		try {
@@ -106,6 +145,34 @@ export class EstablishmentController {
 			return res.status(HttpStatusCode.Ok).json({ message: "Estabelecimento atualizado com sucesso", payload: establishment });
 		} catch (error) {
 			log.error("An error has occurred while updating a establishment. ERROR: ", error);
+			next(error);
+		}
+	}
+
+	@PostMapping("/add/client", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER]})
+	public async addClient(req: Request, res: Response, next: NextFunction) {
+		try {
+			log.info("Assigning a client to establishment");
+			const payload: InviteClientDTO = req.body;
+			const invite: ClientEstablishmentResponseDTO = await this.inviteService.client(payload);
+			log.info("Client assigned to establishment");
+			return res.status(HttpStatusCode.Created).json({ message: "Cliente convidado com sucesso.", payload: invite });
+		} catch (error) {
+			log.error("An error has occurred while assign client to establishment. ERROR: ", error);
+			next(error);
+		}
+	}
+
+	@PatchMapping("/respond/invite", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER]})
+	public async respondInvite(req: Request, res: Response, next: NextFunction) {
+		try {
+			log.info("Responding a client invite");
+			const payload: RespondInviteDTO = req.body;
+			const inviteResponse: ClientEstablishmentResponseDTO = await this.inviteService.respond(payload);
+			log.info("Invite responded successfully");
+			return res.status(HttpStatusCode.Ok).json({ message: "Convite do cliente respondido com sucesso.", payload: inviteResponse });
+		} catch (error) {
+			log.error("An error has occurred while respond a client invite. ERROR: ", error);
 			next(error);
 		}
 	}

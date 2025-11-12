@@ -15,6 +15,10 @@ import { PatchMapping } from "@shared/decorators/router/patch-mapping.decorator"
 import { DeleteMapping } from "@shared/decorators/router/delete-mapping.decorator";
 import { RequestMapping } from "@shared/decorators/router/request-mapping.decorator";
 import { RolesEnum } from "./dto/RolesEnum";
+import { FindUserPreferencesService } from "./services/find-user-preferences.service";
+import { UserPreferencesResponseDTO } from "./dto/user-preferences-response.dto";
+import { UpdateUserPreferencesDTO } from "./dto/update-user-preferences.dto";
+import { UpdateUserPreferencesService } from "./services/update-user-preferences.service";
 
 @RequestMapping("users")
 @RestController()
@@ -24,18 +28,12 @@ export class UserController {
     private readonly createUserService: CreateUserService,
     private readonly findUserService: FindUserService,
     private readonly updateUserService: UpdateUserService,
-    private readonly deleteUserService: DeleteUserService
+    private readonly deleteUserService: DeleteUserService,
+    //- Preferences
+    private readonly findUserPreferencesService: FindUserPreferencesService,
+    private readonly updateUserPreferencesService: UpdateUserPreferencesService
   ) {}
 
-  /**
-   * Método de criação de novos usuários
-   * 
-   * @param {Request} req Requisição recebida
-   * @param {Response} res Resposta do método de criação
-   * @param {NextFunction} next Em caso de erro, lança a exceção para o handler
-   * 
-   * @returns {Promise<Response<any, Record<string, any>>>} Retorna o novo usuário criado
-   */
   @PostMapping("")
   public async create(req: Request, res: Response, next: NextFunction) {
     try {
@@ -72,7 +70,21 @@ export class UserController {
       log.info("All users founded");
       return res.status(HttpStatusCode.Ok).json({ message: "Usuários listados com sucesso", payload: users });
     } catch (error) {
-      log.error("An eror has occurred while find all users. ERROR: ", error);
+      log.error("An error has occurred while find all users. ERROR: ", error);
+      next(error);
+    }
+  }
+
+  @GetMapping("/preferences", { authenticated: true })
+  public async getUserPreferences(req: Request, res: Response, next: NextFunction) {
+    try {
+      log.info("Finding user preferences");
+      const { id } = req.user;
+      const preferences: UserPreferencesResponseDTO = await this.findUserPreferencesService.getPreferences(id);
+      log.info("User preference founded");
+      return res.status(HttpStatusCode.Ok).json({ message: "Preferências do usuário encontrada com sucesso", payload: preferences });
+    } catch (error) {
+      log.error("An eror has occurred while find user preferences. ERROR: ", error);
       next(error);
     }
   }
@@ -104,6 +116,21 @@ export class UserController {
       return res.status(HttpStatusCode.Ok).json({ message: "Cadastro do usuário atualizado com sucesso.", payload: userUpdated });
     } catch (error) {
       log.error("An error has occurred while update user informations. ERROR: ", error);
+      next(error);
+    }
+  }
+
+  @PatchMapping("/preferences", { authenticated: true })
+  public async updatePreferences(req: Request, res: Response, next: NextFunction) {
+    try {
+      log.info("Updating user preferences informations");
+      const { id } = req.user;
+      const preferencesToUpdate: UpdateUserPreferencesDTO = req.body as UpdateUserPreferencesDTO;
+      const preferencesUpdated: UserPreferencesResponseDTO = await this.updateUserPreferencesService.execute(id, preferencesToUpdate);
+      log.info("User preferences informations updated successfully");
+      return res.status(HttpStatusCode.Ok).json({ message: "Preferências do usuário atualizadas com sucesso.", payload: preferencesUpdated });
+    } catch (error) {
+      log.error("An error has occurred while update user preferences. ERROR: ", error);
       next(error);
     }
   }

@@ -45,13 +45,23 @@ export class FindEstablishmentService {
 	}
 
 	public async findAllByUser(userId: string): Promise<EstablishmentResponseDTO[]> {
-    if (!userId) {
-      log.error(`Owner ID is invalid`);
-      throw new InvalidArgumentException("O ID do proprietário é inválido");
-    }
+		if (!userId) {
+		  log.error(`Owner ID is invalid`);
+		  throw new InvalidArgumentException("O ID do proprietário é inválido");
+		}
 
-    const establishments: EstablishmentEntity[] = await this.userRepository.findUserEstablishments(userId)
-    return establishments.length > 0 ? establishments.map(this.treatData) : [];
+		const establishments: EstablishmentEntity[] = await this.userRepository.findUserEstablishments(userId)
+		return establishments.length > 0 ? establishments.map(this.treatData) : [];
+	}
+
+	public async filterEstablishmentByIdentifier(identifier: string): Promise<EstablishmentResponseDTO[]> {
+		if (!identifier) {
+			log.warn(`Any identifier is received. [${identifier}]`);
+			return [];
+		}
+
+		const establishments: EstablishmentEntity[] = await this.establishmentRepository.findAllByIdentifier(identifier);
+		return establishments.map(this.treatData);
 	}
 
 	private treatData(establishment: EstablishmentEntity): EstablishmentResponseDTO {

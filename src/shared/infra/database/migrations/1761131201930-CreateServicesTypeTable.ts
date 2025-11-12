@@ -42,7 +42,7 @@ export class CreateServicesTypeTable1761131201930 implements MigrationInterface 
                     {
                         name: 'updated_at',
                         type: 'timestamp',
-                        default: 'now()',
+                        isNullable: true
                     },
                 ],
             }),

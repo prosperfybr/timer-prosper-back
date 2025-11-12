@@ -1,7 +1,10 @@
 import { Service } from "@shared/decorators/service.decorator";
+import { FormatterUtils } from "./formatter.utils";
 
 @Service()
 export class ValidatorUtils {
+
+	constructor(private readonly formatterUtils: FormatterUtils) {}
 
   public validateEmail(email: string): boolean {
 		const usuario = email.substring(0, email.indexOf("@"));
@@ -63,7 +66,7 @@ export class ValidatorUtils {
 		} else {
 			//- Atualização
 			const ddd: string = phone.slice(0, 2);
-			const telephone: string = phone.slice(3, phone.length);
+			const telephone: string = phone.slice(2, phone.length);
 
 			//- Valida o DDD
 			if (!this.validateTelephoneDDD(`(${ddd})`)) throw new Error("DDD Inválido");
@@ -77,16 +80,53 @@ export class ValidatorUtils {
 
 		const ZIP_CODE_REGEX = /^\d{2}\.?\d{3}-?\d{3}$/;
 		const isInFormat: boolean = ZIP_CODE_REGEX.test(zipCode.trim());
-		console.log("O CEP ESTÁ NO FORMATO? ", isInFormat);
 		const isInCorrectLength: boolean = this.validateZipCodeLength(zipCode);
-		console.log("O CEP ESTÁ COM O TAMANHO CORRETO? ", isInCorrectLength);
-		console.log("O CEP É VALIDO: ", isInFormat && isInCorrectLength);
 		return isInFormat && isInCorrectLength;
 	}
 
 	public sanitizeZipCode(zipCode: string): string {
 		if (!zipCode) return "";
 		return zipCode.replace(/\D/g, '').trim();
+	}
+
+	public validateCPF(cpf: string): boolean {
+		if (!cpf) return false;
+
+		cpf = this.formatterUtils.removeCPFMask(cpf);
+		let soma: number;
+		let resto: number;
+		soma = 0;
+
+		const cpfsInvalidos = [
+			"00000000000",
+			"11111111111",
+			"22222222222",
+			"33333333333",
+			"44444444444",
+			"55555555555",
+			"66666666666",
+			"77777777777",
+			"88888888888",
+			"99999999999",
+		];
+
+		cpf = cpf.replace(/[\s.-]*/gim, "");
+		const cpfInvalido = cpfsInvalidos.indexOf(cpf);
+
+		if (!cpf || cpf.length !== 11 || cpfInvalido !== -1) return false;
+
+		for (let i = 1; i <= 9; i++) soma = soma + parseInt(cpf.substring(i - 1, i)) * (11 - i);
+		resto = (soma * 10) % 11;
+
+		if (resto == 10 || resto == 11) resto = 0;
+		if (resto != parseInt(cpf.substring(9, 10))) return false;
+
+		soma = 0;
+		for (let i = 1; i <= 10; i++) soma = soma + parseInt(cpf.substring(i - 1, i)) * (12 - i);
+		resto = (soma * 10) % 11;
+
+		if (resto == 10 || resto == 11) resto = 0;
+		return resto === parseInt(cpf.substring(10, 11));
 	}
 
 	private validateTelephoneDDD(ddd: string): boolean {

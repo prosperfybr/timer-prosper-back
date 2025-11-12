@@ -47,4 +47,37 @@ export class EstablishmentRepository {
 	public async findBySegment(segmentId: string): Promise<EstablishmentEntity[]> {
 		return await this.repository.find({ where: { segmentId }, relations: ['user', 'segment']});
 	}
+
+	public async findOneByIdentifier(identifier: string): Promise<EstablishmentEntity> {
+		let isUUID: boolean = identifier.includes("-");
+
+		if (isUUID) {
+			return await this.findById(identifier);
+		} else {
+			const searchParam: string = `%${identifier.trim()}%`;
+	
+			const establishment: EstablishmentEntity = await this.repository.createQueryBuilder('establishment')
+				.where(`establishment.id = :searchParam`, { searchParam })
+				.orWhere(`establishment.code ILIKE :searchParam`, { searchParam }) //- Find by code
+				.orWhere(`establishment.tradeName ILIKE :searchParam`, { searchParam }) //- Find by Name
+				.orWhere(`establishment.mainPhone ILIKE :searchParam`, { searchParam }) //- Find by telephone
+				.leftJoinAndSelect('establishment.user', 'user')
+				.orWhere('user.email ILIKE :searchParam', { searchParam }) //- Find by owner email
+				.getOne();
+	
+			return establishment;
+		}
+	}
+
+	public async findAllByIdentifier(identifier: string): Promise<EstablishmentEntity[]> {
+		const searchParam: string = `%${identifier.trim()}%`;
+
+		const establishments: EstablishmentEntity[] = await this.repository.createQueryBuilder('establishment')
+			.leftJoinAndSelect('establishment.user', 'user')
+			.andWhere(`establishment.code ILIKE :searchParam OR establishment.tradeName ILIKE :searchParam`, { searchParam })
+			.orderBy('establishment.tradeName', 'ASC')
+			.getMany();
+
+		return establishments;
+	}
 }

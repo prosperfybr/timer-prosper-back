@@ -6,4 +6,8 @@ export interface UpdateUserDTO {
   email?: string;
   password?: string;
   role?: RolesEnum;
+  birthdate?: Date;
+  whatsApp?: string;
+  cpf?: string;
+  profilePreferences?: string;
 }

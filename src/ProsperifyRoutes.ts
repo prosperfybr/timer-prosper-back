@@ -4,3 +4,5 @@ import "@modules/establishment/establishment.controller";
 import "@modules/services/services.controller";
 import "@modules/servicetype/servicetype.controller";
 import "@modules/segment/segment.controller";
+import "@modules/establishment/client.controller";
+import "@modules/collaborators/collaborator.controller";

@@ -2,6 +2,8 @@ import { SegmentEntity } from "@modules/segment/segment.entity";
 import { ServicesEntity } from "@modules/services/services.entity";
 import { UserEntity } from "@modules/users/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
+import {ClientEstablishmentEntity} from "@modules/establishment/client-establishment.entity";
+import { CollaboratorEntity } from "@modules/collaborators/collaborator.entity";
 
 @Entity("establishments")
 export class EstablishmentEntity {
@@ -81,4 +83,10 @@ export class EstablishmentEntity {
 
 	@OneToMany(() => ServicesEntity, service => service.establishment)
 	public services: ServicesEntity[];
+
+	@OneToMany(() => ClientEstablishmentEntity, clientEstablishment => clientEstablishment.establishment)
+	public clients: ClientEstablishmentEntity[];
+
+	@OneToMany(() => CollaboratorEntity, collaborator => collaborator.establishment)
+	public collaborators: CollaboratorEntity[];
 }

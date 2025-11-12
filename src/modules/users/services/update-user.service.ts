@@ -11,7 +11,7 @@ import { hash } from "bcryptjs";
 
 @Service()
 export class UpdateUserService {
-  
+
   constructor(
     //- Repositories
     private readonly userRepository: UserRepository,
@@ -40,6 +40,17 @@ export class UpdateUserService {
       }
 
       await this.userRepository.update(user.id, fieldsToUpdate);
+
+      //- Verify if profile has been full filled
+      const userUpdated: UserEntity = await this.userRepository.findById(user.id);
+      if (userUpdated.birthDate && userUpdated.cpf && userUpdated.whatsApp) {
+        //- User fill all profile fields
+        await this.userRepository.update(user.id, { profileComplete: true });
+      } else if((!userUpdated.birthDate || !userUpdated.cpf || !userUpdated.whatsApp) && userUpdated.profileComplete === true) {
+        //- Case user has deleted any info and profile previously is complete
+        await this.userRepository.update(user.id, { profileComplete: false });
+      }
+
       return null;
     } else {
       log.debug(`Another user wants to update this user`);

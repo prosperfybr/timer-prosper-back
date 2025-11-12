@@ -41,6 +41,31 @@ export class FindServiceService {
     } as ServiceResponseDTO;
   }
 
+  public async findServiceByIds(ids: string[]): Promise<ServiceResponseDTO[]> {
+    log.info(`Finding a service with ID [${ids}]`);
+
+    if (!ids || ids.length === 0) {
+      log.error("ID is invalid");
+      throw new BadRequestException("O ID dos serviços são obrigatórios");
+    }
+
+    const services: ServicesEntity[] = await this.servicesRepository.findByIds(ids);
+
+    if(!services || services.length === 0) {
+      log.error("Service not found");
+      throw new BadRequestException("Serviço não encontrado");
+    }
+
+    return services.map(service => ({
+      id: service.id,
+      name: service.name,
+      description: service.description,
+      price: this.converterUtils.convertCentsToFloat(service.price),
+      duration: service.duration,
+      durationFormated: this.converterUtils.convertMinutesInTime(service.duration)
+    } as ServiceResponseDTO));
+  }
+
   public async findService(filter: ServiceRequestFilter): Promise<PaginatedResult<ServicesEntity>> {
     const limit: number = parseInt(filter.limit || `${this.DEFAULT_LIMIT}`, 10);
     const page: number = parseInt(filter.page || '1', 10);
