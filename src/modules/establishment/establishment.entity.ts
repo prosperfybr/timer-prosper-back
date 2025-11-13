@@ -4,6 +4,7 @@ import { UserEntity } from "@modules/users/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
 import {ClientEstablishmentEntity} from "@modules/establishment/client-establishment.entity";
 import { CollaboratorEntity } from "@modules/collaborators/collaborator.entity";
+import { EstablishmentHourEntity } from "./establishment-hour.entity";
 
 @Entity("establishments")
 export class EstablishmentEntity {
@@ -89,4 +90,7 @@ export class EstablishmentEntity {
 
 	@OneToMany(() => CollaboratorEntity, collaborator => collaborator.establishment)
 	public collaborators: CollaboratorEntity[];
+
+	@OneToMany(() => EstablishmentHourEntity, hour => hour.establishment)
+	public hours: EstablishmentHourEntity[];
 }
