@@ -1,5 +1,6 @@
 import { Service } from "@shared/decorators/service.decorator";
 import { FormatterUtils } from "./formatter.utils";
+import moment from "moment";
 
 @Service()
 export class ValidatorUtils {
@@ -127,6 +128,29 @@ export class ValidatorUtils {
 
 		if (resto == 10 || resto == 11) resto = 0;
 		return resto === parseInt(cpf.substring(10, 11));
+	}
+
+	public validateHours(hour: string | number): boolean {
+		if (!hour) {
+			return false;
+		}
+
+		const hourString: string = String(hour).trim();
+		//- Lista de formatos aceitos
+		const acceptedFormats = [
+			'HH',        // 20
+			'H',         // "20"
+			'HH:mm',     // "20:00"
+			'HHh:mm',    // "20h:10" (se for o caso)
+			'HHhmm',     // "20h10m" (sem separador)
+			'HH[h] mm[m]', // "20h 10m" (com espaço)
+			'HH[h] mm[m] ss[s]', // "20h 10m 30s"
+			'HH:mm:ss',  // "20:10:30"
+		];
+
+		const parsedTime = moment(hourString, acceptedFormats, true);
+
+		return parsedTime.isValid();
 	}
 
 	private validateTelephoneDDD(ddd: string): boolean {

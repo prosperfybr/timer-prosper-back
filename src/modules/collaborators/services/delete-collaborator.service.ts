@@ -1,10 +1,10 @@
-import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { log } from "@config/Logger";
-import { Service } from "@shared/decorators/service.decorator";
 import { DeleteUserService } from "@modules/users/services/delete-user.service";
-import { CollaboratorRepository } from "../collaborator.repository";
-import { CollaboratorEntity } from "../collaborator.entity";
+import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
+import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import { CollaboratorEntity } from "../models/entity/collaborator.entity";
+import { CollaboratorRepository } from "../repositories/collaborator.repository";
 
 @Service()
 export class DeleteCollaboratorService {

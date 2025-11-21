@@ -1,18 +1,18 @@
 import { log } from "@config/Logger";
 
-import { BadRequestException } from "@shared/exceptions/BadRequestException";
+import { UserEntity } from "@modules/users/models/entity/user.entity";
+import { UserRepository } from "@modules/users/repositories/users.repository";
 import { Service } from "@shared/decorators/service.decorator";
-import { hash } from "bcryptjs";
-import { UserRepository } from "@modules/users/users.repository";
-import { CollaboratorRepository } from "../collaborator.repository";
-import { UpdateCollaboratorDTO } from "../dto/update-collaborator.dto";
-import { CollaboratorEntity } from "../collaborator.entity";
-import { UserEntity } from "@modules/users/user.entity";
-import { CollaboratorServicesRepository } from "../collaborator-services.repository";
-import { CollaboratorsServicesEntity } from "../collaborator-services.entity";
-import { FindCollaboratorService } from "./find-collaborator.service";
-import { CollaboratorResponseDTO } from "../dto/collaborator-response.dto";
+import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import { hash } from "bcryptjs";
+import { CollaboratorResponseDTO } from "../models/dto/collaborator-response.dto";
+import { UpdateCollaboratorDTO } from "../models/dto/update-collaborator.dto";
+import { CollaboratorsServicesEntity } from "../models/entity/collaborator-services.entity";
+import { CollaboratorEntity } from "../models/entity/collaborator.entity";
+import { CollaboratorServicesRepository } from "../repositories/collaborator-services.repository";
+import { CollaboratorRepository } from "../repositories/collaborator.repository";
+import { FindCollaboratorService } from "./find-collaborator.service";
 
 @Service()
 export class UpdateCollaboratorService {

@@ -1,18 +1,13 @@
 import { log } from "@config/Logger";
-import { UpdateUserDTO } from "../dto/update-user.dto";
-import { UserResponseDTO } from "../dto/user-response.dto";
-import { UserEntity } from "../user.entity";
-import { UserRepository } from "../users.repository";
+import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { ValidatorUtils } from "@shared/utils/validator.utils";
-import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
-import { Service } from "@shared/decorators/service.decorator";
-import { hash } from "bcryptjs";
-import { UpdateUserPreferencesDTO } from "../dto/update-user-preferences.dto";
-import { UserPreferencesResponseDTO } from "../dto/user-preferences-response.dto";
-import { UserPreferencesRepository } from "../user-preferences.repository";
-import { UserPreferencesEntity } from "../user-preferences.entity";
-import { UpdateResult } from 'typeorm';
+import { UpdateUserPreferencesDTO } from "../models/dto/update-user-preferences.dto";
+import { UserPreferencesResponseDTO } from "../models/dto/user-preferences-response.dto";
+import { UserPreferencesEntity } from "../models/entity/user-preferences.entity";
+import { UserEntity } from "../models/entity/user.entity";
+import { UserPreferencesRepository } from "../repositories/user-preferences.repository";
+import { UserRepository } from "../repositories/users.repository";
 
 @Service()
 export class UpdateUserPreferencesService {

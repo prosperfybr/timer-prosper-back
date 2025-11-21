@@ -1,6 +1,6 @@
 import { log } from "@config/Logger";
-import { UserEntity } from "@modules/users/user.entity";
-import { UserRepository } from "@modules/users/users.repository";
+import { UserEntity } from "@modules/users/models/entity/user.entity";
+import { UserRepository } from "@modules/users/repositories/users.repository";
 import { NextFunction, Request, Response } from "express";
 import { verify } from "jsonwebtoken";
 

@@ -1,26 +1,25 @@
 import { log } from "@config/Logger";
-import { BadRequestException } from "@shared/exceptions/BadRequestException";
-import { ValidatorUtils } from "@shared/utils/validator.utils";
-import { CollaboratorRepository } from "../collaborator.repository";
-import { Service } from "@shared/decorators/service.decorator";
-import { FormatterUtils } from "@shared/utils/formatter.utils";
-import { CreateCollaboratorDTO } from "../dto/create-collaborator.dto";
-import { CollaboratorServicesRepository } from "../collaborator-services.repository";
-import { CreateUserDTO } from "@modules/users/dto/create-user.dto";
-import { RolesEnum } from "@modules/users/dto/RolesEnum";
+import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
+import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
+import { ServicesEntity } from "@modules/services/models/entity/services.entity";
+import { ServicesRepository } from "@modules/services/repositories/services.repository";
+import { CreateUserDTO } from "@modules/users/models/dto/create-user.dto";
+import { UpdateUserDTO } from "@modules/users/models/dto/update-user.dto";
+import { UserResponseDTO } from "@modules/users/models/dto/user-response.dto";
+import { RolesEnum } from "@modules/users/models/enum/roles.enum";
 import { CreateUserService } from "@modules/users/services/create-user.service";
-import { EstablishmentEntity } from "@modules/establishment/establishment.entity";
-import { EstablishmentRepository } from "@modules/establishment/establishment.repository";
-import { CollaboratorsServicesEntity } from "../collaborator-services.entity";
-import { CollaboratorEntity } from "../collaborator.entity";
-import { ServicesRepository } from "@modules/services/services.repository";
-import { ServicesEntity } from "@modules/services/services.entity";
-import { CollaboratorResponseDTO } from "../dto/collaborator-response.dto";
-import moment from "moment";
-import { UserResponseDTO } from "@modules/users/dto/user-response.dto";
-import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { UpdateUserService } from "@modules/users/services/update-user.service";
-import { UpdateUserDTO } from "@modules/users/dto/update-user.dto";
+import { Service } from "@shared/decorators/service.decorator";
+import { BadRequestException } from "@shared/exceptions/BadRequestException";
+import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import { FormatterUtils } from "@shared/utils/formatter.utils";
+import { ValidatorUtils } from "@shared/utils/validator.utils";
+import { CollaboratorResponseDTO } from "../models/dto/collaborator-response.dto";
+import { CreateCollaboratorDTO } from "../models/dto/create-collaborator.dto";
+import { CollaboratorsServicesEntity } from "../models/entity/collaborator-services.entity";
+import { CollaboratorEntity } from "../models/entity/collaborator.entity";
+import { CollaboratorServicesRepository } from "../repositories/collaborator-services.repository";
+import { CollaboratorRepository } from "../repositories/collaborator.repository";
 
 @Service()
 export class CreateCollaboratorService {
@@ -99,16 +98,16 @@ export class CreateCollaboratorService {
 		const collaboratorServicesRelationshipSaved: CollaboratorsServicesEntity[] = await this.collaboratorServicesRepository.saveAll(collaboratorServicesRelationshipToSave);
 
 		return {
-      id: collaboratorSaved.id,
-      userId: collaboratorUserCreated.id,
-      establishmentId: collaboratorSaved.establishmentId,
-      servicesIds: collaboratorServicesRelationshipSaved.map(relation => relation.id),
-      collaboratorFunction: collaboratorSaved.collaboratorFunction,
-      specialty: collaboratorSaved.specialty,
-      hiringDate: collaboratorSaved.hiringDate,
+			id: collaboratorSaved.id,
+			userId: collaboratorUserCreated.id,
+			establishmentId: collaboratorSaved.establishmentId,
+			servicesIds: collaboratorServicesRelationshipSaved.map(relation => relation.id),
+			collaboratorFunction: collaboratorSaved.collaboratorFunction,
+			specialty: collaboratorSaved.specialty,
+			hiringDate: collaboratorSaved.hiringDate,
 			active: collaboratorSaved.active,
-      createdAt: collaboratorSaved.createdAt
-    } as CollaboratorResponseDTO;
+			createdAt: collaboratorSaved.createdAt,
+		} as CollaboratorResponseDTO;
 	}
 
 	private validate(collaborator: CreateCollaboratorDTO): void {

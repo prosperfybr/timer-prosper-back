@@ -1,15 +1,15 @@
-import * as crypto from "crypto";
-import * as jwt from "jsonwebtoken";
-import { Service } from "@shared/decorators/service.decorator";
 import { log } from "@config/Logger";
-import { RefreshTokenRepository } from "../refresh-token.repository";
-import { UserEntity } from "@modules/users/user.entity";
-import { UserRepository } from "@modules/users/users.repository";
-import { RefreshTokenEntity } from "../refresh-token.entity";
-import { DoLoginDTO } from "../dto/do-login.dto";
-import { LoginResponseDTO } from "../dto/login-response.dto";
+import { UserEntity } from "@modules/users/models/entity/user.entity";
+import { UserRepository } from "@modules/users/repositories/users.repository";
+import { Service } from "@shared/decorators/service.decorator";
 import { UnauthorizedException } from "@shared/exceptions/UnauthorizedException";
 import { compare } from "bcryptjs";
+import * as crypto from "crypto";
+import * as jwt from "jsonwebtoken";
+import { DoLoginDTO } from "../models/dto/do-login.dto";
+import { LoginResponseDTO } from "../models/dto/login-response.dto";
+import { RefreshTokenEntity } from "../models/entity/refresh-token.entity";
+import { RefreshTokenRepository } from "../repositories/refresh-token.repository";
 
 @Service()
 export class LoginService {
@@ -38,8 +38,8 @@ export class LoginService {
 		const passwordMatch: boolean = await compare(password, user.password);
 		if (!passwordMatch) throw new UnauthorizedException("Usuário ou senha incorretos");
 
-		const { token: accessToken }: { token: string; expiresIn: number; } = this.generateAccessToken(user);
-		const {refreshToken, expiresIn: refreshExpiresIn }: { refreshToken: string; expiresIn: Date } = await this.generateAndSaveRefreshToken(user, clientIp, userAgent);
+		const { token: accessToken }: { token: string; expiresIn: number } = this.generateAccessToken(user);
+		const { refreshToken, expiresIn: refreshExpiresIn }: { refreshToken: string; expiresIn: Date } = await this.generateAndSaveRefreshToken(user, clientIp, userAgent);
 
 		return {
 			token: accessToken,
@@ -55,13 +55,13 @@ export class LoginService {
 		return crypto.createHash("sha256").update(token).digest("hex");
 	}
 
-	public generateAccessToken(user: UserEntity): { token: string; expiresIn: number; } {
+	public generateAccessToken(user: UserEntity): { token: string; expiresIn: number } {
 		const payload = { id: user.id, role: user.role };
 		const accessTokenExpiry: number = process.env.ACCESS_TOKEN_EXPIRY ? parseInt(process.env.ACCESS_TOKEN_EXPIRY) : 15;
 		return { token: jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: accessTokenExpiry, subject: user.id }), expiresIn: accessTokenExpiry };
 	}
 
-	public async generateAndSaveRefreshToken(user: UserEntity, clientIp?: string, userAgent?: string): Promise<{ refreshToken: string; expiresIn: Date; }> {
+	public async generateAndSaveRefreshToken(user: UserEntity, clientIp?: string, userAgent?: string): Promise<{ refreshToken: string; expiresIn: Date }> {
 		const token = crypto.randomBytes(32).toString("hex");
 		const tokenHash: string = this.hashToken(token);
 

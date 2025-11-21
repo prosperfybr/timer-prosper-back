@@ -1,8 +1,8 @@
 import { Service } from "@shared/decorators/service.decorator";
-import { SegmentRepository } from "../time-block.repository";
-import { UpdateSegmentDTO } from "../dto/update-scheduling.dto";
-import { SegmentResponseDTO } from "../dto/scheduling-response.dto";
-import { SegmentEntity } from "../collaborator-availability.entity";
+import { SegmentRepository } from "../repositories/time-block.repository";
+import { UpdateSegmentDTO } from "../models/dto/update-scheduling.dto";
+import { SegmentResponseDTO } from "../models/dto/scheduling-response.dto";
+import { SegmentEntity } from "../models/entity/collaborator-availability.entity";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { log } from "@config/Logger";
 import { ValidatorUtils } from "@shared/utils/validator.utils";

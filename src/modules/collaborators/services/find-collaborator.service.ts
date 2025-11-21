@@ -1,18 +1,18 @@
 import { log } from "@config/Logger";
 
-import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
-import { Service } from "@shared/decorators/service.decorator";
-import { CollaboratorRepository } from "../collaborator.repository";
+import { EstablishmentResponseDTO } from "@modules/establishment/models/dto/establishment/establishment-response.dto";
 import { FindEstablishmentService } from "@modules/establishment/services/find-establishment.service";
-import { CollaboratorResponseDTO } from "../dto/collaborator-response.dto";
-import { FindUserService } from "@modules/users/services/find-user.service";
-import { UserResponseDTO } from "@modules/users/dto/user-response.dto";
-import { CollaboratorEntity } from "../collaborator.entity";
-import { EstablishmentResponseDTO } from "@modules/establishment/dto/establishment-response.dto";
-import { CollaboratorServicesRepository } from "../collaborator-services.repository";
-import { CollaboratorsServicesEntity } from "../collaborator-services.entity";
-import { ServiceResponseDTO } from "@modules/services/dto/service-response.dto";
+import { ServiceResponseDTO } from "@modules/services/models/dto/service-response.dto";
 import { FindServiceService } from "@modules/services/services/find-service.service";
+import { UserResponseDTO } from "@modules/users/models/dto/user-response.dto";
+import { FindUserService } from "@modules/users/services/find-user.service";
+import { Service } from "@shared/decorators/service.decorator";
+import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import { CollaboratorResponseDTO } from "../models/dto/collaborator-response.dto";
+import { CollaboratorsServicesEntity } from "../models/entity/collaborator-services.entity";
+import { CollaboratorEntity } from "../models/entity/collaborator.entity";
+import { CollaboratorServicesRepository } from "../repositories/collaborator-services.repository";
+import { CollaboratorRepository } from "../repositories/collaborator.repository";
 
 @Service()
 export class FindCollaboratorService {
@@ -44,26 +44,26 @@ export class FindCollaboratorService {
 	}
 
 	public async getAllEstablishmentCollaborators(establishmentId: string): Promise<CollaboratorResponseDTO[]> {
-    if (!establishmentId) {
-      log.error(`Establishment ID is required, but is received: [${establishmentId}]`);
-      throw new InvalidArgumentException("O ID do estabelecimento é obrigatório");
-    }
+		if (!establishmentId) {
+			log.error(`Establishment ID is required, but is received: [${establishmentId}]`);
+			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório");
+		}
 
-    const establishment: EstablishmentResponseDTO = await this.findEstablishmentService.findById(establishmentId);
-    const collaborators: CollaboratorEntity[] = await this.collaboratorRepository.findAllByEstablishmentId(establishment.id);
-    const establishmentCollaborators: CollaboratorResponseDTO[] = [];
+		const establishment: EstablishmentResponseDTO = await this.findEstablishmentService.findById(establishmentId);
+		const collaborators: CollaboratorEntity[] = await this.collaboratorRepository.findAllByEstablishmentId(establishment.id);
+		const establishmentCollaborators: CollaboratorResponseDTO[] = [];
 
-    if (!collaborators || collaborators.length === 0) {
-      log.warn(`No collaborators found to this establishment`);
-      return establishmentCollaborators;
-    } else {
-      for (const collaborator of collaborators) {
-        establishmentCollaborators.push(await this.execute(collaborator.id, establishment));
-      }
+		if (!collaborators || collaborators.length === 0) {
+			log.warn(`No collaborators found to this establishment`);
+			return establishmentCollaborators;
+		} else {
+			for (const collaborator of collaborators) {
+				establishmentCollaborators.push(await this.execute(collaborator.id, establishment));
+			}
 
-      return establishmentCollaborators;
-    }
-  }
+			return establishmentCollaborators;
+		}
+	}
 
 	private treatResponse(
 		collaborator: CollaboratorEntity,
