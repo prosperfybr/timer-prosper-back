@@ -18,11 +18,9 @@ import mr from 'moment-range';
 import { EstablishmentHourRepository } from '../../establishment/repositories/establishment-hour.repository';
 import { CreateSchedulingDTO } from '../models/dto/create-scheduling.dto';
 import { AppointmentEntity } from '../models/entity/appointment.entity';
-import { CollaboratorAvailabilityEntity } from '../models/entity/collaborator-availability.entity';
-import { TimeBlockEntity } from '../models/entity/time-block.entity';
+import { AbsenceBlockEntity } from '../models/entity/absence-block.entity';
 import { AppointmentRepository } from '../repositories/appointment.repository';
-import { CollaboratorAvailabilityRepository } from '../repositories/collaborator-availability.repository';
-import { TimeBlockRepository } from '../repositories/time-block.repository';
+import { AbsenceBlockRepository } from '../repositories/absence-block.repository';
 
 @Service()
 export class CreateSchedulingService {
@@ -61,8 +59,7 @@ export class CreateSchedulingService {
 		private readonly userRepository: UserRepository,
 		private readonly establishmentHourRepository: EstablishmentHourRepository,
 		private readonly appointmentRepository: AppointmentRepository,
-		private readonly collaboratorAvailabilityRepository: CollaboratorAvailabilityRepository,
-		private readonly timeBlockRepository: TimeBlockRepository,
+		private readonly timeBlockRepository: AbsenceBlockRepository,
 	) {}
 
 	public async execute(payload: CreateSchedulingDTO): Promise<any> {
@@ -151,11 +148,11 @@ export class CreateSchedulingService {
 
 		/* 5. Verifica bloqueio */
 		//- 5.1 Busca todos os bloqueios para o colaborador no período da data escolhida
-		const timeBlocks: TimeBlockEntity[] =
+		const timeBlocks: AbsenceBlockEntity[] =
 			await this.timeBlockRepository.findAllByCollaboratorIdAndDate(
 				collaborator.id,
-				selectedDateTime.toDate(),
-				endTime.toDate(),
+				selectedDateTime.toDate().toString(),
+				endTime.toDate().toString(),
 			);
 		for (const block of timeBlocks) {
 			const blockRange = momentRange.range(moment(block.startTime), moment(block.endTime));
@@ -167,6 +164,7 @@ export class CreateSchedulingService {
 		}
 
 		//- 5.2 Verifica período de trabalho recorrente
+		/*
 		const availablilitySlots: CollaboratorAvailabilityEntity[] =
 			await this.collaboratorAvailabilityRepository.findAllByCollaboratorIdAndDayOfWeek(
 				collaborator.id,
@@ -195,6 +193,7 @@ export class CreateSchedulingService {
 			log.error(`Time out of job scale for this collaborator`);
 			throw new BadRequestException('Horário fora da escala de trabalho regular do colaborador');
 		}
+		*/
 
 		/* 5.3 e 6 Verifica conflito com agendamentos existentes */
 		const existingAppointments: AppointmentEntity[] =

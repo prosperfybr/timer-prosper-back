@@ -23,7 +23,7 @@ import { CollaboratorRepository } from "../repositories/collaborator.repository"
 
 @Service()
 export class CreateCollaboratorService {
-	private COLLABORATOR_DEFAULT_PASSWORD: (name: string) => string = (name: string): string => `123-${name}-C0LAB`;
+	private COLLABORATOR_DEFAULT_PASSWORD: (name: string) => string = (name: string): string => `${name}`;
 
 	private readonly validationRules = {
 		name: { validation: (v: string) => v && v.trim().length > 0, message: "O nome do colaborador é inválido" },

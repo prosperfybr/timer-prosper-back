@@ -7,4 +7,5 @@ export interface LoginResponseDTO {
 	expiresIn: string | number;
 	refreshExpiresIn: Date;
 	user: UserResponseDTO;
+	establishmentId: string | void;
 }

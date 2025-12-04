@@ -4,8 +4,8 @@ import { DaysOfWeekEnum } from '../../enums/days-of-week.enum';
 export interface HourResponseDTO {
 	id: string;
 	dayOfWeek: DaysOfWeekEnum;
-	openingTime: string;
-	closingTime: string;
+	startTime: string;
+	endTime: string;
 	createdAt: Date;
 	updatedAt: Date;
 }

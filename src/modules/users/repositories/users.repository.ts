@@ -1,7 +1,7 @@
 import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
 import { Repository, UpdateResult } from "typeorm";
-import { AppDataSource } from "../../../../ormconfig";
+import { AppDataSource } from "../../../config/ormconfig";
 import { UserEntity } from "../models/entity/user.entity";
 
 @RepositoryDec()
@@ -33,7 +33,7 @@ export class UserRepository {
 	}
 
 	public async findByEmail(email: string): Promise<UserEntity> {
-		return await this.repository.findOne({ where: { email }, relations: ["establishments"] });
+		return await this.repository.findOne({ where: { email } });
 	}
 
 	public async findAll(): Promise<UserEntity[]> {

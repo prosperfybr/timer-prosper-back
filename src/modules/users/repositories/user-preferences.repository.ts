@@ -1,5 +1,5 @@
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { AppDataSource } from "ormconfig";
+import { AppDataSource } from "@config/ormconfig";
 import { Repository, UpdateResult } from "typeorm";
 import { UserPreferencesEntity } from "../models/entity/user-preferences.entity";
 

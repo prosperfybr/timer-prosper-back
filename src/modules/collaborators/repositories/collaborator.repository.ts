@@ -1,6 +1,6 @@
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
 import { Repository, UpdateResult } from "typeorm";
-import { AppDataSource } from "../../../../ormconfig";
+import { AppDataSource } from "../../../config/ormconfig";
 import { CollaboratorEntity } from "../models/entity/collaborator.entity";
 
 @RepositoryDec()
@@ -25,6 +25,18 @@ export class CollaboratorRepository {
 
 	public async findAllByEstablishmentId(establishmentId: string): Promise<CollaboratorEntity[]> {
 		return await this.repository.find({ where: { establishmentId } });
+	}
+
+	public async findCollaboratorsInEstablishentWorksInService(establishmentId: string, serviceId: string, collaboratorId: string): Promise<CollaboratorEntity[]> {
+		let queryCollaborators = this.repository.createQueryBuilder("collaborator")
+		.where('collaborator.establishmentId = :establishmentId', { establishmentId })
+		.andWhere('collaborator.active = :isActive', { isActive: true })
+		.innerJoinAndSelect("collaborator.services", "serviceLink", 'serviceLink.serviceId = :serviceId', { serviceId });
+
+		if (collaboratorId !== null && collaboratorId !== undefined) 
+			queryCollaborators = queryCollaborators.andWhere("collaborator.id = :id", { id: collaboratorId});
+
+		return await queryCollaborators.getMany();
 	}
 
 	public async update(id: string, data: Partial<CollaboratorEntity>): Promise<UpdateResult> {

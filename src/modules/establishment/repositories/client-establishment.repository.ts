@@ -2,7 +2,7 @@ import { DeleteResult, Repository } from "typeorm";
 
 import { ClientEstablishmentEntity } from "@modules/establishment/models/entity/client-establishment.entity";
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { AppDataSource } from "../../../../ormconfig";
+import { AppDataSource } from "../../../config/ormconfig";
 
 @RepositoryDec()
 export class ClientEstablishmentRepository {

@@ -1,5 +1,5 @@
 import { DeleteResult, In, LessThan, MoreThan, Repository, UpdateResult } from "typeorm";
-import { AppDataSource } from "../../../../ormconfig";
+import { AppDataSource } from "../../../config/ormconfig";
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
 import { AppointmentEntity } from '../models/entity/appointment.entity';
 import { AppointmentStatusEnum } from "../models/enums/appointment-status.enum";
@@ -28,6 +28,17 @@ export class AppointmentRepository {
 		return await this.repository.find({
 			where: {
 				collaboratorId,
+				status: In([AppointmentStatusEnum.PENDING, AppointmentStatusEnum.CONFIRMED]),
+				endTime: MoreThan(startTime),
+				startTime: LessThan(endTime)
+			}
+		});
+	}
+
+	public async findAllByCollaboratorsIdAndDate(collaboratorIds: string[], startTime: Date, endTime: Date): Promise<AppointmentEntity[]> {
+		return await this.repository.find({
+			where: {
+				collaboratorId: In(collaboratorIds),
 				status: In([AppointmentStatusEnum.PENDING, AppointmentStatusEnum.CONFIRMED]),
 				endTime: MoreThan(startTime),
 				startTime: LessThan(endTime)

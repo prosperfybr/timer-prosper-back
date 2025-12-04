@@ -1,6 +1,6 @@
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
 import { In, Repository, UpdateResult } from "typeorm";
-import { AppDataSource } from "../../../../ormconfig";
+import { AppDataSource } from "../../../config/ormconfig";
 import { CollaboratorsServicesEntity } from "../models/entity/collaborator-services.entity";
 
 @RepositoryDec()

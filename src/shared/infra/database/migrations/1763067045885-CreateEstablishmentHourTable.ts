@@ -11,7 +11,7 @@ export class CreateEstablishmentHourTable1763067045885 implements MigrationInter
 				columns: [
 					{ name: "id", type: "uuid", isPrimary: true, default: "uuid_generate_v4()" },
 					{ name: this.ESTABLISHMENT_ID_COLUMN, type: "uuid", isNullable: false },
-					{ name: "day_of_week", type: "integer", isNullable: false, comment: "Dias numéricos (1=Domingo, 7=Sábado)" },
+					{ name: "day_of_week", type: "integer", isNullable: false, comment: "Dias numéricos (1=Segunda, 7=Domingo)" },
 					{ name: "opening_time", type: "time", isNullable: false },
 					{ name: "closing_time", type: "time", isNullable: false },
 					{ name: "created_at", type: "timestamp", default: "now()" },

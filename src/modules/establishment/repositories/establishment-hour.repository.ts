@@ -1,7 +1,7 @@
 import { DeleteResult, Repository } from "typeorm";
 
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { AppDataSource } from "../../../../ormconfig";
+import { AppDataSource } from "../../../config/ormconfig";
 import { EstablishmentHourEntity } from "../models/entity/establishment-hour.entity";
 
 @RepositoryDec()

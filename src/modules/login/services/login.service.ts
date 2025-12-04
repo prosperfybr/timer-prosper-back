@@ -10,13 +10,19 @@ import { DoLoginDTO } from "../models/dto/do-login.dto";
 import { LoginResponseDTO } from "../models/dto/login-response.dto";
 import { RefreshTokenEntity } from "../models/entity/refresh-token.entity";
 import { RefreshTokenRepository } from "../repositories/refresh-token.repository";
+import { RolesEnum } from "@modules/users/models/enum/roles.enum";
+import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
+import { CollaboratorRepository } from "@modules/collaborators/repositories/collaborator.repository";
+import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
 
 @Service()
 export class LoginService {
 	constructor(
 		//- Repositories
 		private readonly refreshTokenRepository: RefreshTokenRepository,
-		private readonly userRepository: UserRepository
+		private readonly userRepository: UserRepository,
+		private readonly establishmentRepository: EstablishmentRepository,
+		private readonly collaboratorRepository: CollaboratorRepository
 	) {}
 
 	public async doLogin(payload: DoLoginDTO, clientIp?: string, userAgent?: string): Promise<LoginResponseDTO> {
@@ -39,8 +45,27 @@ export class LoginService {
 		if (!passwordMatch) throw new UnauthorizedException("Usuário ou senha incorretos");
 
 		const { token: accessToken }: { token: string; expiresIn: number } = this.generateAccessToken(user);
-		const { refreshToken, expiresIn: refreshExpiresIn }: { refreshToken: string; expiresIn: Date } = await this.generateAndSaveRefreshToken(user, clientIp, userAgent);
+		const { refreshToken, expiresIn: refreshExpiresIn }: { refreshToken: string; expiresIn: Date } = await this.generateAndSaveRefreshToken(
+			user,
+			clientIp,
+			userAgent,
+		);
 
+		/* FIND A ESTABLISHMENT ATTACHED FOR THIS USER */
+		const finder = {
+			admin: async (userId: string): Promise<string> => {return;},
+			proprietario: async (userId: string) => {
+				const establishment: EstablishmentEntity = await this.establishmentRepository.findByOwnerOrCollaborator(userId);
+				return !establishment ? null : establishment.id;
+			},
+			colaborador: async (userId: string) => {
+				const establishment: EstablishmentEntity = await this.establishmentRepository.findByOwnerOrCollaborator(userId);
+				return !establishment ? null : establishment.id;
+			},
+			cliente: async (userId: string) => { return; },
+		};
+
+		const establishmentId: string | void = await finder[user.role](user.id);
 		return {
 			token: accessToken,
 			refreshToken: refreshToken,
@@ -48,6 +73,7 @@ export class LoginService {
 			expiresIn: `${process.env.ACCESS_TOKEN_EXPIRY}m`,
 			refreshExpiresIn,
 			user: user,
+			establishmentId
 		} as LoginResponseDTO;
 	}
 
@@ -58,10 +84,17 @@ export class LoginService {
 	public generateAccessToken(user: UserEntity): { token: string; expiresIn: number } {
 		const payload = { id: user.id, role: user.role };
 		const accessTokenExpiry: number = process.env.ACCESS_TOKEN_EXPIRY ? parseInt(process.env.ACCESS_TOKEN_EXPIRY) : 15;
-		return { token: jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: accessTokenExpiry, subject: user.id }), expiresIn: accessTokenExpiry };
+		return {
+			token: jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: accessTokenExpiry, subject: user.id }),
+			expiresIn: accessTokenExpiry,
+		};
 	}
 
-	public async generateAndSaveRefreshToken(user: UserEntity, clientIp?: string, userAgent?: string): Promise<{ refreshToken: string; expiresIn: Date }> {
+	public async generateAndSaveRefreshToken(
+		user: UserEntity,
+		clientIp?: string,
+		userAgent?: string,
+	): Promise<{ refreshToken: string; expiresIn: Date }> {
 		const token = crypto.randomBytes(32).toString("hex");
 		const tokenHash: string = this.hashToken(token);
 

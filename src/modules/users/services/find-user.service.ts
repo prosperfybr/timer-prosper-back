@@ -8,11 +8,16 @@ import { UserResponseDTO } from "../models/dto/user-response.dto";
 import { UserEntity } from "../models/entity/user.entity";
 import { UserRepository } from "../repositories/users.repository";
 import { FindUserPreferencesService } from "./find-user-preferences.service";
+import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
+import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
 
 @Service()
 export class FindUserService {
 	constructor(
+		//- Repository
 		private readonly userReposiory: UserRepository,
+		private readonly establishmentRepository: EstablishmentRepository,
+		//- Services
 		private readonly findUserPreferencesService: FindUserPreferencesService,
 		//- Utils
 		private readonly formatterUtils: FormatterUtils
@@ -23,13 +28,16 @@ export class FindUserService {
 			log.error(`User ID is required, but is received: [${id}]`);
 			throw new InvalidArgumentException("O ID do usuário é obrigatório");
 		}
-
+		console.log("Buscando o usuário");
 		const user: UserEntity = await this.userReposiory.findById(id);
+		console.log("Usuário encontrado: USER: ", user);
 
 		if (!user) {
 			log.error(`User not found with ID: [${id}]`);
 			throw new BadRequestException("Usuário não encontrado com o ID informado");
 		}
+
+		const establishment: EstablishmentEntity = await this.establishmentRepository.findByOwnerOrCollaborator(user.id);
 
 		let settingsPreferences: UserPreferencesResponseDTO = null;
 		try {
@@ -55,6 +63,7 @@ export class FindUserService {
 			profileComplete: user.profileComplete,
 			profilePreferences: user.profilePreferences,
 			settingsPreferences,
+			establsihmentId: establishment ? establishment.id : null,
 			establishments: user.establishments,
 		} as UserResponseDTO;
 	}

@@ -16,7 +16,11 @@ export class FormatterUtils {
 	}
 
 	public formatTime(hour: string): string {
-		const parsedTime = moment(hour);
-		return parsedTime.isValid() ? parsedTime.format("HH:mm:ss") : null;
+		const [hours, minutes, seconds] = hour.split(":");
+		const now = moment();
+		now.hour(parseInt(hours));
+		now.minute(parseInt(minutes));
+		now.second(seconds ? parseInt(seconds) : 0);
+		return now.isValid() ? now.format("HH:mm:ss") : null;
 	}
 }

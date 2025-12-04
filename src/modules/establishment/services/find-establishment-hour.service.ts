@@ -47,9 +47,10 @@ export class FindEstablishmentHourService {
 		const hoursToResponse: HourResponseDTO[] = [];
 		hours.forEach((hour) => {
 			hoursToResponse.push({
+				id: hour.id,
 				dayOfWeek: hour.dayOfWeek,
-				openingTime: this.formatterUtils.formatTime(hour.openingTime),
-				closingTime: this.formatterUtils.formatTime(hour.closingTime),
+				startTime: this.formatterUtils.formatTime(hour.openingTime),
+				endTime: this.formatterUtils.formatTime(hour.closingTime),
 				createdAt: hour.createdAt,
 				updatedAt: hour.updatedAt,
 			} as HourResponseDTO);

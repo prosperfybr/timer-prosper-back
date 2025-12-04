@@ -1,7 +1,7 @@
 import { DeleteResult, Repository } from "typeorm";
 
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { AppDataSource } from "../../../../ormconfig";
+import { AppDataSource } from "../../../config/ormconfig";
 import { EstablishmentEntity } from "../models/entity/establishment.entity";
 
 @RepositoryDec()
@@ -34,6 +34,18 @@ export class EstablishmentRepository {
 
 	public async findAllByUser(userId: string): Promise<EstablishmentEntity[]> {
 		return await this.repository.find({ where: { userId } });
+	}
+
+	public async findByOwnerOrCollaborator(userId: string): Promise<EstablishmentEntity> {
+		const establishment: EstablishmentEntity = await this.repository
+				.createQueryBuilder("establishment")
+				.leftJoin("establishment.collaborators", "collaborator")
+				.where("establishment.userId = :id", { id: userId })
+				.orWhere("collaborator.userId = :id", { id: userId })
+				.leftJoinAndSelect("establishment.user", "owner")
+				.getOne();
+
+		return establishment;
 	}
 
 	public async delete(id: string): Promise<DeleteResult> {

@@ -1,6 +1,6 @@
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
 import { Repository } from "typeorm";
-import { AppDataSource } from "../../../../ormconfig";
+import { AppDataSource } from "../../../config/ormconfig";
 import { RefreshTokenEntity } from "../models/entity/refresh-token.entity";
 
 @RepositoryDec()

@@ -34,7 +34,7 @@ export class CreateAppointmentEntity1762984138693 implements MigrationInterface 
 			new TableForeignKey({
 				columnNames: [this.COLLABORATOR_ID],
 				referencedColumnNames: ["id"],
-				referencedTableName: "collaborator_profiles",
+				referencedTableName: "collaborators",
 				onDelete: "RESTRICT", // Não permite deletar o colaborador se ele tiver agendamentos
 			})
 		);
@@ -45,7 +45,7 @@ export class CreateAppointmentEntity1762984138693 implements MigrationInterface 
 			new TableForeignKey({
 				columnNames: [this.CLIENT_ID],
 				referencedColumnNames: ["id"],
-				referencedTableName: "client_profiles",
+				referencedTableName: "users",
 				onDelete: "RESTRICT", // Não permite deletar o cliente se ele tiver agendamentos
 			})
 		);

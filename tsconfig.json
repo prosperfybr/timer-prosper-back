@@ -6,7 +6,7 @@
 		"moduleResolution": "node",
 		"sourceMap": true,
 		"removeComments": true,
-		"rootDir": "./src",
+		"rootDir": ".",
 		"outDir": "./dist",
 
 		"resolveJsonModule": true,
@@ -23,6 +23,10 @@
 			"@shared/*": ["src/shared/*"],
 			"@config/*": ["src/config/*"]
 		},
-		"typeRoots": ["/node_modules/@types", "src/config/@types"]
-	}
+		"typeRoots": ["/node_modules/@types", "src/config/@types"],
+	},
+	"include": [
+		"src/**/*",
+		"docs/**/*"
+	]
 }

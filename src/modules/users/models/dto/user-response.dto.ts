@@ -14,5 +14,6 @@ export interface UserResponseDTO {
 	profileComplete: boolean;
 	userFunction?: string;
 	preferences?: UserPreferencesResponseDTO;
+	establsihmentId?: string;
 	establishments?: any[];
 }
