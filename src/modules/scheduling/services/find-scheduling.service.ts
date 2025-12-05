@@ -14,6 +14,9 @@ import { DateRange, extendMoment } from "moment-range";
 import { SchedulingResponse } from "../models/dto/scheduling-response.dto";
 import { AbsenceBlockRepository } from "../repositories/absence-block.repository";
 import { AppointmentRepository } from "../repositories/appointment.repository";
+import { UserRepository } from "@modules/users/repositories/users.repository";
+import { UserEntity } from "@modules/users/models/entity/user.entity";
+import { ServicesRepository } from "@modules/services/repositories/services.repository";
 
 @Service()
 export class FindSchedulingService {
@@ -24,6 +27,8 @@ export class FindSchedulingService {
 		private readonly collaboratorRepository: CollaboratorRepository,
 		private readonly absenceBlockRepository: AbsenceBlockRepository,
 		private readonly appointmentRepository: AppointmentRepository,
+		private readonly userRepository: UserRepository,
+		private readonly servicesRepository: ServicesRepository,
 		//- Utils
 		private readonly converterUtils: ConverterUtils,
 	) {}
@@ -35,7 +40,7 @@ export class FindSchedulingService {
 		collaboratorId?: string,
 	): Promise<SchedulingResponse.SLOT[]> {
 		log.info(
-			`Finding all slots available to establishment, service and collaborator. [ESTABLISHMENT: ${establishmentId} | SERVICE: ${serviceId} | COLLABORATOR: ${collaboratorId}]`,
+			`Finding all slots available to establishment, service and collaborator. [ESTABLISHMENT: ${establishmentId} | SERVICE: ${serviceId} | COLLABORATOR: ${collaboratorId} | DATE: ${date}]`,
 		);
 
 		if (!establishmentId || !serviceId) {
@@ -137,11 +142,13 @@ export class FindSchedulingService {
 
 				isAvailable = !isBooked;
 
+				const { name: collaboratorName } = await this.userRepository.findUserNameByUserId(collaborator.userId);
+
 				allSlots.push({
 					date,
 					time: timeStr,
 					collaboratorId: collaborator.id,
-					collaboratorName: collaborator.user.name,
+					collaboratorName,
 					available: isAvailable,
 					serviceId: service.id,
 					serviceName: service.name,
@@ -156,5 +163,61 @@ export class FindSchedulingService {
 
 		log.info(`Slots founded`);
 		return allSlots;
+	}
+
+	public async findAllClientScheduling(id: string): Promise<SchedulingResponse.SLOT[]> {
+		log.info("Finding all schedulings for client or service or collaborator");
+		let appointments = null;
+
+		const userCollaborator: UserEntity = await this.userRepository.findById(id);
+		if (userCollaborator) {
+			const collaborator: CollaboratorEntity = await this.collaboratorRepository.findByUserId(userCollaborator.id);
+			id = collaborator ? collaborator.id : id;
+		}
+
+		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(id);
+		if (establishment) {
+			const collaborators: CollaboratorEntity[] = await this.collaboratorRepository.findAllByEstablishmentId(establishment.id);
+			const collaboratorsIds: string[] = collaborators.map(collaborator => collaborator.id);
+			appointments = await this.appointmentRepository.findAllByEstablishmentCollaborators(collaboratorsIds);
+		} else appointments = await this.appointmentRepository.findAllByIdentifierClient(id);
+
+		if (!appointments || appointments.length === 0) {
+			log.info(`This client | service | collaborator has not appointments yet`);
+			return [];
+		}
+
+		const clientAppointments: SchedulingResponse.SLOT[] = [];
+
+		for (const appointment of appointments) {
+			const collaborator: CollaboratorEntity = await this.collaboratorRepository.findById(appointment.collaboratorId);
+			const service: ServicesEntity = await this.servicesRepository.findById(appointment.serviceId);
+			const client: UserEntity = await this.userRepository.findById(appointment.clientId);
+
+			clientAppointments.push({
+						date: moment(appointment.startTime).format("YYYY-MM-DD"),
+						time: null,
+						collaboratorId: collaborator.id,
+						collaboratorName: collaborator.user.name,
+						available: true,
+						serviceId: service.id,
+						serviceName: service.name,
+						servicePrice: service.price,
+						serviceDuration: service.duration,
+						establishmentName: collaborator.establishment.tradeName,
+						id: appointment.id,
+						establishmentId: collaborator.establishment.tradeName,
+						clientId: client.id,
+						clientName: client.name,
+						clientWhatsapp: client.whatsApp,
+						startTime: moment(appointment.startTime).format('HH:mm'),
+						endTime: moment(appointment.endTime).format('HH:mm'),
+						status: appointment.status,
+						notes: appointment.notes,
+						createdAt: appointment.createdAt.toString(),
+						updatedAt: appointment.updatedAt.toString(),
+					});
+		}
+		return clientAppointments;
 	}
 }

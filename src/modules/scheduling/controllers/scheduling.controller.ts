@@ -8,43 +8,53 @@ import { PostMapping } from "@shared/decorators/router/post-mapping.decorator";
 import { RequestMapping } from "@shared/decorators/router/request-mapping.decorator";
 import { HttpStatusCode } from "axios";
 import { NextFunction, Request, Response } from "express";
+import { CreateSchedulingService } from "../services/create-scheduling.service";
+import { FindSchedulingService } from '../services/find-scheduling.service';
 
 @RequestMapping("/scheduling")
 @RestController()
 export class SchedulingController {
 	constructor(
+		private readonly createSchedulingService: CreateSchedulingService,
+		private readonly findSchedulingService: FindSchedulingService
 	) {}
 
 	@PostMapping("")
 	public async create(req: Request, res: Response, next: NextFunction) {
 		try {
 			log.info("Creating a new scheduling");
+			const payload = req.body;
+			const scheduled = await this.createSchedulingService.execute(payload);
 			log.info("Scheduling created successfull");
-			return res.status(HttpStatusCode.Created).json({ message: "Agendamento criado com sucesso", payload: null });
+			return res.status(HttpStatusCode.Created).json({ message: "Agendamento criado com sucesso", payload: scheduled });
 		} catch (error) {
-			log.error("An error has occurred while create a new Scheduling. ERROR: ", error);
+			log.error("An error has occurred while create a new scheduling. ERROR: ", error);
 			next(error);
 		}
 	}
 
-	@GetMapping("/detail/:id", { authenticated: true })
+	@GetMapping("/slot/:establishmentId/:serviceId/:collaboratorId/:date", { authenticated: true })
 	public async findById(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Finding a segment by id");
-			log.info("Segment founded successfully");
-			return res.status(HttpStatusCode.Ok).json({ message: "Segmento detalhado com sucesso", payload: null });
+			log.info("Finding a establishment slot by establishment, service, collaborator and date");
+			const {establishmentId, serviceId, collaboratorId, date } = req.params;
+			const slots = await this.findSchedulingService.findAvailableSlots(establishmentId, date, serviceId, collaboratorId);
+			log.info("Establishment slots founded successfully");
+			return res.status(HttpStatusCode.Ok).json({ message: "Horários disponíveis para agendamento listados com sucesso", payload: slots });
 		} catch (error) {
-			log.error("An error has occurred while find a segment. ERROR:  ", error);
+			log.error("An error has occurred while find a scheduling slot. ERROR:  ", error);
 			next(error);
 		}
 	}
 
-	@GetMapping("")
+	@GetMapping("/all/:id")
 	public async findAll(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("List all segments");
-			log.info("Segments is listed successfully");
-			return res.status(HttpStatusCode.Ok).json({ message: "Segmentos listados com sucesso.", payload: null });
+			log.info("List all client scheduling");
+			const id: string = req.params.id;
+			const appointments = await this.findSchedulingService.findAllClientScheduling(id);
+			log.info("All client scheduling are listed successfully");
+			return res.status(HttpStatusCode.Ok).json({ message: "Agendamentos do cliente listados com sucesso.", payload: appointments });
 		} catch (error) {
 			log.error("An error has occurred while list all segments. ERROR: ", error);
 			next(error);

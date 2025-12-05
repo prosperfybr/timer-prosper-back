@@ -40,6 +40,14 @@ export class UserRepository {
 		return await this.repository.find();
 	}
 
+	public async findUserNameByUserId(userId: string): Promise<Pick<UserEntity, 'name'>> {
+		const user = await this.repository.createQueryBuilder('user')
+            .select(['user.name']) 
+            .where('user.id = :userId', { userId })
+            .getOne();
+        return user as Pick<UserEntity, 'name'>;
+	}
+
 	public async update(id: string, data: Partial<UserEntity>): Promise<UpdateResult> {
 		return await this.repository.update(id, data);
 	}

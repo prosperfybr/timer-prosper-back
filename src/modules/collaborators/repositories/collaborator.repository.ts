@@ -31,12 +31,16 @@ export class CollaboratorRepository {
 		let queryCollaborators = this.repository.createQueryBuilder("collaborator")
 		.where('collaborator.establishmentId = :establishmentId', { establishmentId })
 		.andWhere('collaborator.active = :isActive', { isActive: true })
-		.innerJoinAndSelect("collaborator.services", "serviceLink", 'serviceLink.serviceId = :serviceId', { serviceId });
+		.innerJoinAndSelect("collaborators_services", "serviceLink", 'serviceLink.serviceId = :serviceId', { serviceId });
 
 		if (collaboratorId !== null && collaboratorId !== undefined) 
 			queryCollaborators = queryCollaborators.andWhere("collaborator.id = :id", { id: collaboratorId});
 
 		return await queryCollaborators.getMany();
+	}
+
+	public async findByUserId(userId: string): Promise<CollaboratorEntity> {
+		return await this.repository.findOne({ where: { userId } });
 	}
 
 	public async update(id: string, data: Partial<CollaboratorEntity>): Promise<UpdateResult> {

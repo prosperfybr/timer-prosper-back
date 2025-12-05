@@ -46,6 +46,23 @@ export class AppointmentRepository {
 		});
 	}
 
+	public async findAllByIdentifierClient(id: string): Promise<AppointmentEntity[]> {
+		let querySchedulers = this.repository.createQueryBuilder("appointment")
+		.where('appointment.clientId = :id', { id })
+		.orWhere('appointment.serviceId = :id', { id })
+		.orWhere('appointment.collaboratorId = :id', { id });
+
+		return querySchedulers.getMany();
+	}
+
+	public async findAllByEstablishmentCollaborators(collaboratorsIds: string[]): Promise<AppointmentEntity[]> {
+		return await this.repository.find({
+			where: {
+				collaboratorId: In(collaboratorsIds)
+			}
+		});
+	}
+
 	public async update(id: string, data: Partial<AppointmentEntity>): Promise<UpdateResult> {
 		return await this.repository.update(id, data);
 	}

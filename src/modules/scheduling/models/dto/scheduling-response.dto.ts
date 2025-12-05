@@ -1,4 +1,5 @@
 import { Service } from "@shared/decorators/service.decorator";
+import { AppointmentStatusEnum } from "../enums/appointment-status.enum";
 
 export interface SchedulingResponseDTO {
 	id: string;
@@ -15,9 +16,24 @@ export class SchedulingResponse {
 }
 
 export namespace SchedulingResponse {
-	export interface DTO {}
+	export interface DTO {
+		id?: string;
+		establishmentId?: string;
+		collaboratorId?: string;
+		serviceId?: string;
+		clientId?: string;
+		clientName?: string;
+		clientWhatsapp?: string;
+		date?: string;
+		startTime?: string;
+		endTime?: string;
+		status?: AppointmentStatusEnum;
+		notes?: string;
+		createdAt?: string;
+		updatedAt?: string;
+	}
 
-	export interface SLOT {
+	export interface SLOT extends DTO {
 		date: string; // YYYY-MM-DD
 		time: string; // HH:mm
 		collaboratorId: string;

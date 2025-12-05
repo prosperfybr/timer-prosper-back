@@ -14,13 +14,16 @@ import { Service } from '@shared/decorators/service.decorator';
 import { BadRequestException } from '@shared/exceptions/BadRequestException';
 import { InvalidArgumentException } from '@shared/exceptions/InvalidArgumentException';
 import moment from 'moment';
-import mr from 'moment-range';
+import mr, { extendMoment } from 'moment-range';
 import { EstablishmentHourRepository } from '../../establishment/repositories/establishment-hour.repository';
 import { CreateSchedulingDTO } from '../models/dto/create-scheduling.dto';
 import { AppointmentEntity } from '../models/entity/appointment.entity';
 import { AbsenceBlockEntity } from '../models/entity/absence-block.entity';
 import { AppointmentRepository } from '../repositories/appointment.repository';
 import { AbsenceBlockRepository } from '../repositories/absence-block.repository';
+import { FindSchedulingService } from './find-scheduling.service';
+import { SchedulingResponse } from '../models/dto/scheduling-response.dto';
+import { AppointmentStatusEnum } from '../models/enums/appointment-status.enum';
 
 @Service()
 export class CreateSchedulingService {
@@ -60,6 +63,8 @@ export class CreateSchedulingService {
 		private readonly establishmentHourRepository: EstablishmentHourRepository,
 		private readonly appointmentRepository: AppointmentRepository,
 		private readonly timeBlockRepository: AbsenceBlockRepository,
+		//- Service
+		private readonly findSchedulingService: FindSchedulingService
 	) {}
 
 	public async execute(payload: CreateSchedulingDTO): Promise<any> {
@@ -111,7 +116,7 @@ export class CreateSchedulingService {
 		}
 
 		//- Variáveis de auxilio
-		const momentRange = mr.extendMoment(moment as any); //- Configura momentRange
+		const momentRange = extendMoment(moment as any); //- Configura momentRange
 		const selectedDateTime = moment(`${date} ${startTime}`, 'YYYY-MM-DD HH:mm');
 		const endTime = selectedDateTime.clone().add(service.duration, 'minutes'); //- Calcula o fim do agendamento
 		const dayOfWeek: number = selectedDateTime.isoWeekday(); // 1 (Segunda) a 7 (Domingo)
@@ -164,22 +169,16 @@ export class CreateSchedulingService {
 		}
 
 		//- 5.2 Verifica período de trabalho recorrente
-		/*
-		const availablilitySlots: CollaboratorAvailabilityEntity[] =
-			await this.collaboratorAvailabilityRepository.findAllByCollaboratorIdAndDayOfWeek(
-				collaborator.id,
-				dayOfWeek,
-			);
-		let isAvailable: boolean = false;
+		const availablilitySlots: SchedulingResponse.SLOT[] = await this.findSchedulingService.findAvailableSlots(establishment.id, date, service.id, collaborator.id);
 
+		let isAvailable: boolean = false;
 		for (const slot of availablilitySlots) {
 			//- Cria o range de disponibilidade para a data específica
 			const slotStart = selectedDateTime
 				.clone()
 				.startOf('day')
-				.add(moment.duration(slot.startTime));
-			const slotEnd = selectedDateTime.clone().startOf('day').add(moment.duration(slot.endTime));
-
+				.add(moment.duration(slot.time));
+			const slotEnd = selectedDateTime.clone().startOf('day').add(moment.duration(slot.time + service.duration));
 			const availableRange = momentRange.range(slotStart, slotEnd);
 
 			//- Verifica se o slot proposta está totalmente dentro de alguma disponibilidade
@@ -193,7 +192,6 @@ export class CreateSchedulingService {
 			log.error(`Time out of job scale for this collaborator`);
 			throw new BadRequestException('Horário fora da escala de trabalho regular do colaborador');
 		}
-		*/
 
 		/* 5.3 e 6 Verifica conflito com agendamentos existentes */
 		const existingAppointments: AppointmentEntity[] =
@@ -211,10 +209,22 @@ export class CreateSchedulingService {
 			if (proposedRange.overlaps(appointmentRange)) {
 				log.error(`Already exist other appointement in this chose hour`);
 				throw new BadRequestException(
-					'Conflito de horário com outro agendamento. Slot indisponível',
+					'Conflito de horário com outro agendamento. Horário indisponível',
 				);
 			}
 		}
+
+		const appointment: AppointmentEntity = new AppointmentEntity();
+		appointment.collaboratorId = collaborator.id;
+		appointment.clientId = client.id;
+		appointment.serviceId = service.id;
+		appointment.startTime = selectedDateTime.toDate();
+		appointment.endTime = endTime.toDate();
+		appointment.status = AppointmentStatusEnum.CONFIRMED;
+		appointment.notes = notes;
+
+		await this.appointmentRepository.save(appointment);
+		return;
 	}
 
 	private validate(collaborator: CreateSchedulingDTO): void {
