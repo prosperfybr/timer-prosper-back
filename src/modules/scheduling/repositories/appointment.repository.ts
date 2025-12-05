@@ -17,7 +17,7 @@ export class AppointmentRepository {
 	}
 
 	public async findById(id: string): Promise<AppointmentEntity> {
-		return await this.repository.findOne({ where: { id }, relations: ['serviceTypes'] });
+		return await this.repository.findOne({ where: { id } });
 	}
 
 	public async findAll(): Promise<AppointmentEntity[]> {
@@ -69,5 +69,27 @@ export class AppointmentRepository {
 
 	public async delete(id: string): Promise<DeleteResult> {
 		return await this.repository.delete(id);
+	}
+
+	public async appointmentsRaw(collaboratorIds: string[], startOfDay: string, endOfDay: string) {
+		return await this.repository.createQueryBuilder('appointment')
+        .select('appointment.collaboratorId', 'collaboratorId')
+        .addSelect('CAST(COUNT(appointment.id) AS INTEGER)', 'count')
+        .addSelect(`SUM(EXTRACT(EPOCH FROM (appointment.endTime - appointment.startTime)) / 60)`, 'totalDuration') 
+        .where('appointment.collaboratorId IN (:...collaboratorIds)', { collaboratorIds })
+        .andWhere('appointment.startTime BETWEEN :startOfDay AND :endOfDay', { startOfDay, endOfDay }) 
+        .andWhere('appointment.status IN (:...statuses)', { statuses: ['confirmed', 'pending'] })
+        .groupBy('appointment.collaboratorId')
+        .getRawOne();
+	}
+
+	public async totalClientsRaw(collaboratorIds: string[]) {
+		return await this.repository.createQueryBuilder('appointment')
+        .select('appointment.collaboratorId', 'collaboratorId')
+        .addSelect('CAST(COUNT(DISTINCT appointment.clientId) AS INTEGER)', 'clientCount')
+        .where('appointment.collaboratorId IN (:...collaboratorIds)', { collaboratorIds })
+        .andWhere('appointment.status IN (:...statuses)', { statuses: ['confirmed'] })
+        .groupBy('appointment.collaboratorId')
+        .getRawOne();
 	}
 }

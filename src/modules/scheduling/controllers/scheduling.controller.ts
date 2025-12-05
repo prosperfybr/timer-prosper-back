@@ -10,13 +10,15 @@ import { HttpStatusCode } from "axios";
 import { NextFunction, Request, Response } from "express";
 import { CreateSchedulingService } from "../services/create-scheduling.service";
 import { FindSchedulingService } from '../services/find-scheduling.service';
+import { CancelSchedulingService } from "../services/cancel-scheduling.service";
 
 @RequestMapping("/scheduling")
 @RestController()
 export class SchedulingController {
 	constructor(
 		private readonly createSchedulingService: CreateSchedulingService,
-		private readonly findSchedulingService: FindSchedulingService
+		private readonly findSchedulingService: FindSchedulingService,
+		private readonly cancelSchedulingService: CancelSchedulingService
 	) {}
 
 	@PostMapping("")
@@ -61,23 +63,13 @@ export class SchedulingController {
 		}
 	}
 
-	@PatchMapping("", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
-	public async update(req: Request, res: Response, next: NextFunction) {
-		try {
-			log.info("Updating segment");
-			log.info("Segment udpated successfully");
-			return res.status(HttpStatusCode.Ok).json({ message: "Segmento atualizado com sucesso.", payload: null });
-		} catch (error) {
-			log.error("An error has occurred while updating a segment. ERROR: ", error);
-			next(error);
-		}
-	}
-
-	@DeleteMapping("/:id", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
+	@DeleteMapping("/:id", { authenticated: true })
 	public async delete(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Deleting a segment");
-			log.info("Segment deleted successfully");
+			log.info("Cancellling a scheduling by id");
+			const id: string = req.params.id;
+			await this.cancelSchedulingService.execute(id);
+			log.info("Scheduling cancelled successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Segmento deletado com sucesso" });
 		} catch (error) {
 			log.error("An error has occurred while deleting segment. ERROR: ", error);
