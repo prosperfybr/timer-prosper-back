@@ -1,12 +1,12 @@
-import { Service } from "@shared/decorators/service.decorator";
-import { ServiceTypeRepository } from "../servicetype.repository";
-import { ServiceTypeResponseDTO } from "../dto/service-type-response.dto";
 import { log } from "@config/Logger";
-import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
-import { ServiceTypeEntity } from "../servicetype.entity";
+import { ServiceResponseDTO } from "@modules/services/models/dto/service-response.dto";
+import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
-import { ServiceResponseDTO } from "@modules/services/dto/service-response.dto";
+import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { ConverterUtils } from "@shared/utils/converter.utils";
+import { ServiceTypeResponseDTO } from "../models/dto/service-type-response.dto";
+import { ServiceTypeEntity } from "../models/entity/servicetype.entity";
+import { ServiceTypeRepository } from "../repositories/servicetype.repository";
 
 @Service()
 export class FindServiceTypeService {

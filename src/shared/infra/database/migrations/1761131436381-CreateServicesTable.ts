@@ -56,7 +56,7 @@ export class CreateServicesTable1761131436381 implements MigrationInterface {
                     {
                         name: 'updated_at',
                         type: 'timestamp',
-                        default: 'now()',
+                        isNullable: true
                     },
                 ],
             }),

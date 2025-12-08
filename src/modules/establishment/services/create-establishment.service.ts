@@ -1,18 +1,19 @@
-import { Service } from "@shared/decorators/service.decorator";
-import { EstablishmentRepository } from "../establishment.repository";
-import { UserRepository } from "@modules/users/users.repository";
-import { CreateEstablishmentDTO } from "../dto/create-establishment.dto";
-import { EstablishmentResponseDTO } from "../dto/establishment-response.dto";
 import { log } from "@config/Logger";
-import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
-import { UserEntity } from "@modules/users/user.entity";
+import { SegmentResponseDTO } from "@modules/segment/models/dto/segment-response.dto";
+import { SegmentEntity } from "@modules/segment/models/entity/segment.entity";
+import { SegmentRepository } from "@modules/segment/repositories/segment.repository";
+import { UserEntity } from "@modules/users/models/entity/user.entity";
+import { RolesEnum } from "@modules/users/models/enum/roles.enum";
+import { UserRepository } from "@modules/users/repositories/users.repository";
+import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
+import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import { GeneratorUtils } from "@shared/utils/generator.utils";
 import { ValidatorUtils } from "@shared/utils/validator.utils";
-import { EstablishmentEntity } from "../establishment.entity";
-import { RolesEnum } from "@modules/users/dto/RolesEnum";
-import { SegmentEntity } from "@modules/segment/segment.entity";
-import { SegmentRepository } from "@modules/segment/segment.repository";
-import { SegmentResponseDTO } from "@modules/segment/dto/segment-response.dto";
+import { CreateEstablishmentDTO } from "../models/dto/establishment/create-establishment.dto";
+import { EstablishmentResponseDTO } from "../models/dto/establishment/establishment-response.dto";
+import { EstablishmentEntity } from "../models/entity/establishment.entity";
+import { EstablishmentRepository } from "../repositories/establishment.repository";
 
 @Service()
 export class CreateEstablishmentService {
@@ -33,11 +34,31 @@ export class CreateEstablishmentService {
 		private readonly userRepository: UserRepository,
 		private readonly segmentRepository: SegmentRepository,
 		//- Utils
-		private readonly validatorUtils: ValidatorUtils
+		private readonly validatorUtils: ValidatorUtils,
+		private readonly generatorUtils: GeneratorUtils
 	) {}
 
 	public async execute(payload: CreateEstablishmentDTO): Promise<EstablishmentResponseDTO> {
-		const { userId, tradeName, logo, logoDark, zipCode, street, number, complement, neighborhood, city, state, mainPhone, website, instagram, linkedin, tiktok, youtube, segmentId } = payload;
+		const {
+			userId,
+			tradeName,
+			logo,
+			logoDark,
+			zipCode,
+			street,
+			number,
+			complement,
+			neighborhood,
+			city,
+			state,
+			mainPhone,
+			website,
+			instagram,
+			linkedin,
+			tiktok,
+			youtube,
+			segmentId,
+		} = payload;
 
 		if (!userId || userId.trim().length === 0) {
 			log.error(`User id is invalid. User ID is required, but value receved is [${userId}]`);
@@ -61,6 +82,7 @@ export class CreateEstablishmentService {
 		//- Save establishment
 		const establishmentToSave: EstablishmentEntity = new EstablishmentEntity();
 		establishmentToSave.userId = user.id;
+		establishmentToSave.code = this.generatorUtils.generateUniqueCode(segment.name, tradeName);
 		establishmentToSave.tradeName = tradeName;
 		establishmentToSave.logo = logo;
 		establishmentToSave.logoDark = logoDark;
@@ -88,13 +110,14 @@ export class CreateEstablishmentService {
 		if (user.role == RolesEnum.OWNER || user.role == RolesEnum.ADMIN) log.info(`User is already [${RolesEnum.OWNER}], nothing to update in a user role`);
 		else {
 			log.info(`User isn't a [${RolesEnum.OWNER}]. It is a [${user.role}]. Updating a user role`);
-			await this.userRepository.update(user.id, {role: RolesEnum.OWNER});
+			await this.userRepository.update(user.id, { role: RolesEnum.OWNER });
 			log.info(`User [${user.email}] now is a ${user.role}`);
 		}
 
 		return {
 			id: establishmentSaved.id,
 			userId: user.id,
+			code: establishmentSaved.code,
 			tradeName: establishmentSaved.tradeName,
 			logo: establishmentSaved.logo,
 			logoDark: establishmentSaved.logoDark,
@@ -117,8 +140,8 @@ export class CreateEstablishmentService {
 			segment: {
 				id: segment.id,
 				name: segment.name,
-				active: segment.isActive
-			} as SegmentResponseDTO
+				active: segment.isActive,
+			} as SegmentResponseDTO,
 		} as EstablishmentResponseDTO;
 	}
 

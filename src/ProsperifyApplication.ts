@@ -2,7 +2,7 @@ import cookieParser from "cookie-parser";
 import { HttpStatusCode } from "axios";
 import cors from "cors";
 import express, { NextFunction, Request, Response, Router } from "express";
-import { AppDataSource } from "../ormconfig";
+import { AppDataSource } from "@config/ormconfig";
 import { log } from "@config/Logger";
 import { router } from "@shared/decorators/router/request-mapping.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";

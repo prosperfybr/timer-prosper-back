@@ -1,11 +1,11 @@
-import { Service } from "@shared/decorators/service.decorator";
-import { EstablishmentRepository } from "../establishment.repository";
-import { EstablishmentResponseDTO } from "../dto/establishment-response.dto";
-import { UpdateEstablishmentDTO } from "../dto/update-establishment.dto";
-import { EstablishmentEntity } from "../establishment.entity";
-import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { log } from "@config/Logger";
+import { Service } from "@shared/decorators/service.decorator";
+import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { ValidatorUtils } from "@shared/utils/validator.utils";
+import { EstablishmentResponseDTO } from "../models/dto/establishment/establishment-response.dto";
+import { UpdateEstablishmentDTO } from "../models/dto/establishment/update-establishment.dto";
+import { EstablishmentEntity } from "../models/entity/establishment.entity";
+import { EstablishmentRepository } from "../repositories/establishment.repository";
 
 @Service()
 export class UpdateEstablishmentService {

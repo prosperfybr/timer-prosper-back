@@ -1,7 +1,7 @@
 import { log } from "@config/Logger";
-import { RolesEnum } from "@modules/users/dto/RolesEnum";
-import { UserEntity } from "@modules/users/user.entity";
-import { UserRepository } from "@modules/users/users.repository";
+import { RolesEnum } from "@modules/users/models/enum/roles.enum";
+import { UserEntity } from "@modules/users/models/entity/user.entity";
+import { UserRepository } from "@modules/users/repositories/users.repository";
 import { NextFunction, Request, Response } from "express";
 
 export function can(roles: RolesEnum[] | string[]) {

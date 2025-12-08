@@ -1,11 +1,11 @@
-import { Service } from "@shared/decorators/service.decorator";
-import { SegmentRepository } from "../segment.repository";
-import { SegmentResponseDTO } from "../dto/segment-response.dto";
 import { log } from "@config/Logger";
-import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
-import { SegmentEntity } from "../segment.entity";
+import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
+import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { ConverterUtils } from "@shared/utils/converter.utils";
+import { SegmentResponseDTO } from "../models/dto/segment-response.dto";
+import { SegmentEntity } from "../models/entity/segment.entity";
+import { SegmentRepository } from "../repositories/segment.repository";
 
 @Service()
 export class FindSegmentService {
@@ -29,7 +29,7 @@ export class FindSegmentService {
 		return {
 			id: segment.id,
 			name: segment.name,
-			active: segment.isActive
+			active: segment.isActive,
 		} as SegmentResponseDTO;
 	}
 
@@ -43,11 +43,11 @@ export class FindSegmentService {
 
 		return segments.map(
 			segment =>
-			({
-				id: segment.id,
-				name: segment.name,
-				active: segment.isActive
-			} as SegmentResponseDTO)
+				({
+					id: segment.id,
+					name: segment.name,
+					active: segment.isActive,
+				} as SegmentResponseDTO)
 		);
 	}
 
@@ -64,7 +64,7 @@ export class FindSegmentService {
 				({
 					id: segment.id,
 					name: segment.name,
-					active: segment.isActive
+					active: segment.isActive,
 				} as SegmentResponseDTO)
 		);
 	}

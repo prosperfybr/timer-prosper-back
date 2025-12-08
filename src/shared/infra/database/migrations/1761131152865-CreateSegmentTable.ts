@@ -39,7 +39,7 @@ export class CreateSegmentTable1761131152865 implements MigrationInterface {
 					{
 						name: "updated_at",
 						type: "timestamp",
-						default: "now()",
+						isNullable: true
 					},
 				],
 			}),

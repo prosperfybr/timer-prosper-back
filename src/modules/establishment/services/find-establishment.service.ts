@@ -1,27 +1,28 @@
-import { Service } from "@shared/decorators/service.decorator";
-import { EstablishmentRepository } from "../establishment.repository";
-import { EstablishmentResponseDTO } from "../dto/establishment-response.dto";
-import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { log } from "@config/Logger";
-import { EstablishmentEntity } from "../establishment.entity";
+import { SegmentResponseDTO } from "@modules/segment/models/dto/segment-response.dto";
+import { SegmentEntity } from "@modules/segment/models/entity/segment.entity";
+import { ServiceResponseDTO } from "@modules/services/models/dto/service-response.dto";
+import { ServicesEntity } from "@modules/services/models/entity/services.entity";
+import { UserResponseDTO } from "@modules/users/models/dto/user-response.dto";
+import { UserEntity } from "@modules/users/models/entity/user.entity";
+import { UserRepository } from "@modules/users/repositories/users.repository";
+import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
-import { UserEntity } from "@modules/users/user.entity";
-import { ServicesEntity } from "@modules/services/services.entity";
-import { UserResponseDTO } from "@modules/users/dto/user-response.dto";
+import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { ConverterUtils } from "@shared/utils/converter.utils";
-import { ServiceResponseDTO } from "@modules/services/dto/service-response.dto";
-import { UserRepository } from "@modules/users/users.repository";
-import { SegmentEntity } from "@modules/segment/segment.entity";
-import { SegmentResponseDTO } from "@modules/segment/dto/segment-response.dto";
+import { EstablishmentResponseDTO } from "../models/dto/establishment/establishment-response.dto";
+import { EstablishmentEntity } from "../models/entity/establishment.entity";
+import { EstablishmentRepository } from "../repositories/establishment.repository";
 
 @Service()
 export class FindEstablishmentService {
 	constructor(
-    //- Repositories
-    private readonly establishmentRepository: EstablishmentRepository,
-    private readonly userRepository: UserRepository,
-    //- Utils
-    private readonly converterUtils: ConverterUtils) {}
+		//- Repositories
+		private readonly establishmentRepository: EstablishmentRepository,
+		private readonly userRepository: UserRepository,
+		//- Utils
+		private readonly converterUtils: ConverterUtils
+	) {}
 
 	public async findById(id: string): Promise<EstablishmentResponseDTO> {
 		if (!id) {
@@ -45,13 +46,23 @@ export class FindEstablishmentService {
 	}
 
 	public async findAllByUser(userId: string): Promise<EstablishmentResponseDTO[]> {
-    if (!userId) {
-      log.error(`Owner ID is invalid`);
-      throw new InvalidArgumentException("O ID do proprietário é inválido");
-    }
+		if (!userId) {
+			log.error(`Owner ID is invalid`);
+			throw new InvalidArgumentException("O ID do proprietário é inválido");
+		}
 
-    const establishments: EstablishmentEntity[] = await this.userRepository.findUserEstablishments(userId)
-    return establishments.length > 0 ? establishments.map(this.treatData) : [];
+		const establishments: EstablishmentEntity[] = await this.userRepository.findUserEstablishments(userId);
+		return establishments.length > 0 ? establishments.map(this.treatData) : [];
+	}
+
+	public async filterEstablishmentByIdentifier(identifier: string): Promise<EstablishmentResponseDTO[]> {
+		if (!identifier) {
+			log.warn(`Any identifier is received. [${identifier}]`);
+			return [];
+		}
+
+		const establishments: EstablishmentEntity[] = await this.establishmentRepository.findAllByIdentifier(identifier);
+		return establishments.map(this.treatData);
 	}
 
 	private treatData(establishment: EstablishmentEntity): EstablishmentResponseDTO {
@@ -63,6 +74,7 @@ export class FindEstablishmentService {
 			id: establishment.id,
 			userId: establishment.userId,
 			segmentId: establishment.segmentId,
+			code: establishment.code,
 			tradeName: establishment.tradeName,
 			logo: establishment.logo,
 			logoDark: establishment.logoDark,
@@ -81,28 +93,34 @@ export class FindEstablishmentService {
 			youtube: establishment.youtube,
 			createdAt: establishment.createdAt,
 			updatedAt: establishment.updatedAt,
-			user: user ? {
-				id: user.id,
-				name: user.email,
-				email: user.email,
-				role: user.role,
-			} as UserResponseDTO : null,
-			services: services ? services.map(
-				service =>
-					({
-						id: service.id,
-						name: service.name,
-						description: service.description,
-						price: this.converterUtils.convertCentsToFloat(service.price),
-						duration: service.duration,
-						durationFormated: this.converterUtils.convertMinutesInTime(service.duration),
-					} as ServiceResponseDTO)
-			) : null,
-			segment: estabSegment ? {
-				id: estabSegment.id,
-				name: estabSegment.name,
-				active: estabSegment.isActive
-			} as SegmentResponseDTO : null
+			user: user
+				? ({
+						id: user.id,
+						name: user.email,
+						email: user.email,
+						role: user.role,
+				  } as UserResponseDTO)
+				: null,
+			services: services
+				? services.map(
+						service =>
+							({
+								id: service.id,
+								name: service.name,
+								description: service.description,
+								price: this.converterUtils.convertCentsToFloat(service.price),
+								duration: service.duration,
+								durationFormated: this.converterUtils.convertMinutesInTime(service.duration),
+							} as ServiceResponseDTO)
+				  )
+				: null,
+			segment: estabSegment
+				? ({
+						id: estabSegment.id,
+						name: estabSegment.name,
+						active: estabSegment.isActive,
+				  } as SegmentResponseDTO)
+				: null,
 		} as EstablishmentResponseDTO;
 	}
 }
