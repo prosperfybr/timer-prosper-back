@@ -9,6 +9,7 @@ import { UserRepository } from "@modules/users/repositories/users.repository";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import { validate as validateUUID } from "uuid";
 import { ConverterUtils } from "@shared/utils/converter.utils";
 import { EstablishmentResponseDTO } from "../models/dto/establishment/establishment-response.dto";
 import { EstablishmentEntity } from "../models/entity/establishment.entity";
@@ -25,9 +26,9 @@ export class FindEstablishmentService {
 	) {}
 
 	public async findById(id: string): Promise<EstablishmentResponseDTO> {
-		if (!id) {
-			log.error(`ID is required, but ID value is [${id}]`);
-			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório");
+		if (!id || !validateUUID(id)) {
+			log.error(`ID is required and must be a valid UUID, but ID value is [${id}]`);
+			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório e deve ser um UUID válido");
 		}
 
 		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(id);

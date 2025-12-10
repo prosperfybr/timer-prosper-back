@@ -20,4 +20,4 @@ export const AppDataSource: DataSource = new DataSource({
     migrationsDir: migrationsPath
   }
 } as DataSourceOptions);
-
+
