@@ -25,4 +25,4 @@ COPY --from=build /src/dist ./dist
 
 EXPOSE 80
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/src/ProsperifyApplication.js"]

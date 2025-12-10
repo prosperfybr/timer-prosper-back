@@ -23,7 +23,7 @@ class ProsperifyApplication {
 		app.use(express.json({ limit: "10mb" }));
 		app.use(express.urlencoded({ limit: "10mb", extended: true, parameterLimit: 10 }));
 
-		require("./ProsperifyRoutes.ts");
+		require("./ProsperifyRoutes");
 		app.use(router);
 		log.info("[EXPRESS] Configuração de roteamento finalizado.");
 
