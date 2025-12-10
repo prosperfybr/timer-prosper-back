@@ -1,4 +1,18 @@
-import "dotenv/config";
+import dotenv from "dotenv";
+import path from "path";
+
+// Carrega explicitamente o .env da raiz do WORKDIR (/src/.env)
+const envPath = path.resolve(__dirname, "../../.env"); // Ajuste para sair de dist/src/ para a raiz
+console.log(`[DEBUG] Tentando carregar .env de: ${envPath}`);
+const result = dotenv.config({ path: "/src/.env" }); // Caminho absoluto fixo para garantir no Docker
+
+if (result.error) {
+  console.error("[DEBUG] Erro ao carregar .env:", result.error);
+} else {
+  console.log("[DEBUG] .env carregado com sucesso.");
+  console.log("[DEBUG] DATABASE_URL definida?", !!process.env.DATABASE_URL);
+}
+
 import cookieParser from "cookie-parser";
 import { HttpStatusCode } from "axios";
 import cors from "cors";
