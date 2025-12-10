@@ -1,3 +1,4 @@
+import "dotenv/config";
 import cookieParser from "cookie-parser";
 import { HttpStatusCode } from "axios";
 import cors from "cors";
