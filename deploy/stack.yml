@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  timer-prosper-back:
+    image: docker.io/__REGISTRY_USER__/timer-prosper-back:latest
+    deploy:
+      replicas: 1
+      restart_policy:
+        condition: any
+      update_config:
+        parallelism: 1
+        delay: 10s
+      labels:
+        - "traefik.enable=true"
+        - "traefik.docker.network=network_public"
+
+        # HTTPS Router
+        - "traefik.http.routers.timer-prosper-back-secure.rule=Host(`api.timerprosper.com.br`)"
+        - "traefik.http.routers.timer-prosper-back-secure.entrypoints=websecure"
+        - "traefik.http.routers.timer-prosper-back-secure.tls=true"
+        - "traefik.http.routers.timer-prosper-back-secure.tls.certresolver=letsencryptresolver"
+        - "traefik.http.routers.timer-prosper-back-secure.service=timer-prosper-back-service"
+
+        # HTTP Router (redirect to HTTPS)
+        - "traefik.http.routers.timer-prosper-back-insecure.rule=Host(`api.timerprosper.com.br`)"
+        - "traefik.http.routers.timer-prosper-back-insecure.entrypoints=web"
+        - "traefik.http.routers.timer-prosper-back-insecure.middlewares=timer-prosper-back-redirect"
+
+        # Service and middleware definitions
+        - "traefik.http.services.timer-prosper-back-service.loadbalancer.server.port=80"
+        - "traefik.http.middlewares.timer-prosper-back-redirect.redirectscheme.scheme=https"
+        - "traefik.http.middlewares.timer-prosper-back-redirect.redirectscheme.permanent=true"
+
+    environment:
+      - NODE_ENV=production
+      - PORT=80
+
+    configs:
+      - source: timer_prosper_env
+        target: /src/.env
+        mode: 0444
+
+    networks:
+      - network_public
+
+networks:
+  network_public:
+    external: true
+    name: network_public
+
+configs:
+  timer_prosper_env:
+    external: true
+    name: timer_prosper_env

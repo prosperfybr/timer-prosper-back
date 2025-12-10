@@ -13,6 +13,9 @@ RUN npm install --only=production
 # Copy all source code
 COPY . .
 
+# Build the application
+RUN npm run build
+
 FROM node:22.17.0 AS production
 
 WORKDIR /src
