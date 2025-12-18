@@ -8,6 +8,7 @@ import { UserResponseDTO } from "@modules/users/models/dto/user-response.dto";
 import { FindUserService } from "@modules/users/services/find-user.service";
 import { Service } from "@shared/decorators/service.decorator";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import { validate as validateUUID } from "uuid";
 import { CollaboratorResponseDTO } from "../models/dto/collaborator-response.dto";
 import { CollaboratorsServicesEntity } from "../models/entity/collaborator-services.entity";
 import { CollaboratorEntity } from "../models/entity/collaborator.entity";
@@ -44,9 +45,9 @@ export class FindCollaboratorService {
 	}
 
 	public async getAllEstablishmentCollaborators(establishmentId: string): Promise<CollaboratorResponseDTO[]> {
-		if (!establishmentId || establishmentId === 'undefined') {
-			log.error(`Establishment ID is required, but is received: [${establishmentId}]`);
-			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório");
+		if (!establishmentId || !validateUUID(establishmentId)) {
+			log.error(`Establishment ID is required and must be a valid UUID, but is received: [${establishmentId}]`);
+			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório e deve ser um UUID válido");
 		}
 
 		const establishment: EstablishmentResponseDTO = await this.findEstablishmentService.findById(establishmentId);
@@ -89,3 +90,4 @@ export class FindCollaboratorService {
 		} as CollaboratorResponseDTO;
 	}
 }
+

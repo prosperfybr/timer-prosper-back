@@ -2,8 +2,11 @@ import { DataSource, DataSourceOptions } from "typeorm";
 
 const { DATABASE_URL, NODE_ENV } = process.env;
 
-const migrationsPath: string = "src/shared/infra/database/migrations";
-const entitiesPath: string = "src/modules";
+const isProduction = NODE_ENV === "production";
+const rootDir = isProduction ? "dist/src" : "src";
+
+const migrationsPath: string = `${rootDir}/shared/infra/database/migrations`;
+const entitiesPath: string = `${rootDir}/modules`;
 
 export const AppDataSource: DataSource = new DataSource({
   type: "postgres",
@@ -17,3 +20,4 @@ export const AppDataSource: DataSource = new DataSource({
     migrationsDir: migrationsPath
   }
 } as DataSourceOptions);
+
