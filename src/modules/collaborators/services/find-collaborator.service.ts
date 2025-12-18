@@ -90,4 +90,4 @@ export class FindCollaboratorService {
 		} as CollaboratorResponseDTO;
 	}
 }
-
+
