@@ -60,6 +60,11 @@ export class CollaboratorController {
 		try {
 			log.info("Finding all establishment collaborators");
 			const establishmentId: string = req.params.establishmentId;
+			const userRole: RolesEnum = req.user.role as RolesEnum;
+			if ((userRole === RolesEnum.ADMIN || userRole === RolesEnum.CLIENT || userRole === RolesEnum.COLLABORATOR) && (!establishmentId || establishmentId === 'undefined')) {
+				log.info("Is loading in dashboard request, user is not owner.");
+				return res.status(HttpStatusCode.Ok).json({ message: "Não há colaboradores para carregar no momento" });
+			}
 			const collaborators: CollaboratorResponseDTO[] = await this.findCollaboratorService.getAllEstablishmentCollaborators(establishmentId);
 			log.info("All collaborators founded");
 			return res.status(HttpStatusCode.Ok).json({ message: "Colaboradores do estabelecimento listados com sucesso", payload: collaborators });

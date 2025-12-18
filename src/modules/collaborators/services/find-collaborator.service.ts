@@ -44,7 +44,7 @@ export class FindCollaboratorService {
 	}
 
 	public async getAllEstablishmentCollaborators(establishmentId: string): Promise<CollaboratorResponseDTO[]> {
-		if (!establishmentId) {
+		if (!establishmentId || establishmentId === 'undefined') {
 			log.error(`Establishment ID is required, but is received: [${establishmentId}]`);
 			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório");
 		}
