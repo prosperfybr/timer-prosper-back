@@ -39,6 +39,7 @@ export class LoginController {
 				message: "Usuário logado com sucesso.",
 				payload: {
 					accessToken: token,
+					refreshToken: refreshToken,
 					type,
 					expiresIn,
 					user,
@@ -55,6 +56,7 @@ export class LoginController {
 	public async getUser(req: Request, res: Response, next: NextFunction) {
 		try {
 			const rawRefreshToken = req.cookies?.refreshToken;
+			console.log(rawRefreshToken)
 
 			if (!rawRefreshToken) {
 				log.error(`Refresh token is not valid or not sended. REFRESH: [${rawRefreshToken}]`);

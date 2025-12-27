@@ -15,7 +15,7 @@ if (result.error) {
 
 import cookieParser from "cookie-parser";
 import { HttpStatusCode } from "axios";
-import cors from "cors";
+import cors, { CorsOptions } from "cors";
 import express, { NextFunction, Request, Response, Router } from "express";
 import { AppDataSource } from "@config/ormconfig";
 import { log } from "@config/Logger";
@@ -24,7 +24,7 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { UnauthorizedException } from "@shared/exceptions/UnauthorizedException";
 import { ForbiddenException } from "@shared/exceptions/ForbiddenException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
-import swaggerUi from 'swagger-ui-express';
+import swaggerUi from "swagger-ui-express";
 
 class ProsperifyApplication {
 	public async main(): Promise<void> {
@@ -33,7 +33,21 @@ class ProsperifyApplication {
 		log.info("Iniciando configurações da aplicação...");
 		log.info("[EXPRESS] Configuração de roteamento da aplicação.");
 		const app = express();
-		app.use(cors());
+
+		const ALLOWED_ORIGINS: (string | RegExp)[] = ["*"];
+		const corsConfig: CorsOptions = {
+			origin: (origin, callback) => {
+				if (!origin) return callback(null, true);
+
+				callback(null, true);
+			},
+			credentials: true,
+			methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+			allowedHeaders: "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+			exposedHeaders: "Set-Cookie",
+		};
+
+		app.use(cors(corsConfig));
 		app.use(cookieParser());
 		app.use(express.json({ limit: "10mb" }));
 		app.use(express.urlencoded({ limit: "10mb", extended: true, parameterLimit: 10 }));
@@ -43,7 +57,8 @@ class ProsperifyApplication {
 		log.info("[EXPRESS] Configuração de roteamento finalizado.");
 
 		app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
-			if (error instanceof BadRequestException || error instanceof InvalidArgumentException) return res.status(400).json({ message: error.message, payload: error });
+			if (error instanceof BadRequestException || error instanceof InvalidArgumentException)
+				return res.status(400).json({ message: error.message, payload: error });
 			if (error instanceof UnauthorizedException) return res.status(401).json({ message: error.message, payload: error });
 			if (error instanceof ForbiddenException) return res.status(403).json({ message: error.message, payload: error });
 			if (error instanceof Error) return res.status(HttpStatusCode.BadRequest).json({ message: error.message, payload: error });
