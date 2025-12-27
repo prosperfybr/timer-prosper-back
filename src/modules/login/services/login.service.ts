@@ -85,7 +85,7 @@ export class LoginService {
 		const payload = { id: user.id, role: user.role };
 		const accessTokenExpiry: number = process.env.ACCESS_TOKEN_EXPIRY ? parseInt(process.env.ACCESS_TOKEN_EXPIRY) : 15;
 		return {
-			token: jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: `${accessTokenExpiry}`, subject: user.id }),
+			token: jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, { expiresIn: `${accessTokenExpiry}m`, subject: user.id }),
 			expiresIn: accessTokenExpiry,
 		};
 	}
