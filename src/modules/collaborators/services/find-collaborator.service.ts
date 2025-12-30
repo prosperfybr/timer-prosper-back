@@ -33,15 +33,14 @@ export class FindCollaboratorService {
 			throw new InvalidArgumentException("O ID do colaborador é obrigatório");
 		}
 
-		const collaborator: CollaboratorEntity = await this.collaboratorRepository.findById(id);
-		const user: UserResponseDTO = await this.findUserService.getUser(collaborator.userId);
-		const establishment: EstablishmentResponseDTO = establishmentCache ? establishmentCache : await this.findEstablishmentService.findById(collaborator.establishmentId);
-		const servicesEntities: CollaboratorsServicesEntity[] = await this.collaboratorServicesRepository.findAllServicesByCollaboratorId(collaborator.id);
+		const collaboratorInformations: any[] = await this.collaboratorRepository.findCollaboratorInformations(id);
 
-		const servicesIds: string[] = servicesEntities.map(service => service.serviceId);
-		const services: ServiceResponseDTO[] = await this.findServiceService.findServiceByIds(servicesIds);
-
-		return this.treatResponse(collaborator, user, establishment, servicesIds, services);
+		if (!collaboratorInformations || collaboratorInformations.length === 0) {
+			log.error("No collaborator informations founded");
+			return null;
+		} else {
+			return this.treatResponse(collaboratorInformations);
+		}
 	}
 
 	public async getAllEstablishmentCollaborators(establishmentId: string): Promise<CollaboratorResponseDTO[]> {
@@ -50,44 +49,99 @@ export class FindCollaboratorService {
 			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório e deve ser um UUID válido");
 		}
 
-		const establishment: EstablishmentResponseDTO = await this.findEstablishmentService.findById(establishmentId);
-		const collaborators: CollaboratorEntity[] = await this.collaboratorRepository.findAllByEstablishmentId(establishment.id);
-		const establishmentCollaborators: CollaboratorResponseDTO[] = [];
+		const establishmentCollaborators: any[] = await this.collaboratorRepository.findEstablishmentCollaborators(establishmentId);
 
-		if (!collaborators || collaborators.length === 0) {
+		if (!establishmentCollaborators || establishmentCollaborators.length === 0) {
 			log.warn(`No collaborators found to this establishment`);
 			return establishmentCollaborators;
 		} else {
-			for (const collaborator of collaborators) {
-				establishmentCollaborators.push(await this.execute(collaborator.id, establishment));
-			}
-
-			return establishmentCollaborators;
+			const collaborators: CollaboratorResponseDTO[] = [];
+			const collaboratorsGrouped = this.groupCollaborators(establishmentCollaborators);
+			collaboratorsGrouped.forEach(collaborator => collaborators.push(this.treatResponse(collaborator)))
+			return collaborators;
 		}
 	}
 
-	private treatResponse(
-		collaborator: CollaboratorEntity,
-		user: UserResponseDTO,
-		establishment: EstablishmentResponseDTO,
-		servicesIds: string[],
-		services: ServiceResponseDTO[]
-	): CollaboratorResponseDTO {
+	private treatResponse(collaboratorInformations: any[]): CollaboratorResponseDTO {
+		const servicesIds: string[] = [];
+		const services = [];
+
+		collaboratorInformations.forEach(item => {
+			servicesIds.push(item.service_id);
+			services.push({
+				id: item.service_id,
+				name: item.service_name,
+				description: item.service_description,
+				price: item.service_price,
+				duration: item.service_duration,
+			});
+		});
+
 		return {
-			id: collaborator.id,
-			userId: user.id,
-			user,
-			establishmentId: establishment.id,
-			establishment,
+			id: collaboratorInformations[0].collaborator_id,
+			userId: collaboratorInformations[0].collaborator_user_id,
+			establishmentId: collaboratorInformations[0].collaborator_establishment_id,
+			collaboratorFunction: collaboratorInformations[0].collaborator_collaborator_function,
+			specialty: collaboratorInformations[0].collaborator_specialty,
+			hiringDate: collaboratorInformations[0].collaborator_hiring_date,
+			active: collaboratorInformations[0].collaborator_active,
+			createdAt: collaboratorInformations[0].collaborator_created_at,
+			updatedAt: collaboratorInformations[0].collaborator_updated_at,
 			servicesIds,
+			user: {
+				id: collaboratorInformations[0].user_id,
+				name: collaboratorInformations[0].user_name,
+				email: collaboratorInformations[0].user_email,
+				password: collaboratorInformations[0].user_password,
+				role: collaboratorInformations[0].user_role,
+				birthDate: collaboratorInformations[0].user_birth_date,
+				whatsApp: collaboratorInformations[0].user_whatsapp,
+				cpf: collaboratorInformations[0].user_cpf,
+				profilePreferences: collaboratorInformations[0].user_preferences
+			} as UserResponseDTO,
+			establishment: {
+				id: collaboratorInformations[0].establishment_id,
+				userId: collaboratorInformations[0].establishment_user_id,
+				segmentId: collaboratorInformations[0].establishment_segment_id,
+				code: collaboratorInformations[0].establishment_code,
+				tradeName: collaboratorInformations[0].establishment_trade_name,
+				logo: collaboratorInformations[0].establishment_logo,
+				logoDark: collaboratorInformations[0].establishment_logo_dark,
+				zipCode: collaboratorInformations[0].establishment_zip_code,
+				street: collaboratorInformations[0].establishment_street,
+				number: collaboratorInformations[0].establishment_number,
+				complement: collaboratorInformations[0].establishment_complement,
+				neighborhood: collaboratorInformations[0].establishment_neighborhood,
+				city: collaboratorInformations[0].establishment_city,
+				state: collaboratorInformations[0].establishment_state,
+				mainPhone: collaboratorInformations[0].establishment_main_phone,
+				website: collaboratorInformations[0].establishment_website,
+				instagram: collaboratorInformations[0].establishment_instagram,
+				linkedin: collaboratorInformations[0].establishment_linkedin,
+				tiktok: collaboratorInformations[0].establishment_tiktok,
+				youtube: collaboratorInformations[0].establishment_youtube,
+				createdAt: collaboratorInformations[0].establishment_created_at,
+				updatedAt: collaboratorInformations[0].establishment_updated_at,
+			} as EstablishmentResponseDTO,
 			services,
-			collaboratorFunction: collaborator.collaboratorFunction,
-			specialty: collaborator.specialty,
-			hiringDate: collaborator.hiringDate,
-			active: collaborator.active,
-			createdAt: collaborator.createdAt,
-			updatedAt: collaborator.updatedAt,
 		} as CollaboratorResponseDTO;
+	}
+
+
+	private groupCollaborators<T extends { collaborator_id: string }>(rows: T[]): T[][] {
+		const map = new Map<string, T[]>();
+
+		for (const row of rows) {
+			const collaboratorId = row.collaborator_id;
+
+			if (!map.has(collaboratorId)) {
+				map.set(collaboratorId, []);
+			}
+
+			map.get(collaboratorId)!.push(row);
+		}
+
+		return Array.from(map.values());
 	}
 }
 
