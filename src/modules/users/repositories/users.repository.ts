@@ -40,12 +40,9 @@ export class UserRepository {
 		return await this.repository.find();
 	}
 
-	public async findUserNameByUserId(userId: string): Promise<Pick<UserEntity, 'name'>> {
-		const user = await this.repository.createQueryBuilder('user')
-            .select(['user.name']) 
-            .where('user.id = :userId', { userId })
-            .getOne();
-        return user as Pick<UserEntity, 'name'>;
+	public async findUserNameByUserId(userId: string): Promise<Pick<UserEntity, "name">> {
+		const user = await this.repository.createQueryBuilder("user").select(["user.name"]).where("user.id = :userId", { userId }).getOne();
+		return user as Pick<UserEntity, "name">;
 	}
 
 	public async update(id: string, data: Partial<UserEntity>): Promise<UpdateResult> {
@@ -65,5 +62,16 @@ export class UserRepository {
 
 		if (!userWithEstablishments) return [];
 		return userWithEstablishments.establishments;
+	}
+
+	public async getUserDetails(userId: string): Promise<any> {
+		const result = await this.repository
+			.createQueryBuilder("user")
+			.where("user.id = :userId", { userId })
+			.innerJoinAndSelect("user.establishments", "establishments")
+			.leftJoinAndSelect("user.preferences", "preferences")
+			.getOne();
+
+		return result;
 	}
 }

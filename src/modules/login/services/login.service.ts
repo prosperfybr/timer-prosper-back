@@ -1,4 +1,6 @@
 import { log } from "@config/Logger";
+import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
+import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
 import { UserEntity } from "@modules/users/models/entity/user.entity";
 import { UserRepository } from "@modules/users/repositories/users.repository";
 import { Service } from "@shared/decorators/service.decorator";
@@ -10,10 +12,6 @@ import { DoLoginDTO } from "../models/dto/do-login.dto";
 import { LoginResponseDTO } from "../models/dto/login-response.dto";
 import { RefreshTokenEntity } from "../models/entity/refresh-token.entity";
 import { RefreshTokenRepository } from "../repositories/refresh-token.repository";
-import { RolesEnum } from "@modules/users/models/enum/roles.enum";
-import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
-import { CollaboratorRepository } from "@modules/collaborators/repositories/collaborator.repository";
-import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
 
 @Service()
 export class LoginService {
@@ -22,7 +20,6 @@ export class LoginService {
 		private readonly refreshTokenRepository: RefreshTokenRepository,
 		private readonly userRepository: UserRepository,
 		private readonly establishmentRepository: EstablishmentRepository,
-		private readonly collaboratorRepository: CollaboratorRepository
 	) {}
 
 	public async doLogin(payload: DoLoginDTO, clientIp?: string, userAgent?: string): Promise<LoginResponseDTO> {
@@ -53,7 +50,9 @@ export class LoginService {
 
 		/* FIND A ESTABLISHMENT ATTACHED FOR THIS USER */
 		const finder = {
-			admin: async (userId: string): Promise<string> => {return;},
+			admin: async (userId: string): Promise<string> => {
+				return;
+			},
 			proprietario: async (userId: string) => {
 				const establishment: EstablishmentEntity = await this.establishmentRepository.findByOwnerOrCollaborator(userId);
 				return !establishment ? null : establishment.id;
@@ -62,7 +61,9 @@ export class LoginService {
 				const establishment: EstablishmentEntity = await this.establishmentRepository.findByOwnerOrCollaborator(userId);
 				return !establishment ? null : establishment.id;
 			},
-			cliente: async (userId: string) => { return; },
+			cliente: async (userId: string) => {
+				return;
+			},
 		};
 
 		const establishmentId: string | void = await finder[user.role](user.id);
@@ -73,7 +74,7 @@ export class LoginService {
 			expiresIn: `${process.env.ACCESS_TOKEN_EXPIRY}m`,
 			refreshExpiresIn,
 			user: user,
-			establishmentId
+			establishmentId,
 		} as LoginResponseDTO;
 	}
 
@@ -134,5 +135,9 @@ export class LoginService {
 	public async revokeRefreshToken(token: RefreshTokenEntity): Promise<void> {
 		token.isRevoked = true;
 		await this.refreshTokenRepository.save(token);
+	}
+
+	public async logout(id: string): Promise<void> {
+		await this.refreshTokenRepository.logout(id);
 	}
 }

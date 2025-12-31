@@ -1,42 +1,27 @@
 import { log } from "@config/Logger";
 import { ClientEstablishmentResponseDTO } from "@modules/establishment/models/dto/establishment/client-establishment-response.dto";
 import { ClientEstablishmentEntity } from "@modules/establishment/models/entity/client-establishment.entity";
-import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
 import { ClientEstablishmentRepository } from "@modules/establishment/repositories/client-establishment.repository";
-import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
-import { UserResponseDTO } from "@modules/users/models/dto/user-response.dto";
-import { UserEntity } from "@modules/users/models/entity/user.entity";
-import { UserRepository } from "@modules/users/repositories/users.repository";
-import { FindUserService } from "@modules/users/services/find-user.service";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
-import { EstablishmentResponseDTO } from "../models/dto/establishment/establishment-response.dto";
-import { FindEstablishmentService } from "./find-establishment.service";
+import { FormatterUtils } from "@shared/utils/formatter.utils";
 
 @Service()
 export class FindClientEstablishmentService {
 	constructor(
-		private readonly establishmentRepository: EstablishmentRepository,
 		private readonly clientEstablishmentRepository: ClientEstablishmentRepository,
-		private readonly userRepository: UserRepository,
-
-		private readonly findUserService: FindUserService,
-		private readonly findEstablishmentService: FindEstablishmentService
+		//- Utils
+		private readonly formatterUtils: FormatterUtils
 	) {}
 
-	public async findClientsEstablishment(establishementId: string): Promise<ClientEstablishmentResponseDTO[]> {
+	public async findClientsEstablishment(establishmentId: string): Promise<ClientEstablishmentResponseDTO[]> {
 		log.info("Starting search for establishment clients");
-		if (!establishementId) {
-			log.error(`Establishment ID is required, but is received [${establishementId}]`);
+		if (!establishmentId) {
+			log.error(`Establishment ID is required, but is received [${establishmentId}]`);
 			throw new BadRequestException("O ID do estabelecimento é obrigatório");
 		}
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(establishementId);
-		if (!establishment) {
-			log.error(`Establishment not found by ID [${establishementId}]`);
-			throw new BadRequestException("Estabelecimento não encontrado");
-		}
 
-		const clients: ClientEstablishmentEntity[] = await this.clientEstablishmentRepository.findAllByEstablishment(establishment.id);
+		const clients: ClientEstablishmentEntity[] = await this.clientEstablishmentRepository.findAllByEstablishment(establishmentId);
 
 		if (!clients || clients.length === 0) {
 			log.warn("No clients found to establshment");
@@ -44,16 +29,53 @@ export class FindClientEstablishmentService {
 		} else {
 			log.info("Clients founded");
 			const clientsFormatted: ClientEstablishmentResponseDTO[] = [];
-			const establishment: EstablishmentResponseDTO = await this.findEstablishmentService.findById(clients[0].establishmentId);
 
 			for (const client of clients) {
-				const user: UserResponseDTO = await this.findUserService.getUser(client.userId);
 				clientsFormatted.push({
 					id: client.id,
 					userId: client.userId,
-					user,
+					user: {
+						id: client.user.id,
+						name: client.user.name,
+						email: client.user.email,
+						role: client.user.role,
+						birthDate: client.user.birthDate,
+						whatsApp: client.user.whatsApp,
+						cpf: client.user.cpf ? this.formatterUtils.addCPFMask(client.user.cpf) : null,
+						profileComplete: client.user.profileComplete,
+						profilePreferences: client.user.profilePreferences,
+						settingsPreferences: null,
+						establsihmentId: null,
+						establishments: null
+					},
 					establishmentId: client.establishmentId,
-					establishment,
+					establishment: {
+						id: client.establishment.id,
+						userId: client.establishment.userId,
+						segmentId: client.establishment.segmentId,
+						code: client.establishment.code,
+						tradeName: client.establishment.tradeName,
+						logo: client.establishment.logo,
+						logoDark: client.establishment.logoDark,
+						zipCode: client.establishment.zipCode,
+						street: client.establishment.street,
+						number: client.establishment.number,
+						complement: client.establishment.complement,
+						neighborhood: client.establishment.neighborhood,
+						city: client.establishment.city,
+						state: client.establishment.state,
+						mainPhone: client.establishment.mainPhone,
+						website: client.establishment.website,
+						instagram: client.establishment.instagram,
+						linkedin: client.establishment.linkedin,
+						tiktok: client.establishment.tiktok,
+						youtube: client.establishment.youtube,
+						createdAt: client.establishment.createdAt,
+						updatedAt: client.establishment.updatedAt,
+						user: null,
+						services: null,
+						segment: null,
+					},
 					status: client.status,
 					requestedBy: client.requestedBy,
 					requestedAt: client.requestedAt,
@@ -74,13 +96,7 @@ export class FindClientEstablishmentService {
 			throw new BadRequestException("O ID do cliente é obrigatório");
 		}
 
-		const client: UserEntity = await this.userRepository.findById(clientId);
-		if (!client) {
-			log.error(`Client not found by ID [${clientId}]`);
-			throw new BadRequestException("Cliente não encontrado");
-		}
-
-		const clientEstablishments: ClientEstablishmentEntity[] = await this.clientEstablishmentRepository.findAllByUser(client.id);
+		const clientEstablishments: ClientEstablishmentEntity[] = await this.clientEstablishmentRepository.findAllByUser(clientId);
 		if (!clientEstablishments || clientEstablishments.length === 0) {
 			log.warn("No establishments found to client");
 			return [];
