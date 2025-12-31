@@ -34,7 +34,7 @@ export class EstablishmentHourRepository {
 	}
 
 	public async findAllByEstablishment(establishmentId: string): Promise<EstablishmentHourEntity[]> {
-		return await this.repository.find({ where: { establishmentId } });
+		return await this.repository.find({ where: { establishmentId }, relations: ["establishment"] });
 	}
 
 	public async findByEstablishmentAndWeekDay(establishmentId: string, dayOfWeek: number): Promise<EstablishmentHourEntity> {

@@ -28,22 +28,22 @@ export class FindEstablishmentHourService {
 			throw new InvalidArgumentException('O ID do estabelecimento é obrigatório');
 		}
 
-		const establishment: EstablishmentResponseDTO =
-			await this.findEstablishmentService.findById(establishmentId);
 		const establishmentHours: EstablishmentHourEntity[] =
-			await this.establishmentHourRepository.findAllByEstablishment(establishment.id);
+			await this.establishmentHourRepository.findAllByEstablishment(establishmentId);
+
 		if (!establishmentHours || establishmentHours.length === 0) {
 			log.warn(`The establishment does not yet have set operating hours`);
 			return null;
 		}
 
-		return this.treatData(establishment, establishmentHours);
+		return this.treatData(establishmentHours);
 	}
 
 	private treatData(
-		establishment: EstablishmentResponseDTO,
 		hours: EstablishmentHourEntity[],
 	): EstablishmentHourResponseDTO {
+		const [{ establishment }] = hours;
+
 		const hoursToResponse: HourResponseDTO[] = [];
 		hours.forEach((hour) => {
 			hoursToResponse.push({
@@ -58,7 +58,33 @@ export class FindEstablishmentHourService {
 
 		return {
 			establishmentId: establishment.id,
-			establishment,
+			establishment: {
+				id: establishment.id,
+				userId: establishment.userId,
+				segmentId: establishment.segmentId,
+				code: establishment.code,
+				tradeName: establishment.tradeName,
+				logo: establishment.logo,
+				logoDark: establishment.logoDark,
+				zipCode: establishment.zipCode,
+				street: establishment.street,
+				number: establishment.number,
+				complement: establishment.complement,
+				neighborhood: establishment.neighborhood,
+				city: establishment.city,
+				state: establishment.state,
+				mainPhone: establishment.mainPhone,
+				website: establishment.website,
+				instagram: establishment.instagram,
+				linkedin: establishment.linkedin,
+				tiktok: establishment.tiktok,
+				youtube: establishment.youtube,
+				createdAt: establishment.createdAt,
+				updatedAt: establishment.updatedAt,
+				user: null,
+				services: null,
+				segment:null,
+			},
 			hours: hoursToResponse,
 		} as EstablishmentHourResponseDTO;
 	}

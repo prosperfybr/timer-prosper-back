@@ -56,7 +56,6 @@ export class LoginController {
 	public async getUser(req: Request, res: Response, next: NextFunction) {
 		try {
 			const rawRefreshToken = req.cookies?.refreshToken;
-			console.log(rawRefreshToken)
 
 			if (!rawRefreshToken) {
 				log.error(`Refresh token is not valid or not sended. REFRESH: [${rawRefreshToken}]`);
@@ -94,6 +93,21 @@ export class LoginController {
 			});
 		} catch (error) {
 			log.error("An error has occured while update refresh token. ERROR: ", error);
+			next(error);
+		}
+	}
+
+	@PostMapping("/logout", { authenticated: true })
+	public async logout(req: Request, res: Response, next: NextFunction) {
+		try {
+			const { id } = req.user;
+			await this.loginService.logout(id);
+			return res.status(HttpStatusCode.Ok).json({
+				message: "Usuário deslogado com sucesso",
+				payload: null
+			})
+		} catch (error) {
+			log.error(`An error has occurred while logging out user. ERROR: `, error);
 			next(error);
 		}
 	}

@@ -30,7 +30,7 @@ export class ClientEstablishmentRepository {
 	}
 
 	public async findAllByEstablishment(establishmentId: string): Promise<ClientEstablishmentEntity[]> {
-		return await this.repository.find({ where: { establishmentId } });
+		return await this.repository.find({ where: { establishmentId }, relations: ["establishment", "user"] });
 	}
 	public async findAllByUser(userId: string): Promise<ClientEstablishmentEntity[]> {
 		return await this.repository.find({ where: { userId } });

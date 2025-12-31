@@ -17,15 +17,7 @@ import { CollaboratorRepository } from "../repositories/collaborator.repository"
 
 @Service()
 export class FindCollaboratorService {
-	constructor(
-		//- Repositories
-		private readonly collaboratorRepository: CollaboratorRepository,
-		private readonly collaboratorServicesRepository: CollaboratorServicesRepository,
-		//- Services
-		private readonly findUserService: FindUserService,
-		private readonly findEstablishmentService: FindEstablishmentService,
-		private readonly findServiceService: FindServiceService
-	) {}
+	constructor(private readonly collaboratorRepository: CollaboratorRepository) {}
 
 	public async execute(id: string, establishmentCache?: EstablishmentResponseDTO): Promise<CollaboratorResponseDTO> {
 		if (!id) {
@@ -133,11 +125,7 @@ export class FindCollaboratorService {
 
 		for (const row of rows) {
 			const collaboratorId = row.collaborator_id;
-
-			if (!map.has(collaboratorId)) {
-				map.set(collaboratorId, []);
-			}
-
+			if (!map.has(collaboratorId)) map.set(collaboratorId, []);
 			map.get(collaboratorId)!.push(row);
 		}
 

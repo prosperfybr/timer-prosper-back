@@ -18,4 +18,8 @@ export class RefreshTokenRepository {
 	public async findByTokenHash(hash: string): Promise<RefreshTokenEntity> {
 		return await this.repository.findOne({ where: { tokenHash: hash }, relations: ["user"] });
 	}
+
+	public async logout(userId: string): Promise<void> {
+		await this.repository.delete({ userId });
+	}
 }
