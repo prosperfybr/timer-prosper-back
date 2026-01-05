@@ -11,23 +11,17 @@ import { UserRepository } from "../repositories/users.repository";
 
 @Service()
 export class UpdateUserPreferencesService {
-	constructor(
-		//- Repositories
-		private readonly userRepository: UserRepository,
-		private readonly userPreferencesRepository: UserPreferencesRepository,
-		//- Utils
-		private readonly validatorUtils: ValidatorUtils
-	) {}
+	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
 	public async execute(id: string, preferencesToUpdate: UpdateUserPreferencesDTO): Promise<UserPreferencesResponseDTO> {
-		const user: UserEntity = await this.userRepository.findById(id);
+		const user: UserEntity = await UserRepository.findById(id);
 
 		if (!user) {
 			log.error(`User not found with id. ID [${id}]`);
 			throw new BadRequestException("Usuário não encontrado");
 		}
 
-		let preferences: UserPreferencesEntity = await this.userPreferencesRepository.findByUserId(user.id);
+		let preferences: UserPreferencesEntity = await UserPreferencesRepository.findByUserId(user.id);
 		const fieldsToUpdate = this.validatorUtils.filterUpdatedFields(preferences, preferencesToUpdate);
 
 		if (Object.keys(fieldsToUpdate).length === 0) {
@@ -35,7 +29,7 @@ export class UpdateUserPreferencesService {
 			throw new BadRequestException("Não há nenhuma informação das preferências do usuário para atualizar");
 		}
 
-		await this.userPreferencesRepository.update(preferences.id, fieldsToUpdate);
+		await UserPreferencesRepository.update(preferences.id, fieldsToUpdate);
 		return {
 			id: preferences.id,
 			userId: user.id,

@@ -8,7 +8,7 @@ import { CollaboratorRepository } from "../repositories/collaborator.repository"
 
 @Service()
 export class DeleteCollaboratorService {
-	constructor(private readonly collaboratorRepository: CollaboratorRepository, private readonly deleteUserService: DeleteUserService) {}
+	constructor(private readonly deleteUserService: DeleteUserService) {}
 
 	public async execute(id: string): Promise<void> {
 		if (!id) {
@@ -16,7 +16,7 @@ export class DeleteCollaboratorService {
 			throw new InvalidArgumentException("O ID do colaborador é obrigatório");
 		}
 
-		const collaborator: CollaboratorEntity = await this.collaboratorRepository.findById(id);
+		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id }});
 
 		if (!collaborator) {
 			log.error(`Collaborator not found with ID`);
@@ -24,6 +24,6 @@ export class DeleteCollaboratorService {
 		}
 
 		await this.deleteUserService.execute(collaborator.userId);
-		await this.collaboratorRepository.delete(id);
+		await CollaboratorRepository.delete(id);
 	}
 }

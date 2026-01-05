@@ -20,6 +20,7 @@ import { CollaboratorsServicesEntity } from "../models/entity/collaborator-servi
 import { CollaboratorEntity } from "../models/entity/collaborator.entity";
 import { CollaboratorServicesRepository } from "../repositories/collaborator-services.repository";
 import { CollaboratorRepository } from "../repositories/collaborator.repository";
+import { In } from "typeorm";
 
 @Service()
 export class CreateCollaboratorService {
@@ -36,11 +37,6 @@ export class CreateCollaboratorService {
 	};
 
 	constructor(
-		//- Repositories
-		private readonly collaboratorRepository: CollaboratorRepository,
-		private readonly collaboratorServicesRepository: CollaboratorServicesRepository,
-		private readonly servicesRepository: ServicesRepository,
-		private readonly establishmentRepository: EstablishmentRepository,
 		//- Services
 		private readonly createUserService: CreateUserService,
 		private readonly updateUserService: UpdateUserService,
@@ -59,13 +55,13 @@ export class CreateCollaboratorService {
 			log.error(`No services ids is received [${servicesIds}]`);
 			throw new InvalidArgumentException("O colaborador deve estar associado a pelo menos um serviço");
 		}
-		const services: ServicesEntity[] = await this.servicesRepository.findByIds(servicesIds);
+		const services: ServicesEntity[] = await ServicesRepository.find({ where: { id: In(servicesIds) }});
 		if (!services || services.length === 0) {
 			log.error(`No services found with IDs`);
 			throw new BadRequestException("Não foram encontrados serviços com os IDs informados");
 		}
 
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
 
 		if (!establishment) {
 			log.error(`Establishment not found with ID [${establishmentId}]`);
@@ -92,10 +88,10 @@ export class CreateCollaboratorService {
 		collaboratorToSave.collaboratorFunction = collaboratorFunction;
 		collaboratorToSave.specialty = specialty;
 		collaboratorToSave.hiringDate = hiringDate;
-		const collaboratorSaved: CollaboratorEntity = await this.collaboratorRepository.save(collaboratorToSave);
+		const collaboratorSaved: CollaboratorEntity = await CollaboratorRepository.save(collaboratorToSave);
 
 		const collaboratorServicesRelationshipToSave: CollaboratorsServicesEntity[] = services.map(service => new CollaboratorsServicesEntity(collaboratorSaved.id, service.id));
-		const collaboratorServicesRelationshipSaved: CollaboratorsServicesEntity[] = await this.collaboratorServicesRepository.saveAll(collaboratorServicesRelationshipToSave);
+		const collaboratorServicesRelationshipSaved: CollaboratorsServicesEntity[] = await CollaboratorServicesRepository.save(collaboratorServicesRelationshipToSave);
 
 		return {
 			id: collaboratorSaved.id,

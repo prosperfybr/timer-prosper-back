@@ -5,19 +5,13 @@ import { FormatterUtils } from '@shared/utils/formatter.utils';
 import {
 	EstablishmentHourResponseDTO,
 	HourResponseDTO,
-} from '../models/dto/establishment/establishment-hour-response.dto';
-import { EstablishmentResponseDTO } from '../models/dto/establishment/establishment-response.dto';
-import { EstablishmentHourEntity } from '../models/entity/establishment-hour.entity';
-import { EstablishmentHourRepository } from '../repositories/establishment-hour.repository';
-import { FindEstablishmentService } from './find-establishment.service';
+} from '@modules/establishment/models/dto/establishment/establishment-hour-response.dto';
+import { EstablishmentHourEntity } from '@modules/establishment/models/entity/establishment-hour.entity';
+import { EstablishmentHourRepository } from '@modules/establishment/repositories/establishment-hour.repository';
 
 @Service()
 export class FindEstablishmentHourService {
 	constructor(
-		//- Repositories
-		private readonly establishmentHourRepository: EstablishmentHourRepository,
-		//- Services
-		private readonly findEstablishmentService: FindEstablishmentService,
 		//- Utils
 		private readonly formatterUtils: FormatterUtils,
 	) {}
@@ -29,7 +23,7 @@ export class FindEstablishmentHourService {
 		}
 
 		const establishmentHours: EstablishmentHourEntity[] =
-			await this.establishmentHourRepository.findAllByEstablishment(establishmentId);
+			await EstablishmentHourRepository.findAllByEstablishment(establishmentId);
 
 		if (!establishmentHours || establishmentHours.length === 0) {
 			log.warn(`The establishment does not yet have set operating hours`);

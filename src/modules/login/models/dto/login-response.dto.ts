@@ -1,3 +1,4 @@
+import { EstablishmentResponseDTO } from "@modules/establishment/models/dto/establishment/establishment-response.dto";
 import { UserResponseDTO } from "@modules/users/models/dto/user-response.dto";
 
 export interface LoginResponseDTO {
@@ -7,5 +8,5 @@ export interface LoginResponseDTO {
 	expiresIn: string | number;
 	refreshExpiresIn: Date;
 	user: UserResponseDTO;
-	establishmentId: string | void;
+	establishment: EstablishmentResponseDTO | void;
 }

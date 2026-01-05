@@ -10,7 +10,7 @@ import { ServiceTypeRepository } from "../repositories/servicetype.repository";
 
 @Service()
 export class CreateServiceTypeService {
-	constructor(private readonly serviceTypeRepository: ServiceTypeRepository, private readonly segmentRepository: SegmentRepository) {}
+	constructor() {}
 
 	public async execute(payload: CreateServiceTypeDTO): Promise<ServiceTypeResponseDTO> {
 		const { name, description, segmentId } = payload;
@@ -25,7 +25,7 @@ export class CreateServiceTypeService {
 			throw new InvalidArgumentException("A descrição do tipo de serviço é inválida");
 		}
 
-		const segment: SegmentEntity = await this.segmentRepository.findById(segmentId);
+		const segment: SegmentEntity = await SegmentRepository.findById(segmentId);
 		if (!segment) {
 			log.error(`Segment not found with ID [${segmentId}]`);
 			throw new InvalidArgumentException("O ID do segmento é inválido");
@@ -36,7 +36,7 @@ export class CreateServiceTypeService {
 		serviceType.description = description;
 		serviceType.segmentId = segment.id;
 
-		const serviceTypeSaved: ServiceTypeEntity = await this.serviceTypeRepository.save(serviceType);
+		const serviceTypeSaved: ServiceTypeEntity = await ServiceTypeRepository.save(serviceType);
 
 		return {
 			id: serviceTypeSaved.id,

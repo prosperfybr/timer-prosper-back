@@ -29,10 +29,6 @@ export class CreateEstablishmentService {
 	};
 
 	constructor(
-		//- Repositories
-		private readonly establishmentRepository: EstablishmentRepository,
-		private readonly userRepository: UserRepository,
-		private readonly segmentRepository: SegmentRepository,
 		//- Utils
 		private readonly validatorUtils: ValidatorUtils,
 		private readonly generatorUtils: GeneratorUtils
@@ -65,13 +61,13 @@ export class CreateEstablishmentService {
 			throw new InvalidArgumentException("O ID do proprietário do estabelecimento é obrigatório");
 		}
 
-		const user: UserEntity = await this.userRepository.findById(userId);
+		const user: UserEntity = await UserRepository.findById(userId);
 		if (!user) {
 			log.error(`User not found`);
 			throw new BadRequestException("Proprietário não encontrado para o estabelecimento");
 		}
 
-		const segment: SegmentEntity = await this.segmentRepository.findById(segmentId);
+		const segment: SegmentEntity = await SegmentRepository.findById(segmentId);
 		if (!segment) {
 			log.error(`Segment not found`);
 			throw new BadRequestException("Segmento nao encontrado para o estabelecimento");
@@ -101,7 +97,7 @@ export class CreateEstablishmentService {
 		establishmentToSave.youtube = youtube;
 		establishmentToSave.segmentId = segment.id;
 
-		const establishmentSaved: EstablishmentEntity = await this.establishmentRepository.save(establishmentToSave);
+		const establishmentSaved: EstablishmentEntity = await EstablishmentRepository.save(establishmentToSave);
 
 		//- Update user to OWNER
 		/**
@@ -110,7 +106,7 @@ export class CreateEstablishmentService {
 		if (user.role == RolesEnum.OWNER || user.role == RolesEnum.ADMIN) log.info(`User is already [${RolesEnum.OWNER}], nothing to update in a user role`);
 		else {
 			log.info(`User isn't a [${RolesEnum.OWNER}]. It is a [${user.role}]. Updating a user role`);
-			await this.userRepository.update(user.id, { role: RolesEnum.OWNER });
+			await UserRepository.update(user.id, { role: RolesEnum.OWNER });
 			log.info(`User [${user.email}] now is a ${user.role}`);
 		}
 

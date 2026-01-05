@@ -9,7 +9,7 @@ import { SegmentRepository } from "../repositories/segment.repository";
 
 @Service()
 export class DeleteSegmentService {
-	constructor(private readonly segmentRepository: SegmentRepository, private readonly establishmentRepository: EstablishmentRepository) {}
+	constructor() {}
 
 	public async delete(id: string): Promise<void> {
 		if (!id) {
@@ -17,19 +17,19 @@ export class DeleteSegmentService {
 			throw new InvalidArgumentException("O ID do tipo de serviço é obrigatório");
 		}
 
-		const segment: SegmentEntity = await this.segmentRepository.findById(id);
+		const segment: SegmentEntity = await SegmentRepository.findById(id);
 
 		if (!segment) {
 			log.warn(`Segment not deleted. Service type not found`);
 			throw new BadRequestException("Segmento não encontrado");
 		}
 
-		const segmentEsablishments: EstablishmentEntity[] = await this.establishmentRepository.findBySegment(segment.id);
+		const segmentEsablishments: EstablishmentEntity[] = await EstablishmentRepository.findBySegment(segment.id);
 		if (segmentEsablishments.length > 0) {
 			log.error(`It is not possible to delete a segment because has establishments associated.`);
 			throw new BadRequestException("Não é possível excluir este segmento, pois existem estabelecimentos associados a ele.");
 		}
 
-		await this.segmentRepository.delete(id);
+		await SegmentRepository.delete(id);
 	}
 }

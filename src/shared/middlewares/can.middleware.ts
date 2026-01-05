@@ -1,16 +1,13 @@
 import { log } from "@config/Logger";
 import { RolesEnum } from "@modules/users/models/enum/roles.enum";
-import { UserEntity } from "@modules/users/models/entity/user.entity";
-import { UserRepository } from "@modules/users/repositories/users.repository";
 import { NextFunction, Request, Response } from "express";
+import { getRolesEnumValue } from "../../modules/users/models/enum/roles.enum";
 
 export function can(roles: RolesEnum[] | string[]) {
 	return async (req: Request, res: Response, next: NextFunction) => {
-		const { id } = req.user;
-		const userRepository: UserRepository = new UserRepository();
-		const user: UserEntity = await userRepository.findById(id);
+		const { role } = req.user;
 
-		if (!roles.includes(user.role)) {
+		if (!roles.includes(getRolesEnumValue(role))) {
 			log.error("User has not permission to access this resource");
 			return res.status(403).json({ message: "Você não possui permissão para acessar este recurso." });
 		}

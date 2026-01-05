@@ -4,34 +4,22 @@ import { CollaboratorRepository } from "@modules/collaborators/repositories/coll
 import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
 import { EstablishmentHourRepository } from "@modules/establishment/repositories/establishment-hour.repository";
 import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
+import { SchedulingResponse } from "@modules/scheduling/models/dto/scheduling-response.dto";
 import { ServicesEntity } from "@modules/services/models/entity/services.entity";
+import { ServicesRepository } from "@modules/services/repositories/services.repository";
+import { UserEntity } from "@modules/users/models/entity/user.entity";
+import { UserRepository } from "@modules/users/repositories/users.repository";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
-import { ConverterUtils } from "@shared/utils/converter.utils";
 import moment from "moment";
 import { DateRange, extendMoment } from "moment-range";
-import { SchedulingResponse } from "../models/dto/scheduling-response.dto";
 import { AbsenceBlockRepository } from "../repositories/absence-block.repository";
 import { AppointmentRepository } from "../repositories/appointment.repository";
-import { UserRepository } from "@modules/users/repositories/users.repository";
-import { UserEntity } from "@modules/users/models/entity/user.entity";
-import { ServicesRepository } from "@modules/services/repositories/services.repository";
 
 @Service()
 export class FindSchedulingService {
-	constructor(
-		//- Repositories
-		private readonly establishmentRepository: EstablishmentRepository,
-		private readonly establishmentHourRepository: EstablishmentHourRepository,
-		private readonly collaboratorRepository: CollaboratorRepository,
-		private readonly absenceBlockRepository: AbsenceBlockRepository,
-		private readonly appointmentRepository: AppointmentRepository,
-		private readonly userRepository: UserRepository,
-		private readonly servicesRepository: ServicesRepository,
-		//- Utils
-		private readonly converterUtils: ConverterUtils,
-	) {}
+	constructor() {}
 
 	public async findAvailableSlots(
 		establishmentId: string,
@@ -48,7 +36,7 @@ export class FindSchedulingService {
 			throw new InvalidArgumentException("O ID do estabelecimento e do serviço são obrigatórios");
 		}
 
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
 
 		if (!establishment) {
 			log.error(`Establishment not found by ID: [${establishmentId}]`);
@@ -76,14 +64,14 @@ export class FindSchedulingService {
 		const dayOfWeek = dateMoment.isoWeekday();
 		const serviceDuration = service.duration;
 
-		const daySlot = await this.establishmentHourRepository.findByEstablishmentAndWeekDay(establishment.id, dayOfWeek);
+		const daySlot = await EstablishmentHourRepository.findByEstablishmentAndWeekDay(establishment.id, dayOfWeek);
 
 		if (!daySlot) {
 			log.info(`Establishment not work on this date`);
 			return [];
 		}
 
-		const collaboratorsAvailables: CollaboratorEntity[] = await this.collaboratorRepository.findCollaboratorsInEstablishentWorksInService(
+		const collaboratorsAvailables: CollaboratorEntity[] = await CollaboratorRepository.findCollaboratorsInEstablishentWorksInService(
 			establishment.id,
 			service.id,
 			collaboratorId,
@@ -98,8 +86,8 @@ export class FindSchedulingService {
 		const endOfDay: Date = dateMoment.endOf("day").toDate();
 		const collaboratorsIds: string[] = collaboratorsAvailables.map((collaborator) => collaborator.id);
 
-		const absenceBlocks = await this.absenceBlockRepository.findByCollaboratorsAndDate(collaboratorsIds, startOfDay, endOfDay);
-		const existingAppointments = await this.appointmentRepository.findAllByCollaboratorsIdAndDate(collaboratorsIds, startOfDay, endOfDay);
+		const absenceBlocks = await AbsenceBlockRepository.findByCollaboratorsAndDate(collaboratorsIds, startOfDay, endOfDay);
+		const existingAppointments = await AppointmentRepository.findAllByCollaboratorsIdAndDate(collaboratorsIds, startOfDay, endOfDay);
 
 		const allSlots: SchedulingResponse.SLOT[] = [];
 		const [startHour, startMin] = daySlot.openingTime.split(":").map(Number);
@@ -142,7 +130,7 @@ export class FindSchedulingService {
 
 				isAvailable = !isBooked;
 
-				const { name: collaboratorName } = await this.userRepository.findUserNameByUserId(collaborator.userId);
+				const { name: collaboratorName } = await UserRepository.findUserNameByUserId(collaborator.userId);
 
 				allSlots.push({
 					date,
@@ -169,18 +157,18 @@ export class FindSchedulingService {
 		log.info("Finding all schedulings for client or service or collaborator");
 		let appointments = null;
 
-		const userCollaborator: UserEntity = await this.userRepository.findById(id);
+		const userCollaborator: UserEntity = await UserRepository.findById(id);
 		if (userCollaborator) {
-			const collaborator: CollaboratorEntity = await this.collaboratorRepository.findByUserId(userCollaborator.id);
+			const collaborator: CollaboratorEntity = await CollaboratorRepository.findByUserId(userCollaborator.id);
 			id = collaborator ? collaborator.id : id;
 		}
 
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(id);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(id);
 		if (establishment) {
-			const collaborators: CollaboratorEntity[] = await this.collaboratorRepository.findAllByEstablishmentId(establishment.id);
+			const collaborators: CollaboratorEntity[] = await CollaboratorRepository.findAllByEstablishmentId(establishment.id);
 			const collaboratorsIds: string[] = collaborators.map(collaborator => collaborator.id);
-			appointments = await this.appointmentRepository.findAllByEstablishmentCollaborators(collaboratorsIds);
-		} else appointments = await this.appointmentRepository.findAllByIdentifierClient(id);
+			appointments = await AppointmentRepository.findAllByEstablishmentCollaborators(collaboratorsIds);
+		} else appointments = await AppointmentRepository.findAllByIdentifierClient(id);
 
 		if (!appointments || appointments.length === 0) {
 			log.info(`This client | service | collaborator has not appointments yet`);
@@ -190,9 +178,9 @@ export class FindSchedulingService {
 		const clientAppointments: SchedulingResponse.SLOT[] = [];
 
 		for (const appointment of appointments) {
-			const collaborator: CollaboratorEntity = await this.collaboratorRepository.findById(appointment.collaboratorId);
-			const service: ServicesEntity = await this.servicesRepository.findById(appointment.serviceId);
-			const client: UserEntity = await this.userRepository.findById(appointment.clientId);
+			const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: appointment.collaboratorId }, relations: ["user", "establishment"]});
+			const service: ServicesEntity = await ServicesRepository.findById(appointment.serviceId);
+			const client: UserEntity = await UserRepository.findById(appointment.clientId);
 
 			clientAppointments.push({
 						date: moment(appointment.startTime).format("YYYY-MM-DD"),

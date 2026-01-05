@@ -2,6 +2,7 @@ import { log } from "@config/Logger";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { ConverterUtils } from "@shared/utils/converter.utils";
+import { In } from "typeorm";
 import { ServiceResponseDTO } from "../models/dto/service-response.dto";
 import { PaginatedResult, ServiceRequestFilter } from "../models/dto/services-request-filter.dto";
 import { ServicesEntity } from "../models/entity/services.entity";
@@ -11,7 +12,7 @@ import { ServicesRepository } from "../repositories/services.repository";
 export class FindServiceService {
 	private DEFAULT_LIMIT: number = 10;
 
-	constructor(private readonly servicesRepository: ServicesRepository, private readonly converterUtils: ConverterUtils) {}
+	constructor(private readonly converterUtils: ConverterUtils) {}
 
 	public async findServiceById(id: string): Promise<ServiceResponseDTO> {
 		log.info(`Finding a service with ID [${id}]`);
@@ -21,7 +22,7 @@ export class FindServiceService {
 			throw new BadRequestException("O ID do serviço é obrigatório");
 		}
 
-		const service: ServicesEntity = await this.servicesRepository.findById(id);
+		const service: ServicesEntity = await ServicesRepository.findById(id);
 
 		if (!service) {
 			log.error("Service not found");
@@ -46,15 +47,15 @@ export class FindServiceService {
 			throw new BadRequestException("O ID dos serviços são obrigatórios");
 		}
 
-		const services: ServicesEntity[] = await this.servicesRepository.findByIds(ids);
+		const services: ServicesEntity[] = await ServicesRepository.find({ where: { id: In(ids) } });
 
 		if (!services || services.length === 0) {
-			log.error("Service not found");
-			throw new BadRequestException("Serviço não encontrado");
+			log.error("Services not found");
+			return [];
 		}
 
 		return services.map(
-			service =>
+			(service) =>
 				({
 					id: service.id,
 					name: service.name,
@@ -62,7 +63,7 @@ export class FindServiceService {
 					price: this.converterUtils.convertCentsToFloat(service.price),
 					duration: service.duration,
 					durationFormated: this.converterUtils.convertMinutesInTime(service.duration),
-				} as ServiceResponseDTO)
+				}) as ServiceResponseDTO,
 		);
 	}
 
@@ -76,7 +77,15 @@ export class FindServiceService {
 		if (filter.establishmentId) whereClause.establishmentId = filter.establishmentId;
 		if (filter.serviceTypeId) whereClause.serviceTypeId = filter.establishmentId;
 
-		const [services, totalItems] = await this.servicesRepository.findAndCount(whereClause, limit, skip);
+		const [services, totalItems] = await ServicesRepository.findAndCount({
+			where: whereClause,
+			take: limit,
+			skip,
+			relations: ["establishment", "serviceType"],
+			order: { name: "ASC" },
+		});
+
+		console.log(services);
 
 		const totalPages: number = Math.ceil(totalItems / limit);
 		const result: PaginatedResult<ServicesEntity> = {

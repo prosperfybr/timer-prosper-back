@@ -1,51 +1,19 @@
-import { DeleteResult, Repository } from "typeorm";
 
-import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { AppDataSource } from "../../../config/ormconfig";
+import { AppDataSource } from "@config/ormconfig";
 import { EstablishmentHourEntity } from "../models/entity/establishment-hour.entity";
 
-@RepositoryDec()
-export class EstablishmentHourRepository {
-	private repository: Repository<EstablishmentHourEntity>;
-
-	constructor() {
-		this.repository = AppDataSource.getRepository(EstablishmentHourEntity);
-	}
-
-	public async save(establishment: EstablishmentHourEntity): Promise<EstablishmentHourEntity> {
-		return await this.repository.save(establishment);
-	}
-
-	public async saveAll(establishmentHours: EstablishmentHourEntity[]): Promise<EstablishmentHourEntity[]> {
-		return await this.repository.save(establishmentHours);
-	}
-
-	public async findById(id: string): Promise<EstablishmentHourEntity> {
-		const establishment = await this.repository.findOne({
+export const EstablishmentHourRepository = AppDataSource.getRepository(EstablishmentHourEntity).extend({
+	async findById(id: string): Promise<EstablishmentHourEntity> {
+		const establishment = await this.findOne({
 			where: { id },
 			relations: ["establishment"],
 		});
-
 		return establishment;
+	},
+	async findAllByEstablishment(establishmentId: string): Promise<EstablishmentHourEntity[]> {
+		return await this.find({ where: { establishmentId }, relations: ["establishment"] });
+	},
+	async findByEstablishmentAndWeekDay(establishmentId: string, dayOfWeek: number): Promise<EstablishmentHourEntity> {
+		return await this.findOne({ where: { establishmentId, dayOfWeek }, relations: ["establishment"]});
 	}
-
-	public async findAll(): Promise<EstablishmentHourEntity[]> {
-		return await this.repository.find();
-	}
-
-	public async findAllByEstablishment(establishmentId: string): Promise<EstablishmentHourEntity[]> {
-		return await this.repository.find({ where: { establishmentId }, relations: ["establishment"] });
-	}
-
-	public async findByEstablishmentAndWeekDay(establishmentId: string, dayOfWeek: number): Promise<EstablishmentHourEntity> {
-		return await this.repository.findOne({ where: { establishmentId, dayOfWeek }});
-	}
-
-	public async delete(id: string): Promise<DeleteResult> {
-		return await this.repository.delete(id);
-	}
-
-	public async update(id: string, fieldsToUpdate: Partial<EstablishmentHourEntity>) {
-		return await this.repository.update(id, fieldsToUpdate);
-	}
-}
+});

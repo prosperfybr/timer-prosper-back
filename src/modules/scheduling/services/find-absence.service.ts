@@ -7,8 +7,6 @@ import { AbsenceBlockRepository } from "../repositories/absence-block.repository
 @Service()
 export class FindAbsenceBlockService {
 	constructor(
-		//- Repositories
-		private readonly absenceBlockRepository: AbsenceBlockRepository,
 		//- Mappers
 		private readonly mapper: AbsenceBlockResponse,
 	) {}
@@ -21,7 +19,7 @@ export class FindAbsenceBlockService {
 			throw new InvalidArgumentException("ID do estabelecimento obrigatório");
 		}
 
-		const absences = await this.absenceBlockRepository.findAllByEstablishment(establishmentId);
+		const absences = await AbsenceBlockRepository.findAllByEstablishment(establishmentId);
 
 		if (!absences || absences.length === 0) {
 			log.info(`No absences registered yet to establishment [${establishmentId}]`);

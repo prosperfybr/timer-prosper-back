@@ -1,37 +1,14 @@
-import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { DeleteResult, Repository, UpdateResult } from "typeorm";
-import { AppDataSource } from "../../../config/ormconfig";
+import { AppDataSource } from "@config/ormconfig";
 import { SegmentEntity } from "../models/entity/segment.entity";
 
-@RepositoryDec()
-export class SegmentRepository {
-	private repository: Repository<SegmentEntity>;
-
-	constructor() {
-		this.repository = AppDataSource.getRepository(SegmentEntity);
-	}
-
-	public async save(serviceType: SegmentEntity): Promise<SegmentEntity> {
-		return await this.repository.save(serviceType);
-	}
-
-	public async findById(id: string): Promise<SegmentEntity> {
-		return await this.repository.findOne({ where: { id }, relations: ["serviceTypes"] });
-	}
-
-	public async findAll(): Promise<SegmentEntity[]> {
-		return await this.repository.find();
-	}
-
-	public async findAllActive(): Promise<SegmentEntity[]> {
-		return await this.repository.find({ where: { isActive: true } });
-	}
-
-	public async update(id: string, data: Partial<SegmentEntity>): Promise<UpdateResult> {
-		return await this.repository.update(id, data);
-	}
-
-	public async delete(id: string): Promise<DeleteResult> {
-		return await this.repository.delete(id);
-	}
-}
+export const SegmentRepository = AppDataSource.getRepository(SegmentEntity).extend({
+	async findById(id: string): Promise<SegmentEntity> {
+		return await this.findOne({ where: { id }, relations: ["serviceTypes"] });
+	},
+	async findAll(): Promise<SegmentEntity[]> {
+		return await this.find();
+	},
+	async findAllActive(): Promise<SegmentEntity[]> {
+		return await this.find({ where: { isActive: true } });
+	},
+});

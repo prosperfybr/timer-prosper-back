@@ -21,7 +21,7 @@ export class LoginController {
 			log.info("Request received to log in a user");
 
 			const login: DoLoginDTO = req.body as DoLoginDTO;
-			const { token, refreshToken, type, expiresIn, refreshExpiresIn, user, establishmentId }: LoginResponseDTO = await this.loginService.doLogin(login, req.ip, req.get("User-Agent"));
+			const { token, refreshToken, type, expiresIn, refreshExpiresIn, user, establishment }: LoginResponseDTO = await this.loginService.doLogin(login, req.ip, req.get("User-Agent"));
 
 			res.cookie("refreshToken", refreshToken, {
 				httpOnly: true,
@@ -43,7 +43,7 @@ export class LoginController {
 					type,
 					expiresIn,
 					user,
-					establishmentId
+					establishment
 				},
 			});
 		} catch (error) {

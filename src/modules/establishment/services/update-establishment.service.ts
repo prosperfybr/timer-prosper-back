@@ -9,10 +9,10 @@ import { EstablishmentRepository } from "../repositories/establishment.repositor
 
 @Service()
 export class UpdateEstablishmentService {
-	constructor(private readonly establishmentRepository: EstablishmentRepository, private readonly validatorUtils: ValidatorUtils) {}
+	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
 	public async execute(payload: UpdateEstablishmentDTO): Promise<EstablishmentResponseDTO> {
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(payload.id);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(payload.id);
 
 		if (!establishment) {
 			log.error(`Establishment not found with id. ID [${payload.id}]`);
@@ -26,8 +26,7 @@ export class UpdateEstablishmentService {
 			throw new BadRequestException("Não há nenhuma informação do estabelecimento para atualizar");
 		}
 
-		await this.establishmentRepository.update(establishment.id, fieldsToUpdate);
-
+		await EstablishmentRepository.update(establishment.id, fieldsToUpdate);
 		return null;
 	}
 }

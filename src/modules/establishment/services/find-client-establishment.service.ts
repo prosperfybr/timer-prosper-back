@@ -5,23 +5,20 @@ import { ClientEstablishmentRepository } from "@modules/establishment/repositori
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { FormatterUtils } from "@shared/utils/formatter.utils";
+import { validate as validateUUID } from 'uuid';
 
 @Service()
 export class FindClientEstablishmentService {
-	constructor(
-		private readonly clientEstablishmentRepository: ClientEstablishmentRepository,
-		//- Utils
-		private readonly formatterUtils: FormatterUtils
-	) {}
+	constructor(private readonly formatterUtils: FormatterUtils) {}
 
 	public async findClientsEstablishment(establishmentId: string): Promise<ClientEstablishmentResponseDTO[]> {
 		log.info("Starting search for establishment clients");
-		if (!establishmentId) {
+		if (!establishmentId || !validateUUID(establishmentId)) {
 			log.error(`Establishment ID is required, but is received [${establishmentId}]`);
 			throw new BadRequestException("O ID do estabelecimento é obrigatório");
 		}
 
-		const clients: ClientEstablishmentEntity[] = await this.clientEstablishmentRepository.findAllByEstablishment(establishmentId);
+		const clients: ClientEstablishmentEntity[] = await ClientEstablishmentRepository.findAllByEstablishment(establishmentId);
 
 		if (!clients || clients.length === 0) {
 			log.warn("No clients found to establshment");
@@ -96,7 +93,7 @@ export class FindClientEstablishmentService {
 			throw new BadRequestException("O ID do cliente é obrigatório");
 		}
 
-		const clientEstablishments: ClientEstablishmentEntity[] = await this.clientEstablishmentRepository.findAllByUser(clientId);
+		const clientEstablishments: ClientEstablishmentEntity[] = await ClientEstablishmentRepository.findAllByUser(clientId);
 		if (!clientEstablishments || clientEstablishments.length === 0) {
 			log.warn("No establishments found to client");
 			return [];
