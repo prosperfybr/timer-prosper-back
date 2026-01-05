@@ -11,15 +11,10 @@ import { UserRepository } from "../repositories/users.repository";
 
 @Service()
 export class UpdateUserService {
-	constructor(
-		//- Repositories
-		private readonly userRepository: UserRepository,
-		//- Utils
-		private readonly validatorUtils: ValidatorUtils
-	) {}
+	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
 	public async execute(id: string, userToUpdate: UpdateUserDTO): Promise<UserResponseDTO> {
-		const user: UserEntity = await this.userRepository.findById(id);
+		const user: UserEntity = await UserRepository.findById(id);
 
 		if (!user) {
 			log.error(`User not found with id. ID [${id}]`);
@@ -39,16 +34,16 @@ export class UpdateUserService {
 				fieldsToUpdate.password = await hash(fieldsToUpdate.password, 10);
 			}
 
-			await this.userRepository.update(user.id, fieldsToUpdate);
+			await UserRepository.update(user.id, fieldsToUpdate);
 
 			//- Verify if profile has been full filled
-			const userUpdated: UserEntity = await this.userRepository.findById(user.id);
+			const userUpdated: UserEntity = await UserRepository.findById(user.id);
 			if (userUpdated.birthDate && userUpdated.cpf && userUpdated.whatsApp) {
 				//- User fill all profile fields
-				await this.userRepository.update(user.id, { profileComplete: true });
+				await UserRepository.update(user.id, { profileComplete: true });
 			} else if ((!userUpdated.birthDate || !userUpdated.cpf || !userUpdated.whatsApp) && userUpdated.profileComplete === true) {
 				//- Case user has deleted any info and profile previously is complete
-				await this.userRepository.update(user.id, { profileComplete: false });
+				await UserRepository.update(user.id, { profileComplete: false });
 			}
 
 			return null;
@@ -70,7 +65,7 @@ export class UpdateUserService {
 				fieldsToUpdate.password = await hash(fieldsToUpdate.password, 10);
 			}
 
-			await this.userRepository.update(user.id, fieldsToUpdate);
+			await UserRepository.update(user.id, fieldsToUpdate);
 			return null;
 		}
 	}

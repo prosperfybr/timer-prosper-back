@@ -20,11 +20,6 @@ import { EstablishmentEntity } from "@modules/establishment/models/entity/establ
 @Service()
 export class CreateAbsenceBlockService {
 	constructor(
-		//- Repositories
-		private readonly collaboratorRepository: CollaboratorRepository,
-		private readonly servicesRepository: ServicesRepository,
-		private readonly absenceBlockRepository: AbsenceBlockRepository,
-		private readonly establishmentRepository: EstablishmentRepository,
 		//- Mappers
 		private readonly mapper: AbsenceBlockResponse,
 		//- Utils
@@ -36,7 +31,7 @@ export class CreateAbsenceBlockService {
 
 		const { type, isRecurrent, specificDate, dayOfWeek, collaboratorId, serviceId, establishmentId, description, startTime, endTime, active } = payload;
 
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
 
 		if (!establishment) {
 			log.error(`Establishment not found by id [${establishmentId}]`);
@@ -71,7 +66,7 @@ export class CreateAbsenceBlockService {
 			throw new InvalidArgumentException("O ID do colaborador é inválido");
 		}
 
-		const collaborator: CollaboratorEntity = await this.collaboratorRepository.findById(collaboratorId);
+		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: collaboratorId }});
 
 		if (!collaborator) {
 			log.error(`Collaborator not found by ID [${collaboratorId}]`);
@@ -79,7 +74,7 @@ export class CreateAbsenceBlockService {
 		}
 
 		//- Verify if already exists an absence
-		const absenceAlreadyExists = await this.absenceBlockRepository.findExisting(
+		const absenceAlreadyExists = await AbsenceBlockRepository.findExisting(
 			collaboratorId,
 			startTime,
 			endTime,
@@ -112,7 +107,7 @@ export class CreateAbsenceBlockService {
 			throw new InvalidArgumentException("O ID do serviço é inválido");
 		}
 
-		const service: ServicesEntity = await this.servicesRepository.findById(serviceId);
+		const service: ServicesEntity = await ServicesRepository.findById(serviceId);
 
 		if (!service) {
 			log.error(`Service not found by ID [${serviceId}]`);
@@ -120,7 +115,7 @@ export class CreateAbsenceBlockService {
 		}
 
 		//- Verify if already exists an absence
-		const absenceAlreadyExists = await this.absenceBlockRepository.findExisting(
+		const absenceAlreadyExists = await AbsenceBlockRepository.findExisting(
 			serviceId,
 			startTime,
 			endTime,
@@ -194,6 +189,6 @@ export class CreateAbsenceBlockService {
 		newAbsence.recurrenceRule = dayOfWeek ? dayOfWeek.toString() : moment(specificDate).toString();
 		newAbsence.isActive = active;
 
-		return await this.absenceBlockRepository.save(newAbsence);
+		return await AbsenceBlockRepository.save(newAbsence);
 	}
 }

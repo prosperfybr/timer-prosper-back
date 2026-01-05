@@ -8,7 +8,7 @@ import { UserPreferencesRepository } from "../repositories/user-preferences.repo
 
 @Service()
 export class FindUserPreferencesService {
-	constructor(private readonly userPreferencesReposiory: UserPreferencesRepository) {}
+	constructor() {}
 
 	public async getPreferences(userId: string): Promise<UserPreferencesResponseDTO> {
 		if (!userId) {
@@ -16,7 +16,7 @@ export class FindUserPreferencesService {
 			throw new InvalidArgumentException("O ID do usuário é obrigatório");
 		}
 
-		const preferences: UserPreferencesEntity = await this.userPreferencesReposiory.findByUserId(userId);
+		const preferences: UserPreferencesEntity = await UserPreferencesRepository.findByUserId(userId);
 
 		if (!preferences) {
 			log.error(`User preferences not found with user ID: [${userId}]`);

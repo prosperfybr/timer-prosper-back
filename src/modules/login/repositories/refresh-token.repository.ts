@@ -1,25 +1,8 @@
-import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { Repository } from "typeorm";
-import { AppDataSource } from "../../../config/ormconfig";
+import { AppDataSource } from "@config/ormconfig";
 import { RefreshTokenEntity } from "../models/entity/refresh-token.entity";
 
-@RepositoryDec()
-export class RefreshTokenRepository {
-	private repository: Repository<RefreshTokenEntity>;
-
-	constructor() {
-		this.repository = AppDataSource.getRepository(RefreshTokenEntity);
+export const RefreshTokenRepository = AppDataSource.getRepository(RefreshTokenEntity).extend({
+	async findByTokenHash(hash: string): Promise<RefreshTokenEntity> {
+		return await this.findOne({ where: { tokenHash: hash }, relations: ["user"] });
 	}
-
-	public async save(user: RefreshTokenEntity): Promise<RefreshTokenEntity> {
-		return await this.repository.save(user);
-	}
-
-	public async findByTokenHash(hash: string): Promise<RefreshTokenEntity> {
-		return await this.repository.findOne({ where: { tokenHash: hash }, relations: ["user"] });
-	}
-
-	public async logout(userId: string): Promise<void> {
-		await this.repository.delete({ userId });
-	}
-}
+});

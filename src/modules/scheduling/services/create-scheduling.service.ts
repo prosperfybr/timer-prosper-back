@@ -55,14 +55,6 @@ export class CreateSchedulingService {
 	};
 
 	constructor(
-		private readonly establishmentRepository: EstablishmentRepository,
-		private readonly collaboratorRepository: CollaboratorRepository,
-		private readonly servicesRepository: ServicesRepository,
-		private readonly collaboratorServiceRepository: CollaboratorServicesRepository,
-		private readonly userRepository: UserRepository,
-		private readonly establishmentHourRepository: EstablishmentHourRepository,
-		private readonly appointmentRepository: AppointmentRepository,
-		private readonly timeBlockRepository: AbsenceBlockRepository,
 		//- Service
 		private readonly findSchedulingService: FindSchedulingService
 	) {}
@@ -74,11 +66,11 @@ export class CreateSchedulingService {
 			payload;
 
 		const establishment: EstablishmentEntity =
-			await this.establishmentRepository.findById(establishmentId);
+			await EstablishmentRepository.findById(establishmentId);
 		const collaborator: CollaboratorEntity =
-			await this.collaboratorRepository.findById(collaboratorId);
-		const service: ServicesEntity = await this.servicesRepository.findById(serviceId);
-		const client: UserEntity = await this.userRepository.findById(clientId);
+			await CollaboratorRepository.findOne({ where: { id: collaboratorId }});
+		const service: ServicesEntity = await ServicesRepository.findById(serviceId);
+		const client: UserEntity = await UserRepository.findById(clientId);
 
 		if (!establishment || !collaborator || !service || !client) {
 			log.error(
@@ -108,7 +100,7 @@ export class CreateSchedulingService {
 
 		/* 3. Verifica se o colaborador atende ao serviço desejado */
 		const collaboratorProvidesService: CollaboratorsServicesEntity[] = (
-			await this.collaboratorServiceRepository.findAllServicesByCollaboratorId(collaborator.id)
+			await CollaboratorServicesRepository.findAllServicesByCollaboratorId(collaborator.id)
 		).filter((services) => services.serviceId === service.id);
 		if (collaboratorProvidesService.length === 0) {
 			log.error(`Collaborator no provides the chosen service`);
@@ -124,7 +116,7 @@ export class CreateSchedulingService {
 		/* 4. Verifica o horário de funcionamento do estabelecimento */
 		//- Verifica se o dia escolhido o estabelecimento funciona
 		const establishmentOpeningHours: EstablishmentHourEntity =
-			await this.establishmentHourRepository.findByEstablishmentAndWeekDay(
+			await EstablishmentHourRepository.findByEstablishmentAndWeekDay(
 				establishment.id,
 				dayOfWeek,
 			);
@@ -154,7 +146,7 @@ export class CreateSchedulingService {
 		/* 5. Verifica bloqueio */
 		//- 5.1 Busca todos os bloqueios para o colaborador no período da data escolhida
 		const timeBlocks: AbsenceBlockEntity[] =
-			await this.timeBlockRepository.findAllByCollaboratorIdAndDate(
+			await AbsenceBlockRepository.findAllByCollaboratorIdAndDate(
 				collaborator.id,
 				selectedDateTime.toDate().toString(),
 				endTime.toDate().toString(),
@@ -195,7 +187,7 @@ export class CreateSchedulingService {
 
 		/* 5.3 e 6 Verifica conflito com agendamentos existentes */
 		const existingAppointments: AppointmentEntity[] =
-			await this.appointmentRepository.findAllByCollaboratorIdAndDate(
+			await AppointmentRepository.findAllByCollaboratorIdAndDate(
 				collaborator.id,
 				selectedDateTime.toDate(),
 				endTime.toDate(),
@@ -223,7 +215,7 @@ export class CreateSchedulingService {
 		appointment.status = AppointmentStatusEnum.CONFIRMED;
 		appointment.notes = notes;
 
-		await this.appointmentRepository.save(appointment);
+		await AppointmentRepository.save(appointment);
 		return;
 	}
 

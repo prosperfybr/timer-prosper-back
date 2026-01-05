@@ -9,12 +9,7 @@ import { UserRepository } from "../repositories/users.repository";
 
 @Service()
 export class FindUserService {
-	constructor(
-		//- Repository
-		private readonly userRepository: UserRepository,
-		//- Utils
-		private readonly formatterUtils: FormatterUtils
-	) {}
+	constructor(private readonly formatterUtils: FormatterUtils) {}
 
 	public async getUser(id: string): Promise<UserResponseDTO> {
 		if (!id) {
@@ -22,7 +17,7 @@ export class FindUserService {
 			throw new InvalidArgumentException("O ID do usuário é obrigatório");
 		}
 
-		const user = await this.userRepository.getUserDetails(id);
+		const user = await UserRepository.getUserDetails(id);
 
 		if (!user) {
 			log.error(`User not found with ID: [${id}]`);
@@ -59,7 +54,7 @@ export class FindUserService {
 	}
 
 	public async getAllUsers(): Promise<UserResponseDTO[]> {
-		const users: UserEntity[] = await this.userRepository.findAll();
+		const users: UserEntity[] = await UserRepository.find();
 		return users.map(user => ({
 			id: user.id,
 			name: user.name,

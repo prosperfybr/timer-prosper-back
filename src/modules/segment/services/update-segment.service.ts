@@ -9,10 +9,10 @@ import { SegmentRepository } from "../repositories/segment.repository";
 
 @Service()
 export class UpdateSegmentService {
-	constructor(private readonly segmentRepository: SegmentRepository, private readonly validatorUtils: ValidatorUtils) {}
+	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
 	public async udpdate(payload: UpdateSegmentDTO): Promise<SegmentResponseDTO> {
-		const segment: SegmentEntity = await this.segmentRepository.findById(payload.id);
+		const segment: SegmentEntity = await SegmentRepository.findById(payload.id);
 
 		if (!segment) {
 			log.error(`Segment not found by id. ID [${payload.id}]`);
@@ -26,7 +26,7 @@ export class UpdateSegmentService {
 			throw new BadRequestException("Não há nenhuma informação do segmento para atualizar");
 		}
 
-		await this.segmentRepository.update(segment.id, fieldsToUpdate);
+		await SegmentRepository.update(segment.id, fieldsToUpdate);
 		return null;
 	}
 }

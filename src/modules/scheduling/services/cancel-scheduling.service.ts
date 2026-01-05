@@ -8,18 +8,18 @@ import { AppointmentStatusEnum } from "../models/enums/appointment-status.enum";
 @Service()
 export class CancelSchedulingService {
 
-  constructor(private readonly appointmentRepository: AppointmentRepository) {}
+  constructor() {}
 
   public async execute(id: string): Promise<void> {
     log.info("Excluding a appointment");
-    const appointment: AppointmentEntity = await this.appointmentRepository.findById(id);
+    const appointment: AppointmentEntity = await AppointmentRepository.findOne({ where: { id }});
 
     if (!appointment) {
       log.error(`Appointment not found by id [${id}]`);
       throw new BadRequestException("Agendamento não encontrado");
     }
 
-    await this.appointmentRepository.update(appointment.id, { status: AppointmentStatusEnum.CANCELLED });
+    await AppointmentRepository.update(appointment.id, { status: AppointmentStatusEnum.CANCELLED });
     log.info("Appointment excluded");
   }
 }

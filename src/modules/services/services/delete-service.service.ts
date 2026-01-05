@@ -6,7 +6,7 @@ import { ServicesRepository } from "../repositories/services.repository";
 
 @Service()
 export class DeleteServiceService {
-	constructor(private readonly servicesRepository: ServicesRepository) {}
+	constructor() {}
 
 	public async delete(idOrIds: string): Promise<void> {
 		if (!idOrIds) {
@@ -17,12 +17,12 @@ export class DeleteServiceService {
 		const ids: string[] = idOrIds.split(/[|.&;]+/);
 
 		for (const id of ids) {
-			const serviceToDelete: ServicesEntity = await this.servicesRepository.findById(id);
+			const serviceToDelete: ServicesEntity = await ServicesRepository.findById(id);
 
 			if (!serviceToDelete) {
 				log.error(`Service não encontrada com o ID [${id}]. A service não será deletada da base`);
 			} else {
-				this.servicesRepository.delete(id);
+				ServicesRepository.delete(id);
 			}
 		}
 	}

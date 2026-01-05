@@ -14,9 +14,6 @@ import { EstablishmentRepository } from '../repositories/establishment.repositor
 @Service()
 export class CreateEstablishmentHourService {
 	constructor(
-		private readonly establishmentRepository: EstablishmentRepository,
-		private readonly establishmentHourRepository: EstablishmentHourRepository,
-		//- Utils
 		private readonly validatorUtils: ValidatorUtils,
 		private readonly formatterUtils: FormatterUtils,
 	) {}
@@ -37,7 +34,7 @@ export class CreateEstablishmentHourService {
 		}
 
 		const establishment: EstablishmentEntity =
-			await this.establishmentRepository.findById(establishmentId);
+			await EstablishmentRepository.findById(establishmentId);
 
 		if (!establishment) {
 			log.error(`Establishment not found with ID [${establishmentId}]`);
@@ -82,7 +79,7 @@ export class CreateEstablishmentHourService {
 		if (establishmentHours.length > 0) {
 			log.info(`Saving all [${establishmentHours.length}] establishment hours`);
 			console.log(establishmentHours);
-			await this.establishmentHourRepository.saveAll(establishmentHours);
+			await EstablishmentHourRepository.save(establishmentHours);
 			log.info(`Establishment hours saved successfully`);
 		} else if (establishmentHours.length === 0 || hasErrors) {
 			//- Has error in some hours

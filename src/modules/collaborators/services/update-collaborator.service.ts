@@ -17,23 +17,19 @@ import { FindCollaboratorService } from "./find-collaborator.service";
 @Service()
 export class UpdateCollaboratorService {
 	constructor(
-		//- Repositories
-		private readonly collaboratorRepository: CollaboratorRepository,
-		private readonly userRepository: UserRepository,
-		private readonly collaboratorServicesRepository: CollaboratorServicesRepository,
 		//- Services
 		private readonly findCollaboratorService: FindCollaboratorService
 	) {}
 
 	public async execute(id: string, collaboratorToUpdate: UpdateCollaboratorDTO): Promise<CollaboratorResponseDTO> {
-		const collaborator: CollaboratorEntity = await this.collaboratorRepository.findById(id);
+		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id }});
 
 		if (!collaborator) {
 			log.error(`Collaborator not found with id [${id}]`);
 			throw new BadRequestException("Colaborador não encontrado");
 		}
 
-		const user: UserEntity = await this.userRepository.findById(collaborator.userId);
+		const user: UserEntity = await UserRepository.findById(collaborator.userId);
 
 		if (!user) {
 			log.error(`User not found with id. ID [${id}]`);
@@ -45,7 +41,7 @@ export class UpdateCollaboratorService {
 		user.email = email && email !== user.email ? email : user.email;
 		user.password = password ? await hash(password, 10) : user.password;
 		user.whatsApp = whatsApp && whatsApp !== user.whatsApp ? whatsApp : user.whatsApp;
-		await this.userRepository.update(user.id, user);
+		await UserRepository.update(user.id, user);
 
 		collaborator.collaboratorFunction =
 			collaboratorFunction && collaboratorFunction !== collaborator.collaboratorFunction ? collaboratorFunction : collaborator.collaboratorFunction;
@@ -53,15 +49,15 @@ export class UpdateCollaboratorService {
 		collaborator.hiringDate = hiringDate && hiringDate !== collaborator.hiringDate ? hiringDate : collaborator.hiringDate;
 		collaborator.active = active !== null && active !== undefined && active !== collaborator.active ? active : collaborator.active;
 
-		await this.collaboratorRepository.update(collaborator.id, collaborator);
+		await CollaboratorRepository.update(collaborator.id, collaborator);
 
 		if (servicesIds.length > 0) {
 			log.info("Services has changed, update all");
-			const services: CollaboratorsServicesEntity[] = await this.collaboratorServicesRepository.findAllServicesByCollaboratorId(collaborator.id);
+			const services: CollaboratorsServicesEntity[] = await CollaboratorServicesRepository.findAllServicesByCollaboratorId(collaborator.id);
 			const savedServicesIds: string[] = services.map(service => service.id);
 			const { addedIds, removedIds }: { addedIds: string[]; removedIds: string[] } = this.compareIds(savedServicesIds, servicesIds);
 			log.info("Syncronizing relationship between collaborator and services");
-			await this.collaboratorServicesRepository.syncRelationship(collaborator.id, addedIds, removedIds);
+			await CollaboratorServicesRepository.syncRelationship(collaborator.id, addedIds, removedIds);
 			log.info("Relationship syncronized successfully");
 		}
 
@@ -74,14 +70,14 @@ export class UpdateCollaboratorService {
 			throw new InvalidArgumentException("O ID do colaborador é obrigatório");
 		}
 
-		const collaborator: CollaboratorEntity = await this.collaboratorRepository.findById(collaboratorId);
+		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: collaboratorId }});
 
 		if (!collaborator) {
 			log.error(`Collaborator not found with ID [${collaboratorId}]`);
 			throw new BadRequestException("Colaborador não encontrado");
 		}
 
-		await this.collaboratorRepository.update(collaborator.id, { active: !collaborator.active });
+		await CollaboratorRepository.update(collaborator.id, { active: !collaborator.active });
 	}
 
 	private compareIds(savedIds: string[], newIds: string[]): { addedIds: string[]; removedIds: string[] } {

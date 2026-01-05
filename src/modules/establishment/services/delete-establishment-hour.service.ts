@@ -7,7 +7,7 @@ import { EstablishmentHourRepository } from '../repositories/establishment-hour.
 
 @Service()
 export class DeleteEstablishmentHourService {
-	constructor(private readonly establishmentHourRepository: EstablishmentHourRepository) {}
+	constructor() {}
 
 	public async execute(id: string): Promise<void> {
 		if (!id) {
@@ -15,7 +15,7 @@ export class DeleteEstablishmentHourService {
 			throw new InvalidArgumentException('O ID do horário do estabelecimento é obrigatório');
 		}
 
-		const hour: EstablishmentHourEntity = await this.establishmentHourRepository.findById(id);
+		const hour: EstablishmentHourEntity = await EstablishmentHourRepository.findById(id);
 		if (!hour) {
 			log.error(`Establishment hour not found by id. ID [${id}]`);
 			throw new BadRequestException(
@@ -23,6 +23,6 @@ export class DeleteEstablishmentHourService {
 			);
 		}
 
-		await this.establishmentHourRepository.delete(hour.id);
+		await EstablishmentHourRepository.delete(hour.id);
 	}
 }

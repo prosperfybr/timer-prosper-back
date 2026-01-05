@@ -15,12 +15,7 @@ import { RefreshTokenRepository } from "../repositories/refresh-token.repository
 
 @Service()
 export class LoginService {
-	constructor(
-		//- Repositories
-		private readonly refreshTokenRepository: RefreshTokenRepository,
-		private readonly userRepository: UserRepository,
-		private readonly establishmentRepository: EstablishmentRepository,
-	) {}
+	constructor() {}
 
 	public async doLogin(payload: DoLoginDTO, clientIp?: string, userAgent?: string): Promise<LoginResponseDTO> {
 		log.info(`Initializing login for user [${payload.email}]`);
@@ -31,7 +26,7 @@ export class LoginService {
 			throw new UnauthorizedException("Usuário ou senha incorretos");
 		}
 
-		const user: UserEntity = await this.userRepository.findByEmail(email);
+		const user: UserEntity = await UserRepository.findByEmail(email);
 
 		if (!user) {
 			log.error(`User not found by email [${email}]`);
@@ -50,23 +45,19 @@ export class LoginService {
 
 		/* FIND A ESTABLISHMENT ATTACHED FOR THIS USER */
 		const finder = {
-			admin: async (userId: string): Promise<string> => {
-				return;
+			admin: async (userId: string): Promise<void> => {},
+			proprietario: async (userId: string): Promise<EstablishmentEntity> => {
+				const establishment: EstablishmentEntity = await EstablishmentRepository.findByOwnerOrCollaborator(userId);
+				return !establishment ? null : establishment;
 			},
-			proprietario: async (userId: string) => {
-				const establishment: EstablishmentEntity = await this.establishmentRepository.findByOwnerOrCollaborator(userId);
-				return !establishment ? null : establishment.id;
+			colaborador: async (userId: string): Promise<EstablishmentEntity> => {
+				const establishment: EstablishmentEntity = await EstablishmentRepository.findByOwnerOrCollaborator(userId);
+				return !establishment ? null : establishment;
 			},
-			colaborador: async (userId: string) => {
-				const establishment: EstablishmentEntity = await this.establishmentRepository.findByOwnerOrCollaborator(userId);
-				return !establishment ? null : establishment.id;
-			},
-			cliente: async (userId: string) => {
-				return;
-			},
+			cliente: async (userId: string): Promise<void> => {}
 		};
 
-		const establishmentId: string | void = await finder[user.role](user.id);
+		const establishment: EstablishmentEntity | void = await finder[user.role](user.id);
 		return {
 			token: accessToken,
 			refreshToken: refreshToken,
@@ -74,7 +65,7 @@ export class LoginService {
 			expiresIn: `${process.env.ACCESS_TOKEN_EXPIRY}m`,
 			refreshExpiresIn,
 			user: user,
-			establishmentId,
+			establishment,
 		} as LoginResponseDTO;
 	}
 
@@ -112,7 +103,7 @@ export class LoginService {
 		refreshToken.isRevoked = false;
 		refreshToken.user = user;
 
-		await this.refreshTokenRepository.save(refreshToken);
+		await RefreshTokenRepository.save(refreshToken);
 
 		return { refreshToken: token, expiresIn: expiresAt };
 	}
@@ -120,7 +111,7 @@ export class LoginService {
 	public async validateRefreshToken(rawToken: string): Promise<RefreshTokenEntity> {
 		const tokenHash = this.hashToken(rawToken);
 
-		const token = await this.refreshTokenRepository.findByTokenHash(tokenHash);
+		const token = await RefreshTokenRepository.findByTokenHash(tokenHash);
 
 		if (!token) return null;
 		if (token.isRevoked) return null;
@@ -134,10 +125,10 @@ export class LoginService {
 
 	public async revokeRefreshToken(token: RefreshTokenEntity): Promise<void> {
 		token.isRevoked = true;
-		await this.refreshTokenRepository.save(token);
+		await RefreshTokenRepository.save(token);
 	}
 
 	public async logout(id: string): Promise<void> {
-		await this.refreshTokenRepository.logout(id);
+		await RefreshTokenRepository.delete(id);
 	}
 }

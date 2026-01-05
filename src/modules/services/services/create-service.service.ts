@@ -15,10 +15,6 @@ import { ServicesRepository } from "../repositories/services.repository";
 @Service()
 export class CreateServiceService {
 	constructor(
-		private readonly servicesRepository: ServicesRepository,
-		private readonly serviceTypeRepository: ServiceTypeRepository,
-		private readonly establishmentRepository: EstablishmentRepository,
-		//- Utils
 		private readonly converterUtils: ConverterUtils
 	) {}
 
@@ -33,14 +29,14 @@ export class CreateServiceService {
 			log.error(`Service duration is invalid or in format invalid. [${duration}]`);
 			throw new BadRequestException("O tempo de execução do serviço é inválido");
 		}
-		const serviceType: ServiceTypeEntity = await this.serviceTypeRepository.findById(serviceTypeId);
+		const serviceType: ServiceTypeEntity = await ServiceTypeRepository.findById(serviceTypeId);
 
 		if (!serviceType) {
 			log.error(`Service type not found with ID: [${serviceTypeId}]`);
 			throw new BadRequestException("Tipo de serviço não encontrado com o ID informado");
 		}
 
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
 		if (!establishment) {
 			log.error(`Establishment not found with ID: [${establishmentId}]`);
 			throw new BadRequestException("Estabelecimento não encontrado com o ID inforamdo");
@@ -55,7 +51,7 @@ export class CreateServiceService {
 		newService.serviceTypeId = serviceType.id;
 		newService.establishmentId = establishment.id;
 
-		const serviceCreated: ServicesEntity = await this.servicesRepository.save(newService);
+		const serviceCreated: ServicesEntity = await ServicesRepository.save(newService);
 
 		return {
 			id: serviceCreated.id,

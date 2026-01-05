@@ -10,7 +10,7 @@ import { ServiceTypeRepository } from "../repositories/servicetype.repository";
 
 @Service()
 export class FindServiceTypeService {
-	constructor(private readonly serviceTypeRepository: ServiceTypeRepository, private readonly converterUtils: ConverterUtils) {}
+	constructor(private readonly converterUtils: ConverterUtils) {}
 
 	public async findById(id: string): Promise<ServiceTypeResponseDTO> {
 		log.info(`Starting search for a service type by id [${id}]`);
@@ -20,7 +20,7 @@ export class FindServiceTypeService {
 			throw new InvalidArgumentException("O ID do tipo de serviço é inválido");
 		}
 
-		const serviceType: ServiceTypeEntity = await this.serviceTypeRepository.findById(id);
+		const serviceType: ServiceTypeEntity = await ServiceTypeRepository.findById(id);
 
 		if (!serviceType) {
 			log.error(`Service type is not found`);
@@ -55,7 +55,7 @@ export class FindServiceTypeService {
 			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório");
 		}
 
-		const servicesType: ServiceTypeEntity[] = await this.serviceTypeRepository.findByEstablishment(establishmentId);
+		const servicesType: ServiceTypeEntity[] = await ServiceTypeRepository.findByEstablishment(establishmentId);
 
 		if (servicesType.length === 0) {
 			log.error("The establishment does not yet have service types.");
@@ -82,7 +82,7 @@ export class FindServiceTypeService {
 			throw new InvalidArgumentException("O ID do segmento é obrigatório");
 		}
 
-		const servicesType: ServiceTypeEntity[] = await this.serviceTypeRepository.findBySegment(segmentId);
+		const servicesType: ServiceTypeEntity[] = await ServiceTypeRepository.findBySegment(segmentId);
 
 		if (servicesType.length === 0) {
 			log.error("The segment does not yet have service types.");
@@ -103,7 +103,7 @@ export class FindServiceTypeService {
 
 	public async findAll(): Promise<ServiceTypeResponseDTO[]> {
 		log.info(`Listing all services type`);
-		const servicesType: ServiceTypeEntity[] = await this.serviceTypeRepository.findAll();
+		const servicesType: ServiceTypeEntity[] = await ServiceTypeRepository.findAll();
 		if (servicesType.length === 0) {
 			log.error("Any service type founded yet");
 			throw new BadRequestException("Sem tipos de serviços cadastrados");

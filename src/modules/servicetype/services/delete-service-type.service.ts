@@ -7,7 +7,7 @@ import { ServiceTypeRepository } from "../repositories/servicetype.repository";
 
 @Service()
 export class DeleteServiceTypeService {
-	constructor(private readonly serviceTypeRepository: ServiceTypeRepository) {}
+	constructor() {}
 
 	public async delete(id: string): Promise<void> {
 		if (!id) {
@@ -15,7 +15,7 @@ export class DeleteServiceTypeService {
 			throw new InvalidArgumentException("O ID do tipo de serviço é obrigatório");
 		}
 
-		const serviceType: ServiceTypeEntity = await this.serviceTypeRepository.findById(id);
+		const serviceType: ServiceTypeEntity = await ServiceTypeRepository.findById(id);
 
 		if (!serviceType) {
 			log.warn(`Service type is not deleted. Service type not found`);
@@ -27,6 +27,6 @@ export class DeleteServiceTypeService {
 			throw new BadRequestException("Não é possível excluir este tipo de serviço pois tem serviços associado a este tipo.");
 		}
 
-		await this.serviceTypeRepository.delete(id);
+		await ServiceTypeRepository.delete(id);
 	}
 }

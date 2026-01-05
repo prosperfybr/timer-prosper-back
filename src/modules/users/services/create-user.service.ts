@@ -15,9 +15,6 @@ import { UserRepository } from "../repositories/users.repository";
 @Service()
 export class CreateUserService {
 	constructor(
-		//- Repositories
-		private readonly userRepository: UserRepository,
-		private readonly userPreferencesRepository: UserPreferencesRepository,
 		//- Utils
 		private readonly validatorUtils: ValidatorUtils,
 		private readonly formatterUtils: FormatterUtils
@@ -35,10 +32,11 @@ export class CreateUserService {
 		userToSave.role = newUserRole ? newUserRole : RolesEnum.CLIENT;
 		userToSave.cpf = cpf ? this.formatterUtils.removeCPFMask(cpf) : null;
 
+
 		let id: string = null;
 		let role: any = null;
 		try {
-			const { id: userCreatedId, role: userCreatedRole }: UserEntity = await this.userRepository.save(userToSave);
+			const { id: userCreatedId, role: userCreatedRole }: UserEntity = await UserRepository.save(userToSave);
 			id = userCreatedId;
 			role = userCreatedRole;
 		} catch (error) {
@@ -53,7 +51,7 @@ export class CreateUserService {
 		preferences.emailNotifications = true;
 		preferences.whatsappNotifications = true;
 
-		await this.userPreferencesRepository.save(preferences);
+		await UserPreferencesRepository.save(preferences);
 
 		return {
 			id,

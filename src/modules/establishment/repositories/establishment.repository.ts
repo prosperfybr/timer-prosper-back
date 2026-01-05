@@ -1,23 +1,9 @@
-import { DeleteResult, Repository } from "typeorm";
-
-import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { AppDataSource } from "../../../config/ormconfig";
+import { AppDataSource } from "@config/ormconfig";
 import { EstablishmentEntity } from "../models/entity/establishment.entity";
 
-@RepositoryDec()
-export class EstablishmentRepository {
-	private repository: Repository<EstablishmentEntity>;
-
-	constructor() {
-		this.repository = AppDataSource.getRepository(EstablishmentEntity);
-	}
-
-	public async save(establishment: EstablishmentEntity): Promise<EstablishmentEntity> {
-		return await this.repository.save(establishment);
-	}
-
-	public async findById(id: string): Promise<EstablishmentEntity> {
-		const establishment = await this.repository.findOne({
+export const EstablishmentRepository = AppDataSource.getRepository(EstablishmentEntity).extend({
+	async findById(id: string): Promise<EstablishmentEntity> {
+		const establishment = await this.findOne({
 			where: { id },
 			relations: ["user", "services", "segment"],
 			order: {
@@ -26,50 +12,31 @@ export class EstablishmentRepository {
 		});
 
 		return establishment;
-	}
-
-	public async findAll(): Promise<EstablishmentEntity[]> {
-		return await this.repository.find();
-	}
-
-	public async findAllByUser(userId: string): Promise<EstablishmentEntity[]> {
-		return await this.repository.find({ where: { userId } });
-	}
-
-	public async findByOwnerOrCollaborator(userId: string): Promise<EstablishmentEntity> {
-		const establishment: EstablishmentEntity = await this.repository
-				.createQueryBuilder("establishment")
-				.leftJoin("establishment.collaborators", "collaborator")
-				.where("establishment.userId = :id", { id: userId })
-				.orWhere("collaborator.userId = :id", { id: userId })
-				.leftJoinAndSelect("establishment.user", "owner")
-				.getOne();
+	},
+	async findAllByUser(userId: string): Promise<EstablishmentEntity[]> {
+		return await this.find({ where: { userId } });
+	},
+	async findByOwnerOrCollaborator(userId: string): Promise<EstablishmentEntity> {
+		const establishment: EstablishmentEntity = await this.createQueryBuilder("establishment")
+			.leftJoin("establishment.collaborators", "collaborator")
+			.where("establishment.userId = :id", { id: userId })
+			.orWhere("collaborator.userId = :id", { id: userId })
+			.leftJoinAndSelect("establishment.user", "owner")
+			.leftJoinAndSelect("establishment.segment", "segment")
+			.getOne();
 
 		return establishment;
-	}
-
-	public async delete(id: string): Promise<DeleteResult> {
-		return await this.repository.delete(id);
-	}
-
-	public async update(id: string, fieldsToUpdate: Partial<EstablishmentEntity>) {
-		return await this.repository.update(id, fieldsToUpdate);
-	}
-
-	public async findBySegment(segmentId: string): Promise<EstablishmentEntity[]> {
-		return await this.repository.find({ where: { segmentId }, relations: ["user", "segment"] });
-	}
-
-	public async findOneByIdentifier(identifier: string): Promise<EstablishmentEntity> {
+	},
+	async findBySegment(segmentId: string): Promise<EstablishmentEntity[]> {
+		return await this.find({ where: { segmentId }, relations: ["user", "segment"] });
+	},
+	async findOneByIdentifier(identifier: string): Promise<EstablishmentEntity> {
 		let isUUID: boolean = identifier.includes("-");
-
-		if (isUUID) {
-			return await this.findById(identifier);
-		} else {
+		if (isUUID) return await this.findById(identifier);
+		else {
 			const searchParam: string = `%${identifier.trim()}%`;
 
-			const establishment: EstablishmentEntity = await this.repository
-				.createQueryBuilder("establishment")
+			const establishment: EstablishmentEntity = await this.createQueryBuilder("establishment")
 				.where(`establishment.id = :searchParam`, { searchParam })
 				.orWhere(`establishment.code ILIKE :searchParam`, { searchParam }) //- Find by code
 				.orWhere(`establishment.tradeName ILIKE :searchParam`, { searchParam }) //- Find by Name
@@ -80,18 +47,16 @@ export class EstablishmentRepository {
 
 			return establishment;
 		}
-	}
-
-	public async findAllByIdentifier(identifier: string): Promise<EstablishmentEntity[]> {
+	},
+	async findAllByIdentifier(identifier: string): Promise<EstablishmentEntity[]> {
 		const searchParam: string = `%${identifier.trim()}%`;
 
-		const establishments: EstablishmentEntity[] = await this.repository
-			.createQueryBuilder("establishment")
+		const establishments: EstablishmentEntity[] = await this.createQueryBuilder("establishment")
 			.leftJoinAndSelect("establishment.user", "user")
 			.andWhere(`establishment.code ILIKE :searchParam OR establishment.tradeName ILIKE :searchParam`, { searchParam })
 			.orderBy("establishment.tradeName", "ASC")
 			.getMany();
 
 		return establishments;
-	}
-}
+	},
+});

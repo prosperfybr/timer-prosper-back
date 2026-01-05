@@ -16,13 +16,8 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 
 @Service()
 export class InviteService {
-	constructor(
-		private readonly establishmentRepository: EstablishmentRepository,
-		private readonly userRepository: UserRepository,
-		private readonly clientEstablshmentRepository: ClientEstablishmentRepository
-	) {}
+	constructor() {}
 
-	/** ESTABLISHMENT INVITES A CLIENT  **/
 	public async client(payload: InviteClientDTO): Promise<ClientEstablishmentResponseDTO> {
 		log.info("Inviting a new client to establishment");
 
@@ -37,8 +32,8 @@ export class InviteService {
 			throw new BadRequestException("O e-mail do cliente é obrigatório");
 		}
 
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(establishmentId);
-		const client: UserEntity = await this.userRepository.findByEmail(clientEmail);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
+		const client: UserEntity = await UserRepository.findByEmail(clientEmail);
 
 		if (!establishment) {
 			log.error(`Establishment not found with ID [${establishmentId}`);
@@ -52,7 +47,7 @@ export class InviteService {
 		} else {
 			log.info(`User founded by email`);
 
-			const invite: ClientEstablishmentEntity = await this.clientEstablshmentRepository.findByUserId(client.id);
+			const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findByUserId(client.id);
 			if (invite) {
 				log.warn(`This user has been already invited. Nothing to do now`);
 				throw new BadRequestException("O cliente já foi convidado");
@@ -79,8 +74,8 @@ export class InviteService {
 			throw new BadRequestException("O ID do cliente é obrigatório");
 		}
 
-		const client: UserEntity = await this.userRepository.findById(clientId);
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findOneByIdentifier(establishmentIdentifier);
+		const client: UserEntity = await UserRepository.findById(clientId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findOneByIdentifier(establishmentIdentifier);
 
 		if (!establishment) {
 			log.error(`Establishment not found with identifier [${establishmentIdentifier}`);
@@ -92,7 +87,7 @@ export class InviteService {
 			throw new BadRequestException("Cliente não encontrado");
 		}
 
-		const invite: ClientEstablishmentEntity = await this.clientEstablshmentRepository.findByUserId(client.id);
+		const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findByUserId(client.id);
 		if (invite) {
 			log.warn(`This user has been already request invite to establishment. Nothing to do now`);
 			throw new BadRequestException("O cliente já solicitou um convite para o estabelecimento");
@@ -116,7 +111,7 @@ export class InviteService {
 			throw new BadRequestException("A aprovação ou rejeição do convite é obrigatória");
 		}
 
-		const invite: ClientEstablishmentEntity = await this.clientEstablshmentRepository.findById(inviteId);
+		const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findById(inviteId);
 		if (!invite) {
 			log.error(`Invite not found by ID [${inviteId}`);
 			throw new BadRequestException("Convite não encontrado");
@@ -126,7 +121,7 @@ export class InviteService {
 		if (invite.status === ClientRequestStatusEnum.APPROVED) invite.approvedAt = new Date();
 		else invite.rejectedAt = new Date();
 
-		await this.clientEstablshmentRepository.update(invite.id, invite);
+		await ClientEstablishmentRepository.update(invite.id, invite);
 		log.info("Client is responded");
 		return this.treatResponse(invite);
 	}
@@ -141,7 +136,7 @@ export class InviteService {
 		newInvite.approvedAt = null;
 		newInvite.rejectedAt = null;
 
-		const inviteSaved: ClientEstablishmentEntity = await this.clientEstablshmentRepository.save(newInvite);
+		const inviteSaved: ClientEstablishmentEntity = await ClientEstablishmentRepository.save(newInvite);
 
 		log.info("User has been invited successfully");
 

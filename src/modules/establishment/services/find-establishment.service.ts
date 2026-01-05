@@ -11,19 +11,13 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { validate as validateUUID } from "uuid";
 import { ConverterUtils } from "@shared/utils/converter.utils";
-import { EstablishmentResponseDTO } from "../models/dto/establishment/establishment-response.dto";
-import { EstablishmentEntity } from "../models/entity/establishment.entity";
-import { EstablishmentRepository } from "../repositories/establishment.repository";
+import { EstablishmentResponseDTO } from "@modules/establishment/models/dto/establishment/establishment-response.dto";
+import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
+import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
 
 @Service()
 export class FindEstablishmentService {
-	constructor(
-		//- Repositories
-		private readonly establishmentRepository: EstablishmentRepository,
-		private readonly userRepository: UserRepository,
-		//- Utils
-		private readonly converterUtils: ConverterUtils
-	) {}
+	constructor(private readonly converterUtils: ConverterUtils) {}
 
 	public async findById(id: string): Promise<EstablishmentResponseDTO> {
 		if (!id || !validateUUID(id)) {
@@ -31,7 +25,7 @@ export class FindEstablishmentService {
 			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório e deve ser um UUID válido");
 		}
 
-		const establishment: EstablishmentEntity = await this.establishmentRepository.findById(id);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(id);
 
 		if (!establishment) {
 			log.error(`Establishment not founded by id`);
@@ -42,7 +36,7 @@ export class FindEstablishmentService {
 	}
 
 	public async findAll(): Promise<EstablishmentResponseDTO[]> {
-		const establishments: EstablishmentEntity[] = await this.establishmentRepository.findAll();
+		const establishments: EstablishmentEntity[] = await EstablishmentRepository.find();
 		return establishments.length > 0 ? establishments.map(this.treatData) : [];
 	}
 
@@ -52,7 +46,7 @@ export class FindEstablishmentService {
 			throw new InvalidArgumentException("O ID do proprietário é inválido");
 		}
 
-		const establishments: EstablishmentEntity[] = await this.userRepository.findUserEstablishments(userId);
+		const establishments: EstablishmentEntity[] = await UserRepository.findUserEstablishments(userId);
 		return establishments.length > 0 ? establishments.map(this.treatData) : [];
 	}
 
@@ -62,7 +56,7 @@ export class FindEstablishmentService {
 			return [];
 		}
 
-		const establishments: EstablishmentEntity[] = await this.establishmentRepository.findAllByIdentifier(identifier);
+		const establishments: EstablishmentEntity[] = await EstablishmentRepository.findAllByIdentifier(identifier);
 		return establishments.map(this.treatData);
 	}
 

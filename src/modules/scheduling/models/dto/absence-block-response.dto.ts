@@ -10,7 +10,7 @@ import { ServicesEntity } from "@modules/services/models/entity/services.entity"
 @Service()
 export class AbsenceBlockResponse {
 
-	constructor(private readonly collaboratorRepository: CollaboratorRepository, private readonly servicesRepository: ServicesRepository) {}
+	constructor() {}
 
 	public async toDto(availability: AbsenceBlockEntity | AbsenceBlockEntity[]): Promise<AbsenceBlockResponse.DTO[]> {
 		if (Array.isArray(availability)) {
@@ -25,8 +25,8 @@ export class AbsenceBlockResponse {
 	}
 
 	private async fillObject(availability: AbsenceBlockEntity): Promise<AbsenceBlockResponse.DTO> {
-		const collaborator: CollaboratorEntity | null = availability.collaboratorId ? await this.collaboratorRepository.findById(availability.collaboratorId) : null;
-		const service: ServicesEntity | null = availability.serviceId ? await this.servicesRepository.findById(availability.serviceId) : null;
+		const collaborator: CollaboratorEntity | null = availability.collaboratorId ? await CollaboratorRepository.findOne({ where: { id: availability.collaboratorId }, relations: ["user"]}) : null;
+		const service: ServicesEntity | null = availability.serviceId ? await ServicesRepository.findById(availability.serviceId) : null;
 
 		return {
 			id: availability.id,

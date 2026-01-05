@@ -9,10 +9,10 @@ import { ServiceTypeRepository } from "../repositories/servicetype.repository";
 
 @Service()
 export class UpdateServiceTypeService {
-	constructor(private readonly serviceTypeRepository: ServiceTypeRepository, private readonly validatorUtils: ValidatorUtils) {}
+	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
 	public async udpdate(payload: UpdateServiceTypeDTO): Promise<ServiceTypeResponseDTO> {
-		const serviceType: ServiceTypeEntity = await this.serviceTypeRepository.findById(payload.id);
+		const serviceType: ServiceTypeEntity = await ServiceTypeRepository.findById(payload.id);
 
 		if (!serviceType) {
 			log.error(`Service type not found by id. ID [${payload.id}]`);
@@ -26,7 +26,7 @@ export class UpdateServiceTypeService {
 			throw new BadRequestException("Não há nenhuma informação do tipo de serviço para atualizar");
 		}
 
-		await this.serviceTypeRepository.update(serviceType.id, fieldsToUpdate);
+		await ServiceTypeRepository.update(serviceType.id, fieldsToUpdate);
 		return null;
 	}
 }

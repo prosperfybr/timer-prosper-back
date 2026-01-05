@@ -7,7 +7,7 @@ import { EstablishmentRepository } from "../repositories/establishment.repositor
 
 @Service()
 export class DeleteEstablishmentService {
-	constructor(private readonly establishmentRepository: EstablishmentRepository) {}
+	constructor() {}
 
 	public async delete(id: string): Promise<void> {
 		if (!id) {
@@ -15,7 +15,7 @@ export class DeleteEstablishmentService {
 			throw new InvalidArgumentException("O ID do estabelecimento é inválido");
 		}
 
-		const result: DeleteResult = await this.establishmentRepository.delete(id);
+		const result: DeleteResult = await EstablishmentRepository.delete(id);
 
 		if (result.affected && result.affected == 0) {
 			log.warn(`Establishment is not deleted. Service type not found`);

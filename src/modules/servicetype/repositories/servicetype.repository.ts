@@ -1,47 +1,22 @@
-import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { DeleteResult, Repository, UpdateResult } from "typeorm";
-import { AppDataSource } from "../../../config/ormconfig";
+import { AppDataSource } from "@config/ormconfig";
 import { ServiceTypeEntity } from "../models/entity/servicetype.entity";
 
-@RepositoryDec()
-export class ServiceTypeRepository {
-	private repository: Repository<ServiceTypeEntity>;
-
-	constructor() {
-		this.repository = AppDataSource.getRepository(ServiceTypeEntity);
-	}
-
-	public async save(serviceType: ServiceTypeEntity): Promise<ServiceTypeEntity> {
-		return await this.repository.save(serviceType);
-	}
-
-	public async findById(id: string): Promise<ServiceTypeEntity> {
-		return await this.repository.findOne({ where: { id }, relations: ["services", "segment"] });
-	}
-
-	public async findAll(): Promise<ServiceTypeEntity[]> {
-		return await this.repository.find({ relations: ["segment"] });
-	}
-
-	public async findByEstablishment(establishmentId: string): Promise<ServiceTypeEntity[]> {
-		const query = this.repository
-			.createQueryBuilder("serviceType")
+export const ServiceTypeRepository = AppDataSource.getRepository(ServiceTypeEntity).extend({
+	async findById(id: string): Promise<ServiceTypeEntity> {
+		return await this.findOne({ where: { id }, relations: ["services", "segment"] });
+	},
+	async findAll(): Promise<ServiceTypeEntity[]> {
+		return await this.find({ relations: ["segment"] });
+	},
+	async findByEstablishment(establishmentId: string): Promise<ServiceTypeEntity[]> {
+		const query = this.createQueryBuilder("serviceType")
 			.innerJoin("serviceType.services", "service", "service.establishmentId = :establishmentId", { establishmentId })
 			.select(["serviceType.id", "serviceType.name", "serviceType.description", "serviceType.createdAt", "serviceType.updatedAt"])
 			.distinct(true)
 			.orderBy("serviceType.name", "ASC");
 		return await query.getMany();
-	}
-
-	public async findBySegment(segmentId: string): Promise<ServiceTypeEntity[]> {
-		return await this.repository.find({ where: { segmentId }, relations: ["services", "segment"] });
-	}
-
-	public async update(id: string, data: Partial<ServiceTypeEntity>): Promise<UpdateResult> {
-		return await this.repository.update(id, data);
-	}
-
-	public async delete(id: string): Promise<DeleteResult> {
-		return await this.repository.delete(id);
-	}
-}
+	},
+	async findBySegment(segmentId: string): Promise<ServiceTypeEntity[]> {
+		return await this.find({ where: { segmentId }, relations: ["services", "segment"] });
+	},
+});

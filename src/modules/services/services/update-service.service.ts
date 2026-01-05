@@ -9,14 +9,10 @@ import { ServicesRepository } from "../repositories/services.repository";
 
 @Service()
 export class UpdateServiceService {
-	constructor(
-		private readonly servicesRepository: ServicesRepository,
-		//- Utils
-		private readonly validatorUtils: ValidatorUtils
-	) {}
+	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
 	public async execute(payload: UpdateServiceDTO): Promise<ServiceResponseDTO> {
-		const service: ServicesEntity = await this.servicesRepository.findById(payload.id);
+		const service: ServicesEntity = await ServicesRepository.findById(payload.id);
 
 		if (!service) {
 			log.error(`Service not found with id. ID [${payload.id}]`);
@@ -30,8 +26,7 @@ export class UpdateServiceService {
 			throw new BadRequestException("Não há nenhuma informação do serviço para atualizar");
 		}
 
-		await this.servicesRepository.update(service.id, fieldsToUpdate);
-
+		await ServicesRepository.update(service.id, fieldsToUpdate);
 		return null;
 	}
 }

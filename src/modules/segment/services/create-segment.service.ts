@@ -8,7 +8,7 @@ import { SegmentRepository } from "../repositories/segment.repository";
 
 @Service()
 export class CreateSegmentService {
-	constructor(private readonly segmentRepository: SegmentRepository) {}
+	constructor() {}
 
 	public async execute(payload: CreateSegmentDTO): Promise<SegmentResponseDTO> {
 		const { name, active } = payload;
@@ -22,7 +22,7 @@ export class CreateSegmentService {
 		segment.name = name;
 		segment.isActive = active !== null && active !== undefined ? active : false;
 
-		const segmentSaved: SegmentEntity = await this.segmentRepository.save(segment);
+		const segmentSaved: SegmentEntity = await SegmentRepository.save(segment);
 
 		return {
 			id: segmentSaved.id,
