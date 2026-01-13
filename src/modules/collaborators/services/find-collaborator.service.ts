@@ -4,8 +4,10 @@ import { UserResponseDTO } from "@modules/users/models/dto/user-response.dto";
 import { Service } from "@shared/decorators/service.decorator";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { validate as validateUUID } from "uuid";
-import { CollaboratorResponseDTO } from "../models/dto/collaborator-response.dto";
+import { CollaboratorResponseDTO, CollaboratorStats } from "../models/dto/collaborator-response.dto";
 import { CollaboratorRepository } from "../repositories/collaborator.repository";
+import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
+import moment from "moment"
 
 @Service()
 export class FindCollaboratorService {
@@ -44,6 +46,61 @@ export class FindCollaboratorService {
 			collaboratorsGrouped.forEach(collaborator => collaborators.push(this.treatResponse(collaborator)))
 			return collaborators;
 		}
+	}
+
+	public async getCollaboratorStats(collaboratorId: string, ownerId?: string): Promise<CollaboratorStats> {
+		if (collaboratorId === "ALL" && (!ownerId || !validateUUID(ownerId))) {
+			log.error(`Owner ID is required and must be a valid UUID when collaboratorId is 'ALL', but is received: [${ownerId}]`);
+			throw new InvalidArgumentException("O ID do proprietário é obrigatório e deve ser um UUID válido quando o ID do colaborador for 'ALL'");
+		} else if (collaboratorId !== "ALL" && !validateUUID(collaboratorId)) {
+			log.error(`Collaborator ID must be a valid UUID, but is received: [${collaboratorId}]`);
+			throw new InvalidArgumentException("O ID do colaborador deve ser um UUID válido");
+		}
+
+		if (collaboratorId === "ALL") {
+			log.info("Finding stats for all collaborators of an establishment");
+			const collaboratorsRawStats: any[] = await EstablishmentRepository.findEstablishmentCollaboratorsStats(ownerId);
+			collaboratorsRawStats.pop();
+
+			const collaboratorStats: CollaboratorStats = {
+				collaboratorId: 'ALL',
+				appointmentsToday: 0,
+				totalClients: Number(collaboratorsRawStats[0].total_clients),
+				occupationRate: 0,
+				scheduledHours: 0
+			};
+
+			collaboratorsRawStats.forEach(stats => {
+				const { total_appointments, total_scheduled_duration } = stats;
+				collaboratorStats.appointmentsToday += Number(total_appointments);
+				collaboratorStats.scheduledHours += Number(total_scheduled_duration) / 60;
+			});
+
+			let occupationRate: number = this.calculateOccupationRate(collaboratorsRawStats);
+			collaboratorStats.occupationRate = occupationRate;
+			return collaboratorStats;
+		}
+
+		log.info(`Finding stats for collaborator ID: ${collaboratorId}`);
+		const collaboratorRawStats: any[] = await CollaboratorRepository.findCollaboratorStats(collaboratorId);
+
+		const collaboratorStats: CollaboratorStats = {
+				collaboratorId: 'ALL',
+				appointmentsToday: 0,
+				totalClients: Number(collaboratorRawStats[0].total_clients),
+				occupationRate: 0,
+				scheduledHours: 0
+			};
+
+			collaboratorRawStats.forEach(stats => {
+				const { total_appointments, total_scheduled_duration } = stats;
+				collaboratorStats.appointmentsToday += Number(total_appointments);
+				collaboratorStats.scheduledHours += Number(total_scheduled_duration) / 60;
+			});
+
+		let occupationRate: number = this.calculateOccupationRate(collaboratorRawStats);
+		collaboratorStats.occupationRate = occupationRate;
+		return collaboratorStats;
 	}
 
 	private treatResponse(collaboratorInformations: any[]): CollaboratorResponseDTO {
@@ -111,7 +168,6 @@ export class FindCollaboratorService {
 		} as CollaboratorResponseDTO;
 	}
 
-
 	private groupCollaborators<T extends { collaborator_id: string }>(rows: T[]): T[][] {
 		const map = new Map<string, T[]>();
 
@@ -123,5 +179,36 @@ export class FindCollaboratorService {
 
 		return Array.from(map.values());
 	}
-}
 
+	private timeStringToMinutes(timeStr: string): number {
+		if (!timeStr || typeof timeStr !== 'string') return 0;
+		const [ hours, minutes ] = timeStr.split(':').map(Number);
+		return hours * 60 + minutes;
+	}
+
+	private calculateOccupationRate(item: any[]): any {
+		if (!item || item.length === 0) return 0;
+
+		const firstRow = item[0];
+		const openingMinutes = this.timeStringToMinutes(firstRow.establishment_opening_time);
+		const closingMinutes = this.timeStringToMinutes(firstRow.establishment_closing_time);
+		//- Se houver um total de colaboradores é o esabelecimento que está buscando, caso não haja é a informação do colaborador.
+		const totalCollaborators = firstRow.total_collaborators ? Number(firstRow.total_collaborators) : 1; 
+
+		const capacityMinutesPerCollaborator = closingMinutes - openingMinutes;
+		const totalCapacityMinutes = capacityMinutesPerCollaborator * totalCollaborators;
+
+		const totalBlockedMinutes = item.reduce((acc, curr) => {
+			const start = new Date(curr.appointment_start_time).getTime();
+			const end = new Date(curr.appointment_end_time).getTime();
+			const durationMinutes = (end - start) / (1000 * 60);
+			return acc + durationMinutes;
+		}, 0);
+
+		const occupancyPercentage = totalCapacityMinutes > 0
+			? (totalBlockedMinutes / totalCapacityMinutes) * 100
+			: 0;
+
+		return parseFloat(occupancyPercentage.toFixed(2));
+	}
+}

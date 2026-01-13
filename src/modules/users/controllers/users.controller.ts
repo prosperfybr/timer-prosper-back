@@ -88,6 +88,20 @@ export class UserController {
 		}
 	}
 
+	@GetMapping("/adm/stats", { authenticated: true, roles: [RolesEnum.ADMIN] })
+	public async getAdminStats(req: Request, res: Response, next: NextFunction) {
+		try {
+			log.info("Getting admin stats");
+			const { id } = req.user;
+			const stats = await this.findUserService.getAdminStats(id);
+			log.info("Admin stats loaded successfully");
+			return res.status(HttpStatusCode.Ok).json({ message: "Estatísticas administrativas carregadas com sucesso", payload: stats });
+		} catch (error) {
+			log.error("An error has occurred while get admin stats. ERROR: ", error);
+			next(error);
+		}
+	}
+
 	@PatchMapping("", { authenticated: true })
 	public async update(req: Request, res: Response, next: NextFunction) {
 		try {

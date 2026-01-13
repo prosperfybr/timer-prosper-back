@@ -1,6 +1,7 @@
 import { log } from "@config/Logger";
 import { AppDataSource } from "@config/ormconfig";
 import { CollaboratorEntity } from "../models/entity/collaborator.entity";
+import moment from "moment";
 
 export const CollaboratorRepository = AppDataSource.getRepository(CollaboratorEntity).extend({
 	async findAllByEstablishmentId(establishmentId: string): Promise<CollaboratorEntity[]> {
@@ -47,5 +48,45 @@ export const CollaboratorRepository = AppDataSource.getRepository(CollaboratorEn
 			.getRawMany();
 		log.info("All collaborators for establishment consulted");
 		return result.length > 0 ? result : [];
+	},
+	async findCollaboratorStats(collaboratorId: string): Promise<any> {
+		const startTime = performance.now();
+		log.info(`Starting connection in database to find collaborator stats`);
+		log.info(`Finding stats for collaborator [${collaboratorId}]`);
+
+		const dateMoment = moment.utc(new Date(), "YYYY-MM-DD");
+		const startOfDay = dateMoment.clone().startOf("day").format("YYYY-MM-DD HH:mm:ss");
+		const endOfDay = dateMoment.clone().endOf("day").format("YYYY-MM-DD HH:mm:ss");
+		const dayOfWeek: Number = dateMoment.day();
+
+		log.info("Finding appointments between date: ", startOfDay, " and ", endOfDay);
+
+		const sql: string = `
+		SELECT
+		COUNT(appointment.id) as total_appointments,
+		SUM(CASE WHEN appointment.status = 'completed' THEN 1 ELSE 0 END) AS total_completed_appointments,
+		SUM(CASE WHEN appointment.status = 'cancelled' THEN 1 ELSE 0 END) AS total_cancelled_appointments,
+		SUM(CASE WHEN clientEstablishment.status = 'approved' THEN 1 ELSE 0 END) AS total_clients,
+		COALESCE(SUM(service.duration), 0) AS total_scheduled_duration,
+		establishmentHours.opening_time AS establishment_opening_time,
+		establishmentHours.closing_time AS establishment_closing_time,
+		appointment.start_time AS appointment_start_time,
+		appointment.end_time AS appointment_end_time
+		FROM collaborators collaborator
+						LEFT JOIN establishments establishment ON collaborator.establishment_id = establishment.id
+						LEFT JOIN appointments appointment ON appointment.collaborator_id = collaborator.id AND appointment.start_time BETWEEN '${startOfDay}' AND '${endOfDay}'
+						LEFT JOIN services service ON appointment.service_id = service.id
+						LEFT JOIN client_establishments clientEstablishment ON clientEstablishment.establishment_id = establishment.id
+						LEFT JOIN establishment_hours establishmentHours ON establishmentHours.establishment_id = establishment.id AND establishmentHours.day_of_week = '${dayOfWeek}'
+		WHERE collaborator.user_id = '${collaboratorId}'
+		GROUP BY collaborator.id, establishment.id, appointment.id, establishmentHours.id;`;
+
+		const result = await this.query(sql);
+		log.info(`Stats for collaborator [${collaboratorId}] consulted`);
+
+		const endTime = performance.now();
+		const executionTime = (endTime - startTime).toFixed(2);
+		log.info(`** [EXECUTION TIME: ${executionTime}ms] ** Connection in database to find collaborator stats finished`);
+		return result ? result : null;
 	},
 });

@@ -6,10 +6,14 @@ import { FormatterUtils } from "@shared/utils/formatter.utils";
 import { UserResponseDTO } from "../models/dto/user-response.dto";
 import { UserEntity } from "../models/entity/user.entity";
 import { UserRepository } from "../repositories/users.repository";
+import { AdminStatsDTO } from "../models/dto/admin-stats.dto";
+import { randomUUID } from "crypto";
+import moment from "moment";
 
 @Service()
 export class FindUserService {
-	constructor(private readonly formatterUtils: FormatterUtils) {}
+	constructor(private readonly formatterUtils: FormatterUtils,
+	) {}
 
 	public async getUser(id: string): Promise<UserResponseDTO> {
 		if (!id) {
@@ -48,8 +52,8 @@ export class FindUserService {
 				emailNotifications: null,
 				whatsappNotifications: null,
 			},
-			establsihmentId: user.establishments ? user.establishments[0].id : null,
-			establishments: user.establishments,
+			establsihmentId: user.establishments && user.establishments.length > 0 ? user.establishments[0].id : null,
+			establishments: user.establishments && user.establishments.length > 0 ? user.establishments : [],
 		} as UserResponseDTO;
 	}
 
@@ -63,5 +67,46 @@ export class FindUserService {
 			profileComplete: user.profileComplete,
 			establishments: user.establishments,
 		}));
+	}
+
+	public async getAdminStats(id: string): Promise<AdminStatsDTO> {
+		const { mainResult, recentEstablishments } = await UserRepository.getAdminStats();
+
+		const mainInfo = mainResult[0];
+
+		const stats: AdminStatsDTO = {
+			systemStats: {
+				totalEstablishments: Number(mainInfo.total_establishments),
+				totalUsers: Number(mainInfo.total_users),
+				totalAppointments: Number(mainInfo.month_appointments),
+				monthlyRevenue: 0,
+				newEstablishmentsThisMonth: Number(mainInfo.new_establishments_month),
+				newUsersThisWeek: Number(mainInfo.new_users_week),
+				activeSubscriptions: 0,
+				churnRate: 0,
+			},
+			establishmentsByPlan: {
+				basic: 0,
+				professional: 0,
+				enterprise: 0
+			},
+			recentEstablishments: recentEstablishments.map(est => ({
+				id: est.id,
+				tradeName: est.trade_name,
+				ownerName: est.owner_name,
+				planId: randomUUID(),
+				status: 'active',
+				createdAt: est.created_at,
+				city: est.city,
+			})),
+			growthData: mainResult.map(main => ({
+				month: moment().format("MMM"),
+				establishments: main.growth_establishments_pct,
+				users: main.growth_users_pct,
+				revenue: 0
+			}))
+		};
+
+		return stats;
 	}
 }

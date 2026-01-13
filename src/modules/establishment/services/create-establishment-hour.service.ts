@@ -78,7 +78,6 @@ export class CreateEstablishmentHourService {
 		//- Save all establishment hours correct
 		if (establishmentHours.length > 0) {
 			log.info(`Saving all [${establishmentHours.length}] establishment hours`);
-			console.log(establishmentHours);
 			await EstablishmentHourRepository.save(establishmentHours);
 			log.info(`Establishment hours saved successfully`);
 		} else if (establishmentHours.length === 0 || hasErrors) {

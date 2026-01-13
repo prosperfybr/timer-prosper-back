@@ -17,3 +17,12 @@ export interface CollaboratorResponseDTO {
 	createdAt?: Date;
 	updatedAt?: Date;
 }
+
+
+export interface CollaboratorStats {
+  collaboratorId: string;
+  appointmentsToday: number;
+  totalClients: number;
+  occupationRate: number;
+  scheduledHours: number;
+}
