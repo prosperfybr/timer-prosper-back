@@ -16,6 +16,7 @@ import { AbsenceBlockTypeEnum } from "../models/enums/absence-block-type.enum";
 import { AbsenceBlockRepository } from "../repositories/absence-block.repository";
 import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
 import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CreateAbsenceBlockService {
@@ -26,6 +27,7 @@ export class CreateAbsenceBlockService {
 		private readonly formatterUtils: FormatterUtils,
 	) {}
 
+	@Track()
 	public async execute(payload: CreateAbsenceBlockDTO): Promise<AbsenceBlockResponse.DTO[]> {
 		log.info("Creating a new absence for service or collaborator");
 

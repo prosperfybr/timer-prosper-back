@@ -3,6 +3,7 @@ import { Service } from "@shared/decorators/service.decorator";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { AbsenceBlockResponse } from "../models/dto/absence-block-response.dto";
 import { AbsenceBlockRepository } from "../repositories/absence-block.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindAbsenceBlockService {
@@ -11,6 +12,7 @@ export class FindAbsenceBlockService {
 		private readonly mapper: AbsenceBlockResponse,
 	) {}
 
+	@Track()
 	public async find(establishmentId: string): Promise<AbsenceBlockResponse.DTO[]> {
 		log.info("Finding all absences in establishment");
 

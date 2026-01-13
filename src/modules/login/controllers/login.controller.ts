@@ -9,6 +9,7 @@ import { DoLoginDTO } from "../models/dto/do-login.dto";
 import { LoginResponseDTO } from "../models/dto/login-response.dto";
 import { RefreshTokenEntity } from "../models/entity/refresh-token.entity";
 import { LoginService } from "../services/login.service";
+import { ControllerLog } from "@shared/decorators/logs/controller.decorator";
 
 @RequestMapping("auth")
 @RestController()
@@ -16,10 +17,9 @@ export class LoginController {
 	constructor(private readonly loginService: LoginService) {}
 
 	@PostMapping("/login")
+	@ControllerLog()
 	public async login(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Request received to log in a user");
-
 			const login: DoLoginDTO = req.body as DoLoginDTO;
 			const { token, refreshToken, type, expiresIn, refreshExpiresIn, user, establishment }: LoginResponseDTO = await this.loginService.doLogin(login, req.ip, req.get("User-Agent"));
 
@@ -29,8 +29,6 @@ export class LoginController {
 				sameSite: "strict",
 				expires: refreshExpiresIn,
 			});
-
-			log.info("User logged in successfully");
 
 			delete user.establishments;
 			delete user.password;
@@ -53,6 +51,7 @@ export class LoginController {
 	}
 
 	@PostMapping("/refresh")
+	@ControllerLog()
 	public async getUser(req: Request, res: Response, next: NextFunction) {
 		try {
 			const rawRefreshToken = req.cookies?.refreshToken;
@@ -98,6 +97,7 @@ export class LoginController {
 	}
 
 	@PostMapping("/logout", { authenticated: true })
+	@ControllerLog()
 	public async logout(req: Request, res: Response, next: NextFunction) {
 		try {
 			const { id } = req.user;

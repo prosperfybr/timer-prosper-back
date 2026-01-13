@@ -6,11 +6,13 @@ import { SegmentResponseDTO } from "../models/dto/segment-response.dto";
 import { UpdateSegmentDTO } from "../models/dto/update-segment.dto";
 import { SegmentEntity } from "../models/entity/segment.entity";
 import { SegmentRepository } from "../repositories/segment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class UpdateSegmentService {
 	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
+	@Track()
 	public async udpdate(payload: UpdateSegmentDTO): Promise<SegmentResponseDTO> {
 		const segment: SegmentEntity = await SegmentRepository.findById(payload.id);
 

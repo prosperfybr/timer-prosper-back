@@ -8,11 +8,13 @@ import { UpdateUserDTO } from "../models/dto/update-user.dto";
 import { UserResponseDTO } from "../models/dto/user-response.dto";
 import { UserEntity } from "../models/entity/user.entity";
 import { UserRepository } from "../repositories/users.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class UpdateUserService {
 	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
+	@Track()
 	public async execute(id: string, userToUpdate: UpdateUserDTO): Promise<UserResponseDTO> {
 		const user: UserEntity = await UserRepository.findById(id);
 

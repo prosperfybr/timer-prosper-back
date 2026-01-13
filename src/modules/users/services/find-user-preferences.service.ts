@@ -5,11 +5,13 @@ import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentExce
 import { UserPreferencesResponseDTO } from "../models/dto/user-preferences-response.dto";
 import { UserPreferencesEntity } from "../models/entity/user-preferences.entity";
 import { UserPreferencesRepository } from "../repositories/user-preferences.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindUserPreferencesService {
 	constructor() {}
 
+	@Track()
 	public async getPreferences(userId: string): Promise<UserPreferencesResponseDTO> {
 		if (!userId) {
 			log.error(`User ID is required, but is received: [${userId}]`);

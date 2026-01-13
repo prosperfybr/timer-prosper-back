@@ -12,6 +12,7 @@ import { EstablishmentHourResponseDTO } from '../models/dto/establishment/establ
 import { CreateEstablishmentHourService } from '../services/create-establishment-hour.service';
 import { DeleteEstablishmentHourService } from '../services/delete-establishment-hour.service';
 import { FindEstablishmentHourService } from '../services/find-establishment-hour.service';
+import { ControllerLog } from '@shared/decorators/logs/controller.decorator';
 
 @RequestMapping('establishment-hours')
 @RestController()
@@ -23,12 +24,11 @@ export class EstablishmentHourController {
 	) {}
 
 	@PostMapping('', { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
+	@ControllerLog()
 	public async create(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info('Creating a new hour for establishment');
 			const payload: CreateEstablishmentHourDTO = req.body as CreateEstablishmentHourDTO;
 			await this.createEstablishmentHourService.execute(payload);
-			log.info('Hour for establishent created successfully');
 			return res.status(HttpStatusCode.Created).json({
 				message: 'Horário de funcionamento do estabelecimento criado com sucesso.',
 				payload: null,
@@ -40,13 +40,12 @@ export class EstablishmentHourController {
 	}
 
 	@GetMapping('/all/:establishmentId', { authenticated: true })
+	@ControllerLog()
 	public async findAllEstablishments(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info('Finding all establishments hours');
 			const establishmentId: string = req.params.establishmentId;
 			const establishmentHours: EstablishmentHourResponseDTO =
 				await this.findEstablishmentHourService.execute(establishmentId);
-			log.info('All establishments founded successfully');
 			return res.status(HttpStatusCode.Ok).json({
 				message: 'Horários de funcionamento do estabelecimento listado com sucesso',
 				payload: establishmentHours,
@@ -58,12 +57,11 @@ export class EstablishmentHourController {
 	}
 
 	@DeleteMapping('/:id', { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
+	@ControllerLog()
 	public async delete(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info('Deleting a establishment');
 			const id: string = req.params.id;
 			await this.deleteEstablishmentHourService.execute(id);
-			log.info('Establishment deleted successfully');
 			return res
 				.status(HttpStatusCode.Ok)
 				.json({ message: 'Horário de funcionamento do estabelecimento deletado com sucesso.' });

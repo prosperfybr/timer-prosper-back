@@ -4,11 +4,13 @@ import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentExce
 import { UserPreferencesEntity } from "../models/entity/user-preferences.entity";
 import { UserPreferencesRepository } from "../repositories/user-preferences.repository";
 import { UserRepository } from "../repositories/users.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class DeleteUserService {
 	constructor() {}
 
+	@Track()
 	public async execute(id: string): Promise<void> {
 		if (!id) {
 			log.error(`User id is required, but id is: [${id}]`);

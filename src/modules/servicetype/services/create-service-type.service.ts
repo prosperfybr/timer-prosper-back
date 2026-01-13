@@ -7,11 +7,13 @@ import { CreateServiceTypeDTO } from "../models/dto/create-service-type.dto";
 import { ServiceTypeResponseDTO } from "../models/dto/service-type-response.dto";
 import { ServiceTypeEntity } from "../models/entity/servicetype.entity";
 import { ServiceTypeRepository } from "../repositories/servicetype.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CreateServiceTypeService {
 	constructor() {}
 
+	@Track()
 	public async execute(payload: CreateServiceTypeDTO): Promise<ServiceTypeResponseDTO> {
 		const { name, description, segmentId } = payload;
 

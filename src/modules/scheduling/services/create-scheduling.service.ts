@@ -24,6 +24,7 @@ import { AbsenceBlockRepository } from '../repositories/absence-block.repository
 import { FindSchedulingService } from './find-scheduling.service';
 import { SchedulingResponse } from '../models/dto/scheduling-response.dto';
 import { AppointmentStatusEnum } from '../models/enums/appointment-status.enum';
+import { Track } from '@shared/decorators/logs/track.decorator';
 
 @Service()
 export class CreateSchedulingService {
@@ -59,6 +60,7 @@ export class CreateSchedulingService {
 		private readonly findSchedulingService: FindSchedulingService
 	) {}
 
+	@Track()
 	public async execute(payload: CreateSchedulingDTO): Promise<any> {
 		log.info(`Creating a new scheduling for client-id [${payload.clientId}]`);
 		this.validate(payload);

@@ -21,6 +21,7 @@ import { CollaboratorEntity } from "../models/entity/collaborator.entity";
 import { CollaboratorServicesRepository } from "../repositories/collaborator-services.repository";
 import { CollaboratorRepository } from "../repositories/collaborator.repository";
 import { In } from "typeorm";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CreateCollaboratorService {
@@ -45,6 +46,7 @@ export class CreateCollaboratorService {
 		private readonly formatterUtils: FormatterUtils
 	) {}
 
+	@Track()
 	public async execute(collaborator: CreateCollaboratorDTO): Promise<CollaboratorResponseDTO> {
 		log.info("Creating a new collaborator");
 		const { name, surname, collaboratorFunction, specialty, servicesIds, establishmentId, hiringDate, email, whatsApp } = collaborator;

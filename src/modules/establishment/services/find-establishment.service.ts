@@ -14,11 +14,13 @@ import { ConverterUtils } from "@shared/utils/converter.utils";
 import { EstablishmentResponseDTO } from "@modules/establishment/models/dto/establishment/establishment-response.dto";
 import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
 import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindEstablishmentService {
 	constructor(private readonly converterUtils: ConverterUtils) {}
 
+	@Track()
 	public async findById(id: string): Promise<EstablishmentResponseDTO> {
 		if (!id || !validateUUID(id)) {
 			log.error(`ID is required and must be a valid UUID, but ID value is [${id}]`);
@@ -35,11 +37,13 @@ export class FindEstablishmentService {
 		return this.treatData(establishment);
 	}
 
+	@Track()
 	public async findAll(): Promise<EstablishmentResponseDTO[]> {
 		const establishments: EstablishmentEntity[] = await EstablishmentRepository.find();
 		return establishments.length > 0 ? establishments.map(this.treatData) : [];
 	}
 
+	@Track()
 	public async findAllByUser(userId: string): Promise<EstablishmentResponseDTO[]> {
 		if (!userId) {
 			log.error(`Owner ID is invalid`);
@@ -50,6 +54,7 @@ export class FindEstablishmentService {
 		return establishments.length > 0 ? establishments.map(this.treatData) : [];
 	}
 
+	@Track()
 	public async filterEstablishmentByIdentifier(identifier: string): Promise<EstablishmentResponseDTO[]> {
 		if (!identifier) {
 			log.warn(`Any identifier is received. [${identifier}]`);

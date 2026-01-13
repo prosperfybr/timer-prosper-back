@@ -7,6 +7,7 @@ import { ServiceResponseDTO } from "../models/dto/service-response.dto";
 import { PaginatedResult, ServiceRequestFilter } from "../models/dto/services-request-filter.dto";
 import { ServicesEntity } from "../models/entity/services.entity";
 import { ServicesRepository } from "../repositories/services.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindServiceService {
@@ -14,6 +15,7 @@ export class FindServiceService {
 
 	constructor(private readonly converterUtils: ConverterUtils) {}
 
+	@Track()
 	public async findServiceById(id: string): Promise<ServiceResponseDTO> {
 		log.info(`Finding a service with ID [${id}]`);
 
@@ -39,6 +41,7 @@ export class FindServiceService {
 		} as ServiceResponseDTO;
 	}
 
+	@Track()
 	public async findServiceByIds(ids: string[]): Promise<ServiceResponseDTO[]> {
 		log.info(`Finding a service with ID [${ids}]`);
 
@@ -67,6 +70,7 @@ export class FindServiceService {
 		);
 	}
 
+	@Track()
 	public async findService(filter: ServiceRequestFilter): Promise<PaginatedResult<ServicesEntity>> {
 		const limit: number = parseInt(filter.limit || `${this.DEFAULT_LIMIT}`, 10);
 		const page: number = parseInt(filter.page || "1", 10);

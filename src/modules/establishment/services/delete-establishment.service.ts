@@ -4,11 +4,13 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { DeleteResult } from "typeorm";
 import { EstablishmentRepository } from "../repositories/establishment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class DeleteEstablishmentService {
 	constructor() {}
 
+	@Track()
 	public async delete(id: string): Promise<void> {
 		if (!id) {
 			log.error(`Establishment ID is required, but the value received is [${id}]`);

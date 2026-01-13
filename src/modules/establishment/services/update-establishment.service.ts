@@ -6,11 +6,13 @@ import { EstablishmentResponseDTO } from "../models/dto/establishment/establishm
 import { UpdateEstablishmentDTO } from "../models/dto/establishment/update-establishment.dto";
 import { EstablishmentEntity } from "../models/entity/establishment.entity";
 import { EstablishmentRepository } from "../repositories/establishment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class UpdateEstablishmentService {
 	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
+	@Track()
 	public async execute(payload: UpdateEstablishmentDTO): Promise<EstablishmentResponseDTO> {
 		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(payload.id);
 

@@ -6,11 +6,13 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { SegmentEntity } from "../models/entity/segment.entity";
 import { SegmentRepository } from "../repositories/segment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class DeleteSegmentService {
 	constructor() {}
 
+	@Track()
 	public async delete(id: string): Promise<void> {
 		if (!id) {
 			log.error(`ID is required, but ID received is [${id}]`);

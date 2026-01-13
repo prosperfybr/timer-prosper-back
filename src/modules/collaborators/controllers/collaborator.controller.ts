@@ -16,6 +16,7 @@ import { CreateCollaboratorService } from "../services/create-collaborator.servi
 import { DeleteCollaboratorService } from "../services/delete-collaborator.service";
 import { FindCollaboratorService } from "../services/find-collaborator.service";
 import { UpdateCollaboratorService } from "../services/update-collaborator.service";
+import { ControllerLog } from "@shared/decorators/logs/controller.decorator";
 
 @RequestMapping("collaborator")
 @RestController()
@@ -28,12 +29,11 @@ export class CollaboratorController {
 	) {}
 
 	@PostMapping("", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
+	@ControllerLog()
 	public async create(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Request received to create a new collaborator");
 			const collaborator: CreateCollaboratorDTO = req.body as CreateCollaboratorDTO;
 			const collaboratorCreated: CollaboratorResponseDTO = await this.createCollaboratorService.execute(collaborator);
-			log.info("New collaborator created successfully");
 			return res.status(HttpStatusCode.Created).json({ message: "Colaborador criado com sucesso.", payload: collaboratorCreated });
 		} catch (error) {
 			log.error("An error has occurred while save a new collaborator. ERROR: ", error);
@@ -42,12 +42,11 @@ export class CollaboratorController {
 	}
 
 	@GetMapping("/:collaboratorId", { authenticated: true })
+	@ControllerLog()
 	public async getCollaborator(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Finding collaborator informations");
 			const id = req.params.collaboratorId;
 			const collaborator: CollaboratorResponseDTO = await this.findCollaboratorService.execute(id);
-			log.info("Collaborator informations loaded successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Colaborador encontrado com sucesso", payload: collaborator });
 		} catch (error) {
 			log.error("An error has occurred while find collaborator by id. ERROR: ", error);
@@ -56,9 +55,9 @@ export class CollaboratorController {
 	}
 
 	@GetMapping("/all/establishment/:establishmentId", { authenticated: true })
+	@ControllerLog()
 	public async getAllEstablishmentCollaborators(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Finding all establishment collaborators");
 			const establishmentId: string = req.params.establishmentId;
 			const userRole: RolesEnum = req.user.role as RolesEnum;
 			if ((userRole === RolesEnum.ADMIN || userRole === RolesEnum.CLIENT || userRole === RolesEnum.COLLABORATOR) && (!establishmentId || establishmentId === 'undefined')) {
@@ -66,7 +65,6 @@ export class CollaboratorController {
 				return res.status(HttpStatusCode.Ok).json({ message: "Não há colaboradores para carregar no momento" });
 			}
 			const collaborators: CollaboratorResponseDTO[] = await this.findCollaboratorService.getAllEstablishmentCollaborators(establishmentId);
-			log.info("All collaborators founded");
 			return res.status(HttpStatusCode.Ok).json({ message: "Colaboradores do estabelecimento listados com sucesso", payload: collaborators });
 		} catch (error) {
 			log.error("An error has occurred while find all establishment collaborators. ERROR: ", error);
@@ -75,12 +73,11 @@ export class CollaboratorController {
 	}
 
 	@PatchMapping("", { authenticated: true })
+	@ControllerLog()
 	public async update(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Updating collaborator informations");
 			const userToUpdate: UpdateCollaboratorDTO = req.body as UpdateCollaboratorDTO;
 			const collaboratorUpdated: CollaboratorResponseDTO = await this.updateCollaboratorService.execute(userToUpdate.id, userToUpdate);
-			log.info("Collaborator informations updated successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Cadastro do colaborador atualizado com sucesso.", payload: collaboratorUpdated });
 		} catch (error) {
 			log.error("An error has occurred while update collaborator informations. ERROR: ", error);
@@ -89,12 +86,11 @@ export class CollaboratorController {
 	}
 
 	@PatchMapping("/toggle-status/:collaboratorId", { authenticated: true })
+	@ControllerLog()
 	public async toggleStatus(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Toggle collaborator status");
 			const id = req.params.collaboratorId;
 			await this.updateCollaboratorService.toggleStatus(id);
-			log.info("Collaborator informations updated successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Cadastro do colaborador atualizado com sucesso." });
 		} catch (error) {
 			log.error("An error has occurred while update collaborator informations. ERROR: ", error);
@@ -103,12 +99,11 @@ export class CollaboratorController {
 	}
 
 	@DeleteMapping("/:id", { authenticated: true })
+	@ControllerLog()
 	public async delete(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Excluding collaborator");
 			const id = req.params.id;
 			await this.deleteCollaboratorService.execute(id);
-			log.info("Collaborator deleted successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Colaborador deletado com sucesso" });
 		} catch (error) {
 			log.error("An error has occurred while delete collaborator. ERROR: ", error);
@@ -117,13 +112,12 @@ export class CollaboratorController {
 	}
 
 	@GetMapping("/stats/:collaboratorId", { authenticated: true })
+	@ControllerLog()
 	public async getCollaboratorStats(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Getting collaborator stats");
 			const userId = req.user.id;
 			const collaboratorId = req.params.collaboratorId;
 			const stats = await this.findCollaboratorService.getCollaboratorStats(collaboratorId, userId);
-			log.info("Collaborator stats loaded successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Estatísticas do colaborador carregadas com sucesso", payload: stats });
 		} catch (error) {
 			log.error("An error has occurred while get collaborator stats. ERROR: ", error);

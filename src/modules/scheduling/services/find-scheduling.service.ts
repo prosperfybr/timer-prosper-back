@@ -16,11 +16,13 @@ import moment from "moment";
 import { DateRange, extendMoment } from "moment-range";
 import { AbsenceBlockRepository } from "../repositories/absence-block.repository";
 import { AppointmentRepository } from "../repositories/appointment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindSchedulingService {
 	constructor() {}
 
+	@Track()
 	public async findAvailableSlots(
 		establishmentId: string,
 		date: string,
@@ -153,59 +155,45 @@ export class FindSchedulingService {
 		return allSlots;
 	}
 
+	@Track()
 	public async findAllClientScheduling(id: string): Promise<SchedulingResponse.SLOT[]> {
 		log.info("Finding all schedulings for client or service or collaborator");
-		let appointments = null;
-
-		const userCollaborator: UserEntity = await UserRepository.findById(id);
-		if (userCollaborator) {
-			const collaborator: CollaboratorEntity = await CollaboratorRepository.findByUserId(userCollaborator.id);
-			id = collaborator ? collaborator.id : id;
-		}
-
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(id);
-		if (establishment) {
-			const collaborators: CollaboratorEntity[] = await CollaboratorRepository.findAllByEstablishmentId(establishment.id);
-			const collaboratorsIds: string[] = collaborators.map(collaborator => collaborator.id);
-			appointments = await AppointmentRepository.findAllByEstablishmentCollaborators(collaboratorsIds);
-		} else appointments = await AppointmentRepository.findAllByIdentifierClient(id);
-
+		
+		const appointments = await AppointmentRepository.findAppointmentsById(id);
+		
 		if (!appointments || appointments.length === 0) {
-			log.info(`This client | service | collaborator has not appointments yet`);
+			log.info(`No appointments found for identifier: ${id}`);
 			return [];
 		}
 
-		const clientAppointments: SchedulingResponse.SLOT[] = [];
+		log.info("All schedulings for client or service or collaborator founded");
+		return appointments.map((app) => {
+			const collab = app.collaborator;
+			const est = collab?.establishment;
 
-		for (const appointment of appointments) {
-			const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: appointment.collaboratorId }, relations: ["user", "establishment"]});
-			const service: ServicesEntity = await ServicesRepository.findById(appointment.serviceId);
-			const client: UserEntity = await UserRepository.findById(appointment.clientId);
-
-			clientAppointments.push({
-						date: moment(appointment.startTime).format("YYYY-MM-DD"),
-						time: null,
-						collaboratorId: collaborator.id,
-						collaboratorName: collaborator.user.name,
-						available: true,
-						serviceId: service.id,
-						serviceName: service.name,
-						servicePrice: service.price,
-						serviceDuration: service.duration,
-						establishmentName: collaborator.establishment.tradeName,
-						id: appointment.id,
-						establishmentId: collaborator.establishment.tradeName,
-						clientId: client.id,
-						clientName: client.name,
-						clientWhatsapp: client.whatsApp,
-						startTime: moment(appointment.startTime).format('HH:mm'),
-						endTime: moment(appointment.endTime).format('HH:mm'),
-						status: appointment.status,
-						notes: appointment.notes,
-						createdAt: appointment.createdAt.toString(),
-						updatedAt: appointment.updatedAt.toString(),
-					});
-		}
-		return clientAppointments;
+			return {
+				date: moment(app.startTime).format("YYYY-MM-DD"),
+				time: null,
+				collaboratorId: collab?.id,
+				collaboratorName: collab?.user?.name,
+				available: true,
+				serviceId: app.service?.id,
+				serviceName: app.service?.name,
+				servicePrice: app.service?.price,
+				serviceDuration: app.service?.duration,
+				establishmentName: est?.tradeName,
+				id: app.id,
+				establishmentId: est?.id,
+				clientId: app.client?.id,
+				clientName: app.client?.name,
+				clientWhatsapp: app.client?.whatsApp,
+				startTime: moment(app.startTime).format("HH:mm"),
+				endTime: moment(app.endTime).format("HH:mm"),
+				status: app.status,
+				notes: app.notes,
+				createdAt: app.createdAt.toString(),
+				updatedAt: app.updatedAt.toString(),
+			};
+		});
 	}
 }

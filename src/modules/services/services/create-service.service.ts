@@ -11,6 +11,7 @@ import { CreateServiceDTO } from "../models/dto/create-service.dto";
 import { ServiceResponseDTO } from "../models/dto/service-response.dto";
 import { ServicesEntity } from "../models/entity/services.entity";
 import { ServicesRepository } from "../repositories/services.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CreateServiceService {
@@ -18,6 +19,7 @@ export class CreateServiceService {
 		private readonly converterUtils: ConverterUtils
 	) {}
 
+	@Track()
 	public async execute(payload: CreateServiceDTO): Promise<ServiceResponseDTO> {
 		log.info("Starting creation for a new service");
 

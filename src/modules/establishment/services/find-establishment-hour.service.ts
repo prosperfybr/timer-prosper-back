@@ -8,6 +8,7 @@ import {
 } from '@modules/establishment/models/dto/establishment/establishment-hour-response.dto';
 import { EstablishmentHourEntity } from '@modules/establishment/models/entity/establishment-hour.entity';
 import { EstablishmentHourRepository } from '@modules/establishment/repositories/establishment-hour.repository';
+import { Track } from '@shared/decorators/logs/track.decorator';
 
 @Service()
 export class FindEstablishmentHourService {
@@ -16,6 +17,7 @@ export class FindEstablishmentHourService {
 		private readonly formatterUtils: FormatterUtils,
 	) {}
 
+	@Track()
 	public async execute(establishmentId: string): Promise<EstablishmentHourResponseDTO> {
 		if (!establishmentId) {
 			log.error(`Establishment ID is required, but received [${establishmentId}]`);

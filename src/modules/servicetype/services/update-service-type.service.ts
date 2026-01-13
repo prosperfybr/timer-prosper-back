@@ -6,11 +6,13 @@ import { ServiceTypeResponseDTO } from "../models/dto/service-type-response.dto"
 import { UpdateServiceTypeDTO } from "../models/dto/update-service-type.dto";
 import { ServiceTypeEntity } from "../models/entity/servicetype.entity";
 import { ServiceTypeRepository } from "../repositories/servicetype.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class UpdateServiceTypeService {
 	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
+	@Track()
 	public async udpdate(payload: UpdateServiceTypeDTO): Promise<ServiceTypeResponseDTO> {
 		const serviceType: ServiceTypeEntity = await ServiceTypeRepository.findById(payload.id);
 
