@@ -11,6 +11,7 @@ import { ClientEstablishmentRepository } from "@modules/establishment/repositori
 import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
 import { UserEntity } from "@modules/users/models/entity/user.entity";
 import { UserRepository } from "@modules/users/repositories/users.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 
@@ -18,6 +19,7 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 export class InviteService {
 	constructor() {}
 
+	@Track()
 	public async client(payload: InviteClientDTO): Promise<ClientEstablishmentResponseDTO> {
 		log.info("Inviting a new client to establishment");
 
@@ -59,6 +61,7 @@ export class InviteService {
 	}
 
 	/** CLIENT REQUEST TO ESTABLISHMENT **/
+	@Track()
 	public async establishment(payload: InviteEstablishmentDTO): Promise<ClientEstablishmentResponseDTO> {
 		log.info("Client requesting to establishment");
 
@@ -97,6 +100,7 @@ export class InviteService {
 		return this.createInvite(client.id, establishment.id, ClientRequestByEnum.CLIENT);
 	}
 
+	@Track()
 	public async respond(payload: RespondInviteDTO): Promise<ClientEstablishmentResponseDTO> {
 		log.info("Responding a client");
 		const { inviteId, approve } = payload;

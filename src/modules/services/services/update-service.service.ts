@@ -6,11 +6,13 @@ import { ServiceResponseDTO } from "../models/dto/service-response.dto";
 import { UpdateServiceDTO } from "../models/dto/update-service.dto";
 import { ServicesEntity } from "../models/entity/services.entity";
 import { ServicesRepository } from "../repositories/services.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class UpdateServiceService {
 	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
+	@Track()
 	public async execute(payload: UpdateServiceDTO): Promise<ServiceResponseDTO> {
 		const service: ServicesEntity = await ServicesRepository.findById(payload.id);
 

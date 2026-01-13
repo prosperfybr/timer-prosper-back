@@ -13,6 +13,7 @@ import { CollaboratorEntity } from "../models/entity/collaborator.entity";
 import { CollaboratorServicesRepository } from "../repositories/collaborator-services.repository";
 import { CollaboratorRepository } from "../repositories/collaborator.repository";
 import { FindCollaboratorService } from "./find-collaborator.service";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class UpdateCollaboratorService {
@@ -21,6 +22,7 @@ export class UpdateCollaboratorService {
 		private readonly findCollaboratorService: FindCollaboratorService
 	) {}
 
+	@Track()
 	public async execute(id: string, collaboratorToUpdate: UpdateCollaboratorDTO): Promise<CollaboratorResponseDTO> {
 		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id }});
 
@@ -64,6 +66,7 @@ export class UpdateCollaboratorService {
 		return await this.findCollaboratorService.execute(collaborator.id);
 	}
 
+	@Track()
 	public async toggleStatus(collaboratorId: string): Promise<void> {
 		if (!collaboratorId) {
 			log.error(`Collaborator ID is required but received [${collaboratorId}]`);

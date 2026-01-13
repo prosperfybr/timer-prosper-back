@@ -50,8 +50,6 @@ export const CollaboratorRepository = AppDataSource.getRepository(CollaboratorEn
 		return result.length > 0 ? result : [];
 	},
 	async findCollaboratorStats(collaboratorId: string): Promise<any> {
-		const startTime = performance.now();
-		log.info(`Starting connection in database to find collaborator stats`);
 		log.info(`Finding stats for collaborator [${collaboratorId}]`);
 
 		const dateMoment = moment.utc(new Date(), "YYYY-MM-DD");
@@ -71,22 +69,21 @@ export const CollaboratorRepository = AppDataSource.getRepository(CollaboratorEn
 		establishmentHours.opening_time AS establishment_opening_time,
 		establishmentHours.closing_time AS establishment_closing_time,
 		appointment.start_time AS appointment_start_time,
-		appointment.end_time AS appointment_end_time
+		appointment.end_time AS appointment_end_time,
+		service.name AS service_name,
+		client.name AS client_name
 		FROM collaborators collaborator
 						LEFT JOIN establishments establishment ON collaborator.establishment_id = establishment.id
 						LEFT JOIN appointments appointment ON appointment.collaborator_id = collaborator.id AND appointment.start_time BETWEEN '${startOfDay}' AND '${endOfDay}'
 						LEFT JOIN services service ON appointment.service_id = service.id
 						LEFT JOIN client_establishments clientEstablishment ON clientEstablishment.establishment_id = establishment.id
+						LEFT JOIN users client ON client.id = clientEstablishment.user_id
 						LEFT JOIN establishment_hours establishmentHours ON establishmentHours.establishment_id = establishment.id AND establishmentHours.day_of_week = '${dayOfWeek}'
 		WHERE collaborator.user_id = '${collaboratorId}'
-		GROUP BY collaborator.id, establishment.id, appointment.id, establishmentHours.id;`;
+		GROUP BY collaborator.id, establishment.id, appointment.id, establishmentHours.id, service.name, client.name;`;
 
 		const result = await this.query(sql);
 		log.info(`Stats for collaborator [${collaboratorId}] consulted`);
-
-		const endTime = performance.now();
-		const executionTime = (endTime - startTime).toFixed(2);
-		log.info(`** [EXECUTION TIME: ${executionTime}ms] ** Connection in database to find collaborator stats finished`);
 		return result ? result : null;
 	},
 });

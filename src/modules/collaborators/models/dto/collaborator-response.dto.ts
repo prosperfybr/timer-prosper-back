@@ -25,4 +25,5 @@ export interface CollaboratorStats {
   totalClients: number;
   occupationRate: number;
   scheduledHours: number;
+	appointmentsForToday?: { time: string; client: string; service: string; }[];
 }

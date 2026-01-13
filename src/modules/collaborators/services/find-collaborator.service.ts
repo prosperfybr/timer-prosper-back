@@ -8,11 +8,13 @@ import { CollaboratorResponseDTO, CollaboratorStats } from "../models/dto/collab
 import { CollaboratorRepository } from "../repositories/collaborator.repository";
 import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
 import moment from "moment"
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindCollaboratorService {
 	constructor() {}
 
+	@Track()
 	public async execute(id: string): Promise<CollaboratorResponseDTO> {
 		if (!id || !validateUUID(id)) {
 			log.error(`Collaborator ID is required, but is received: [${id}]`);
@@ -29,6 +31,7 @@ export class FindCollaboratorService {
 		}
 	}
 
+	@Track()
 	public async getAllEstablishmentCollaborators(establishmentId: string): Promise<CollaboratorResponseDTO[]> {
 		if (!establishmentId || !validateUUID(establishmentId)) {
 			log.error(`Establishment ID is required and must be a valid UUID, but is received: [${establishmentId}]`);
@@ -48,6 +51,7 @@ export class FindCollaboratorService {
 		}
 	}
 
+	@Track()
 	public async getCollaboratorStats(collaboratorId: string, ownerId?: string): Promise<CollaboratorStats> {
 		if (collaboratorId === "ALL" && (!ownerId || !validateUUID(ownerId))) {
 			log.error(`Owner ID is required and must be a valid UUID when collaboratorId is 'ALL', but is received: [${ownerId}]`);
@@ -67,40 +71,27 @@ export class FindCollaboratorService {
 				appointmentsToday: 0,
 				totalClients: Number(collaboratorsRawStats[0].total_clients),
 				occupationRate: 0,
-				scheduledHours: 0
+				scheduledHours: 0,
+				appointmentsForToday: []
 			};
 
-			collaboratorsRawStats.forEach(stats => {
-				const { total_appointments, total_scheduled_duration } = stats;
-				collaboratorStats.appointmentsToday += Number(total_appointments);
-				collaboratorStats.scheduledHours += Number(total_scheduled_duration) / 60;
-			});
-
-			let occupationRate: number = this.calculateOccupationRate(collaboratorsRawStats);
-			collaboratorStats.occupationRate = occupationRate;
-			return collaboratorStats;
+			return this.treatStatsResponse(collaboratorStats, collaboratorsRawStats);
 		}
 
 		log.info(`Finding stats for collaborator ID: ${collaboratorId}`);
 		const collaboratorRawStats: any[] = await CollaboratorRepository.findCollaboratorStats(collaboratorId);
 
 		const collaboratorStats: CollaboratorStats = {
-				collaboratorId: 'ALL',
+				collaboratorId,
 				appointmentsToday: 0,
 				totalClients: Number(collaboratorRawStats[0].total_clients),
 				occupationRate: 0,
-				scheduledHours: 0
+				scheduledHours: 0,
+				appointmentsForToday: []
 			};
 
-			collaboratorRawStats.forEach(stats => {
-				const { total_appointments, total_scheduled_duration } = stats;
-				collaboratorStats.appointmentsToday += Number(total_appointments);
-				collaboratorStats.scheduledHours += Number(total_scheduled_duration) / 60;
-			});
 
-		let occupationRate: number = this.calculateOccupationRate(collaboratorRawStats);
-		collaboratorStats.occupationRate = occupationRate;
-		return collaboratorStats;
+		return this.treatStatsResponse(collaboratorStats, collaboratorRawStats);
 	}
 
 	private treatResponse(collaboratorInformations: any[]): CollaboratorResponseDTO {
@@ -210,5 +201,31 @@ export class FindCollaboratorService {
 			: 0;
 
 		return parseFloat(occupancyPercentage.toFixed(2));
+	}
+
+	private treatStatsResponse(collaboratorStats: CollaboratorStats, raw: any): CollaboratorStats {
+		raw.forEach(stats => {
+				const { total_appointments, total_scheduled_duration } = stats;
+				collaboratorStats.appointmentsToday += Number(total_appointments);
+				collaboratorStats.scheduledHours += Number(total_scheduled_duration) / 60;
+
+				if (stats.appointment_start_time && stats.client_name && stats.service_name) {
+					collaboratorStats.appointmentsForToday.push({
+						time: moment(stats.appointment_start_time).format("HH:mm"),
+						client: stats.client_name,
+						service: stats.service_name
+					})
+				}
+			});
+
+			let occupationRate: number = this.calculateOccupationRate(raw);
+			collaboratorStats.occupationRate = occupationRate;
+			collaboratorStats.appointmentsForToday.sort((a, b) => {
+				if (a.time < b.time) return -1;
+				if (a.time > b.time) return 1;
+				return 0;
+			});
+
+			return collaboratorStats;
 	}
 }

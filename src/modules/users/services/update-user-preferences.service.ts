@@ -8,11 +8,13 @@ import { UserPreferencesEntity } from "../models/entity/user-preferences.entity"
 import { UserEntity } from "../models/entity/user.entity";
 import { UserPreferencesRepository } from "../repositories/user-preferences.repository";
 import { UserRepository } from "../repositories/users.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class UpdateUserPreferencesService {
 	constructor(private readonly validatorUtils: ValidatorUtils) {}
 
+	@Track()
 	public async execute(id: string, preferencesToUpdate: UpdateUserPreferencesDTO): Promise<UserPreferencesResponseDTO> {
 		const user: UserEntity = await UserRepository.findById(id);
 

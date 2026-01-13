@@ -5,11 +5,13 @@ import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentExce
 import { SegmentResponseDTO } from "../models/dto/segment-response.dto";
 import { SegmentEntity } from "../models/entity/segment.entity";
 import { SegmentRepository } from "../repositories/segment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindSegmentService {
 	constructor() {}
 
+	@Track()
 	public async findById(id: string): Promise<SegmentResponseDTO> {
 		log.info(`Starting search for a segment by id [${id}]`);
 
@@ -32,6 +34,7 @@ export class FindSegmentService {
 		} as SegmentResponseDTO;
 	}
 
+	@Track()
 	public async findAllActives(): Promise<SegmentResponseDTO[]> {
 		log.info(`Listing all segments [ACTIVE]`);
 		const segments: SegmentEntity[] = await SegmentRepository.findAllActive();
@@ -50,6 +53,7 @@ export class FindSegmentService {
 		);
 	}
 
+	@Track()
 	public async findAll(): Promise<SegmentResponseDTO[]> {
 		log.info(`Listing all segments`);
 		const segments: SegmentEntity[] = await SegmentRepository.findAll();

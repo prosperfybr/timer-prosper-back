@@ -3,11 +3,13 @@ import { Service } from "@shared/decorators/service.decorator";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { ServicesEntity } from "../models/entity/services.entity";
 import { ServicesRepository } from "../repositories/services.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class DeleteServiceService {
 	constructor() {}
 
+	@Track()
 	public async delete(idOrIds: string): Promise<void> {
 		if (!idOrIds) {
 			log.error(`Service ID's is required, but ID's is: [${idOrIds}]`);

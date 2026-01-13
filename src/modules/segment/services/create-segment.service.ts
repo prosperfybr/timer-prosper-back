@@ -5,11 +5,13 @@ import { CreateSegmentDTO } from "../models/dto/create-segment.dto";
 import { SegmentResponseDTO } from "../models/dto/segment-response.dto";
 import { SegmentEntity } from "../models/entity/segment.entity";
 import { SegmentRepository } from "../repositories/segment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CreateSegmentService {
 	constructor() {}
 
+	@Track()
 	public async execute(payload: CreateSegmentDTO): Promise<SegmentResponseDTO> {
 		const { name, active } = payload;
 

@@ -15,6 +15,7 @@ import { CreateSegmentService } from "../services/create-segment.service";
 import { DeleteSegmentService } from "../services/delete-segment.service";
 import { FindSegmentService } from "../services/find-segment.service";
 import { UpdateSegmentService } from "../services/update-segment.service";
+import { ControllerLog } from "@shared/decorators/logs/controller.decorator";
 
 @RequestMapping("/segments")
 @RestController()
@@ -27,12 +28,11 @@ export class SegmentController {
 	) {}
 
 	@PostMapping("")
+	@ControllerLog()
 	public async create(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Creating a new segment");
 			const payload: CreateSegmentDTO = req.body;
 			const serviceType: SegmentResponseDTO = await this.createSegmentService.execute(payload);
-			log.info("Segment created successfull");
 			return res.status(HttpStatusCode.Created).json({ message: "Segmento criado com sucesso", payload: serviceType });
 		} catch (error) {
 			log.error("An error has occurred while create a new segment. ERROR: ", error);
@@ -41,12 +41,11 @@ export class SegmentController {
 	}
 
 	@GetMapping("/detail/:id", { authenticated: true })
+	@ControllerLog()
 	public async findById(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Finding a segment by id");
 			const id: string = req.params.id;
 			const serviceType: SegmentResponseDTO = await this.findSegmentService.findById(id);
-			log.info("Segment founded successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Segmento detalhado com sucesso", payload: serviceType });
 		} catch (error) {
 			log.error("An error has occurred while find a segment. ERROR:  ", error);
@@ -55,11 +54,10 @@ export class SegmentController {
 	}
 
 	@GetMapping("")
+	@ControllerLog()
 	public async findAll(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("List all segments");
 			const servicesType: SegmentResponseDTO[] = await this.findSegmentService.findAll();
-			log.info("Segments is listed successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Segmentos listados com sucesso.", payload: servicesType });
 		} catch (error) {
 			log.error("An error has occurred while list all segments. ERROR: ", error);
@@ -68,11 +66,10 @@ export class SegmentController {
 	}
 
 	@GetMapping("/actives")
+	@ControllerLog()
 	public async findActive(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Listing all segments ative");
 			const servicesType: SegmentResponseDTO[] = await this.findSegmentService.findAllActives();
-			log.info("All segments active is listed successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Segmentos ativos listados com sucesso.", payload: servicesType });
 		} catch (error) {
 			log.error("An error has occurred while listing segments active. ERROR: ", error);
@@ -81,12 +78,11 @@ export class SegmentController {
 	}
 
 	@PatchMapping("", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
+	@ControllerLog()
 	public async update(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Updating segment");
 			const payload: UpdateSegmentDTO = req.body;
 			await this.updateSegmentService.udpdate(payload);
-			log.info("Segment udpated successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Segmento atualizado com sucesso.", payload: null });
 		} catch (error) {
 			log.error("An error has occurred while updating a segment. ERROR: ", error);
@@ -95,12 +91,11 @@ export class SegmentController {
 	}
 
 	@DeleteMapping("/:id", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
+	@ControllerLog()
 	public async delete(req: Request, res: Response, next: NextFunction) {
 		try {
-			log.info("Deleting a segment");
 			const id: string = req.params.id;
 			await this.deleteSegmentService.delete(id);
-			log.info("Segment deleted successfully");
 			return res.status(HttpStatusCode.Ok).json({ message: "Segmento deletado com sucesso" });
 		} catch (error) {
 			log.error("An error has occurred while deleting segment. ERROR: ", error);

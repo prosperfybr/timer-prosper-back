@@ -7,11 +7,13 @@ import { ConverterUtils } from "@shared/utils/converter.utils";
 import { ServiceTypeResponseDTO } from "../models/dto/service-type-response.dto";
 import { ServiceTypeEntity } from "../models/entity/servicetype.entity";
 import { ServiceTypeRepository } from "../repositories/servicetype.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindServiceTypeService {
 	constructor(private readonly converterUtils: ConverterUtils) {}
 
+	@Track()
 	public async findById(id: string): Promise<ServiceTypeResponseDTO> {
 		log.info(`Starting search for a service type by id [${id}]`);
 
@@ -47,6 +49,7 @@ export class FindServiceTypeService {
 		} as ServiceTypeResponseDTO;
 	}
 
+	@Track()
 	public async findByEstablishment(establishmentId: string): Promise<ServiceTypeResponseDTO[]> {
 		log.info("Listing all service type by establishment");
 
@@ -74,6 +77,7 @@ export class FindServiceTypeService {
 		);
 	}
 
+	@Track()
 	public async findBySegment(segmentId: string): Promise<ServiceTypeResponseDTO[]> {
 		log.info("Listing all service type by segment");
 
@@ -101,6 +105,7 @@ export class FindServiceTypeService {
 		);
 	}
 
+	@Track()
 	public async findAll(): Promise<ServiceTypeResponseDTO[]> {
 		log.info(`Listing all services type`);
 		const servicesType: ServiceTypeEntity[] = await ServiceTypeRepository.findAll();

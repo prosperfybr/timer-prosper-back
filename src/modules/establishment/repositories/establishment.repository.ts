@@ -82,15 +82,18 @@ export const EstablishmentRepository = AppDataSource.getRepository(Establishment
 		establishmentHours.closing_time AS establishment_closing_time,
 		(SELECT COUNT(c.id) FROM collaborators AS c WHERE c.establishment_id = establishment.id) AS total_collaborators,
 		appointment.start_time AS appointment_start_time,
-		appointment.end_time AS appointment_end_time
+		appointment.end_time AS appointment_end_time,
+		service.name AS service_name,
+		client.name AS client_name
 		FROM establishments establishment
 			LEFT JOIN collaborators collaborator ON collaborator.establishment_id = establishment.id
 			LEFT JOIN appointments appointment ON appointment.collaborator_id = collaborator.id AND appointment.start_time BETWEEN '${startOfDay}' AND '${endOfDay}'
 			LEFT JOIN services service ON appointment.service_id = service.id
 			LEFT JOIN client_establishments clientEstablishment ON clientEstablishment.establishment_id = establishment.id
+			LEFT JOIN users client ON client.id = clientEstablishment.user_id
 			LEFT JOIN establishment_hours establishmentHours ON establishmentHours.establishment_id = establishment.id AND establishmentHours.day_of_week = '${dayOfWeek}'
 		WHERE establishment.user_id = '${ownerId}'
-		GROUP BY establishment.id, collaborator.id, appointment.id, establishmentHours.id;`;
+		GROUP BY establishment.id, collaborator.id, appointment.id, establishmentHours.id, service.name, client.name;`;
 
 		const result = await this.query(sql);
 

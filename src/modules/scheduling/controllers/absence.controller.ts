@@ -10,6 +10,7 @@ import { PostMapping } from "@shared/decorators/router/post-mapping.decorator";
 import { RolesEnum } from "@modules/users/models/enum/roles.enum";
 import { GetMapping } from "@shared/decorators/router/get-mapping.decorator";
 import { DeleteMapping } from "@shared/decorators/router/delete-mapping.decorator";
+import { ControllerLog } from "@shared/decorators/logs/controller.decorator";
 
 @RequestMapping("/absence")
 @RestController()
@@ -21,12 +22,11 @@ export class AbsenceController {
   ) {}
 
   @PostMapping("", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER]})
+  @ControllerLog()
   public async create(req: Request, res: Response, next: NextFunction) {
     try {
-      log.info("Creating a new absence");
       const payload: CreateAbsenceBlockDTO = req.body as CreateAbsenceBlockDTO;
       const absence = await this.createService.execute(payload);
-      log.info("Absence created successfully");
       return res.status(HttpStatusCode.Created).json({ message: "Ausência criada com sucesso", payload: absence });
     } catch (error) {
       log.error("An error has occurred while create a new absence. ERROR: ", error);
@@ -35,12 +35,11 @@ export class AbsenceController {
   }
 
   @GetMapping("/:establishmentId", { authenticated: true })
+  @ControllerLog()
   public async find(req: Request, res: Response, next: NextFunction) {
     try {
-      log.info(`Finding all absences by establishment`);
       const establishmentId: string = req.params.establishmentId;
       const absences = await this.findService.find(establishmentId);
-      log.info(`All absences founded by establishment`);
       return res.status(HttpStatusCode.Ok).json({ message: "Ausências do estabelecimento listadas com sucesso", payload: absences });
     } catch (error) {
       log.error("An error has occurred while find a establishments absences. ERROR: ", error);
@@ -49,10 +48,9 @@ export class AbsenceController {
   }
 
   @DeleteMapping("", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
+  @ControllerLog()
   public async delete(req: Request, res: Response, next: NextFunction) {
     try {
-      log.info("Deleting an establishment absence");
-      log.info("Establishment absence deleted successfully");
       return res.status(HttpStatusCode.Ok).json({ message: "Ausência deletada co sucesso"})
     } catch (error) {
       log.error("An error has ocurred while delete an establishment absence. ERROR: ", error);

@@ -10,6 +10,7 @@ import { EstablishmentEntity } from '../models/entity/establishment.entity';
 import { DaysOfWeekEnum } from '../models/enums/days-of-week.enum';
 import { EstablishmentHourRepository } from '../repositories/establishment-hour.repository';
 import { EstablishmentRepository } from '../repositories/establishment.repository';
+import { Track } from '@shared/decorators/logs/track.decorator';
 
 @Service()
 export class CreateEstablishmentHourService {
@@ -18,6 +19,7 @@ export class CreateEstablishmentHourService {
 		private readonly formatterUtils: FormatterUtils,
 	) {}
 
+	@Track()
 	public async execute(createHour: CreateEstablishmentHourDTO): Promise<void> {
 		const { establishmentId, hours } = createHour;
 

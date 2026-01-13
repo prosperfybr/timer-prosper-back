@@ -5,6 +5,7 @@ enum LogLevel {
     WARN = 'WARN',
     ERROR = 'ERROR',
     DEBUG = 'DEBUG',
+    PERFORM = 'PERFORMANCE',
 }
 
 /**
@@ -20,6 +21,9 @@ const getLogPrefix = (level: LogLevel): string => {
 export const log = {
     info: (...args: any[]) => {
         console.info(getLogPrefix(LogLevel.INFO), ...args);
+    },
+    perform: (...args: any[]) => {
+        console.info(getLogPrefix(LogLevel.PERFORM), ...args);
     },
     warn: (...args: any[]) => {
         console.warn(getLogPrefix(LogLevel.WARN), ...args);

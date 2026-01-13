@@ -2,6 +2,7 @@ import { log } from "@config/Logger";
 import { ClientEstablishmentResponseDTO } from "@modules/establishment/models/dto/establishment/client-establishment-response.dto";
 import { ClientEstablishmentEntity } from "@modules/establishment/models/entity/client-establishment.entity";
 import { ClientEstablishmentRepository } from "@modules/establishment/repositories/client-establishment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { FormatterUtils } from "@shared/utils/formatter.utils";
@@ -11,6 +12,7 @@ import { validate as validateUUID } from 'uuid';
 export class FindClientEstablishmentService {
 	constructor(private readonly formatterUtils: FormatterUtils) {}
 
+	@Track()
 	public async findClientsEstablishment(establishmentId: string): Promise<ClientEstablishmentResponseDTO[]> {
 		log.info("Starting search for establishment clients");
 		if (!establishmentId || !validateUUID(establishmentId)) {
@@ -86,6 +88,7 @@ export class FindClientEstablishmentService {
 		}
 	}
 
+	@Track()
 	public async findEstablishmentsClient(clientId: string): Promise<ClientEstablishmentResponseDTO[]> {
 		log.info("Starting search for client establishments");
 		if (!clientId) {

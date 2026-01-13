@@ -9,12 +9,14 @@ import { UserRepository } from "../repositories/users.repository";
 import { AdminStatsDTO } from "../models/dto/admin-stats.dto";
 import { randomUUID } from "crypto";
 import moment from "moment";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindUserService {
 	constructor(private readonly formatterUtils: FormatterUtils,
 	) {}
 
+	@Track()
 	public async getUser(id: string): Promise<UserResponseDTO> {
 		if (!id) {
 			log.error(`User ID is required, but is received: [${id}]`);
@@ -57,6 +59,7 @@ export class FindUserService {
 		} as UserResponseDTO;
 	}
 
+	@Track()
 	public async getAllUsers(): Promise<UserResponseDTO[]> {
 		const users: UserEntity[] = await UserRepository.find();
 		return users.map(user => ({
@@ -69,6 +72,7 @@ export class FindUserService {
 		}));
 	}
 
+	@Track()
 	public async getAdminStats(id: string): Promise<AdminStatsDTO> {
 		const { mainResult, recentEstablishments } = await UserRepository.getAdminStats();
 

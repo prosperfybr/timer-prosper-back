@@ -5,11 +5,13 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { CollaboratorEntity } from "../models/entity/collaborator.entity";
 import { CollaboratorRepository } from "../repositories/collaborator.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class DeleteCollaboratorService {
 	constructor(private readonly deleteUserService: DeleteUserService) {}
 
+	@Track()
 	public async execute(id: string): Promise<void> {
 		if (!id) {
 			log.error(`Collaborator id is required, but id is: [${id}]`);

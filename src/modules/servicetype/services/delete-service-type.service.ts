@@ -4,11 +4,13 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import { ServiceTypeEntity } from "../models/entity/servicetype.entity";
 import { ServiceTypeRepository } from "../repositories/servicetype.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class DeleteServiceTypeService {
 	constructor() {}
 
+	@Track()
 	public async delete(id: string): Promise<void> {
 		if (!id) {
 			log.error(`ID is required, but ID received is [${id}]`);

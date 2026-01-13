@@ -11,6 +11,7 @@ import { UserPreferencesEntity } from "../models/entity/user-preferences.entity"
 import { UserEntity } from "../models/entity/user.entity";
 import { UserPreferencesRepository } from "../repositories/user-preferences.repository";
 import { UserRepository } from "../repositories/users.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CreateUserService {
@@ -20,6 +21,7 @@ export class CreateUserService {
 		private readonly formatterUtils: FormatterUtils
 	) {}
 
+	@Track()
 	public async execute(user: CreateUserDTO): Promise<UserResponseDTO> {
 		const { name, email, password, cpf, role: newUserRole } = user;
 		//- Validate user informations

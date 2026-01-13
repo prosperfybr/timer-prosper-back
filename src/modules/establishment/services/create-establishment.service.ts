@@ -14,6 +14,7 @@ import { CreateEstablishmentDTO } from "../models/dto/establishment/create-estab
 import { EstablishmentResponseDTO } from "../models/dto/establishment/establishment-response.dto";
 import { EstablishmentEntity } from "../models/entity/establishment.entity";
 import { EstablishmentRepository } from "../repositories/establishment.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CreateEstablishmentService {
@@ -34,6 +35,7 @@ export class CreateEstablishmentService {
 		private readonly generatorUtils: GeneratorUtils
 	) {}
 
+	@Track()
 	public async execute(payload: CreateEstablishmentDTO): Promise<EstablishmentResponseDTO> {
 		const {
 			userId,

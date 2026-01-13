@@ -4,11 +4,13 @@ import { BadRequestException } from '@shared/exceptions/BadRequestException';
 import { InvalidArgumentException } from '@shared/exceptions/InvalidArgumentException';
 import { EstablishmentHourEntity } from '../models/entity/establishment-hour.entity';
 import { EstablishmentHourRepository } from '../repositories/establishment-hour.repository';
+import { Track } from '@shared/decorators/logs/track.decorator';
 
 @Service()
 export class DeleteEstablishmentHourService {
 	constructor() {}
 
+	@Track()
 	public async execute(id: string): Promise<void> {
 		if (!id) {
 			log.error(`Establishment Hour id is requred, but received [${id}]`);
