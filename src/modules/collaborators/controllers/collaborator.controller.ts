@@ -115,4 +115,19 @@ export class CollaboratorController {
 			next(error);
 		}
 	}
+
+	@GetMapping("/stats/:collaboratorId", { authenticated: true })
+	public async getCollaboratorStats(req: Request, res: Response, next: NextFunction) {
+		try {
+			log.info("Getting collaborator stats");
+			const userId = req.user.id;
+			const collaboratorId = req.params.collaboratorId;
+			const stats = await this.findCollaboratorService.getCollaboratorStats(collaboratorId, userId);
+			log.info("Collaborator stats loaded successfully");
+			return res.status(HttpStatusCode.Ok).json({ message: "Estatísticas do colaborador carregadas com sucesso", payload: stats });
+		} catch (error) {
+			log.error("An error has occurred while get collaborator stats. ERROR: ", error);
+			next(error);
+		}
+	}
 }

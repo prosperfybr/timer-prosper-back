@@ -85,8 +85,6 @@ export class FindServiceService {
 			order: { name: "ASC" },
 		});
 
-		console.log(services);
-
 		const totalPages: number = Math.ceil(totalItems / limit);
 		const result: PaginatedResult<ServicesEntity> = {
 			data: services,
