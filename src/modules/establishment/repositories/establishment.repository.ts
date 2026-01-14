@@ -4,9 +4,12 @@ import { log } from "@config/Logger";
 import moment from "moment";
 
 export const EstablishmentRepository = AppDataSource.getRepository(EstablishmentEntity).extend({
-	async findById(id: string): Promise<EstablishmentEntity> {
+	async findByIdOrCode(identifier: string): Promise<EstablishmentEntity> {
 		const establishment = await this.findOne({
-			where: { id },
+			where: [
+				{ id: identifier },
+				{ code: identifier },
+			],
 			relations: ["user", "services", "segment"],
 			order: {
 				services: { name: "ASC" },

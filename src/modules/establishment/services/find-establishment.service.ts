@@ -22,12 +22,12 @@ export class FindEstablishmentService {
 
 	@Track()
 	public async findById(id: string): Promise<EstablishmentResponseDTO> {
-		if (!id || !validateUUID(id)) {
+		if (!id) {
 			log.error(`ID is required and must be a valid UUID, but ID value is [${id}]`);
 			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório e deve ser um UUID válido");
 		}
 
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(id);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(id);
 
 		if (!establishment) {
 			log.error(`Establishment not founded by id`);
