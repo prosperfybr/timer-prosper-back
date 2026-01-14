@@ -38,7 +38,7 @@ export class CreateServiceService {
 			throw new BadRequestException("Tipo de serviço não encontrado com o ID informado");
 		}
 
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(establishmentId);
 		if (!establishment) {
 			log.error(`Establishment not found with ID: [${establishmentId}]`);
 			throw new BadRequestException("Estabelecimento não encontrado com o ID inforamdo");

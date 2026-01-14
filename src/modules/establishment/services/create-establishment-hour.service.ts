@@ -36,7 +36,7 @@ export class CreateEstablishmentHourService {
 		}
 
 		const establishment: EstablishmentEntity =
-			await EstablishmentRepository.findById(establishmentId);
+			await EstablishmentRepository.findByIdOrCode(establishmentId);
 
 		if (!establishment) {
 			log.error(`Establishment not found with ID [${establishmentId}]`);

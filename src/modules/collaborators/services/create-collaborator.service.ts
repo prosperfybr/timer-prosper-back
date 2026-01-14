@@ -63,7 +63,7 @@ export class CreateCollaboratorService {
 			throw new BadRequestException("Não foram encontrados serviços com os IDs informados");
 		}
 
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(establishmentId);
 
 		if (!establishment) {
 			log.error(`Establishment not found with ID [${establishmentId}]`);

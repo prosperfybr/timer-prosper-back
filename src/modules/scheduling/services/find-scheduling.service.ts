@@ -38,7 +38,7 @@ export class FindSchedulingService {
 			throw new InvalidArgumentException("O ID do estabelecimento e do serviço são obrigatórios");
 		}
 
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(establishmentId);
 
 		if (!establishment) {
 			log.error(`Establishment not found by ID: [${establishmentId}]`);

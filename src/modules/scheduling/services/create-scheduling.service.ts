@@ -68,7 +68,7 @@ export class CreateSchedulingService {
 			payload;
 
 		const establishment: EstablishmentEntity =
-			await EstablishmentRepository.findById(establishmentId);
+			await EstablishmentRepository.findByIdOrCode(establishmentId);
 		const collaborator: CollaboratorEntity =
 			await CollaboratorRepository.findOne({ where: { id: collaboratorId }});
 		const service: ServicesEntity = await ServicesRepository.findById(serviceId);

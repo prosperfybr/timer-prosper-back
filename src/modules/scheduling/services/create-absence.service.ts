@@ -33,7 +33,7 @@ export class CreateAbsenceBlockService {
 
 		const { type, isRecurrent, specificDate, dayOfWeek, collaboratorId, serviceId, establishmentId, description, startTime, endTime, active } = payload;
 
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(establishmentId);
 
 		if (!establishment) {
 			log.error(`Establishment not found by id [${establishmentId}]`);

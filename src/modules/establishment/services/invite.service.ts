@@ -34,7 +34,7 @@ export class InviteService {
 			throw new BadRequestException("O e-mail do cliente é obrigatório");
 		}
 
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(establishmentId);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(establishmentId);
 		const client: UserEntity = await UserRepository.findByEmail(clientEmail);
 
 		if (!establishment) {

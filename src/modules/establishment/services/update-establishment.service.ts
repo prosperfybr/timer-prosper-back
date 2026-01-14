@@ -14,7 +14,7 @@ export class UpdateEstablishmentService {
 
 	@Track()
 	public async execute(payload: UpdateEstablishmentDTO): Promise<EstablishmentResponseDTO> {
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findById(payload.id);
+		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(payload.id);
 
 		if (!establishment) {
 			log.error(`Establishment not found with id. ID [${payload.id}]`);
