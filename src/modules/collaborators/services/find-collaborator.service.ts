@@ -69,7 +69,7 @@ export class FindCollaboratorService {
 			const collaboratorStats: CollaboratorStats = {
 				collaboratorId: 'ALL',
 				appointmentsToday: 0,
-				totalClients: Number(collaboratorsRawStats[0].total_clients),
+				totalClients: 0,
 				occupationRate: 0,
 				scheduledHours: 0,
 				appointmentsForToday: []
@@ -205,9 +205,10 @@ export class FindCollaboratorService {
 
 	private treatStatsResponse(collaboratorStats: CollaboratorStats, raw: any): CollaboratorStats {
 		raw.forEach(stats => {
-				const { total_appointments, total_scheduled_duration } = stats;
+				const { total_appointments, total_scheduled_duration, total_clients } = stats;
 				collaboratorStats.appointmentsToday += Number(total_appointments);
 				collaboratorStats.scheduledHours += Number(total_scheduled_duration) / 60;
+				collaboratorStats.totalClients += Number(total_clients);
 
 				if (stats.appointment_start_time && stats.client_name && stats.service_name) {
 					collaboratorStats.appointmentsForToday.push({

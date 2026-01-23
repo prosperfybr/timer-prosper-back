@@ -32,8 +32,9 @@ export class FindClientEstablishmentService {
 			for (const client of clients) {
 				clientsFormatted.push({
 					id: client.id,
+					clientEmail: client.clientEmail,
 					userId: client.userId,
-					user: {
+					user: client.user ? {
 						id: client.user.id,
 						name: client.user.name,
 						email: client.user.email,
@@ -46,7 +47,7 @@ export class FindClientEstablishmentService {
 						settingsPreferences: null,
 						establsihmentId: null,
 						establishments: null
-					},
+					} : null,
 					establishmentId: client.establishmentId,
 					establishment: {
 						id: client.establishment.id,

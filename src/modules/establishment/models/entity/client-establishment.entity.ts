@@ -9,8 +9,8 @@ export class ClientEstablishmentEntity {
 	@PrimaryGeneratedColumn("uuid")
 	public id: string;
 
-	@Column({ type: "uuid", name: "user_id", nullable: false })
-	public userId: string;
+	@Column({ type: "uuid", name: "user_id", nullable: true })
+	public userId: string | null;
 
 	@ManyToOne(() => UserEntity)
 	@JoinColumn({ name: "user_id" })
@@ -22,6 +22,9 @@ export class ClientEstablishmentEntity {
 	@ManyToOne(() => EstablishmentEntity, establishment => establishment.clients)
 	@JoinColumn({ name: "establishment_id" })
 	public establishment: EstablishmentEntity;
+
+	@Column({ name: "client_email", type: "varchar", nullable: false })
+	public clientEmail: string;
 
 	@Column({ type: "varchar", nullable: false, default: ClientRequestStatusEnum.PENDING })
 	public status: ClientRequestStatusEnum;

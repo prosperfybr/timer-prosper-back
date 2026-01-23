@@ -4,21 +4,42 @@ import { InviteClientDTO } from "@modules/establishment/models/dto/invite/invite
 import { InviteEstablishmentDTO } from "@modules/establishment/models/dto/invite/invite-establishment.dto";
 import { RespondInviteDTO } from "@modules/establishment/models/dto/invite/respond-invite.dto";
 import { ClientEstablishmentEntity } from "@modules/establishment/models/entity/client-establishment.entity";
-import { EstablishmentEntity } from "@modules/establishment/models/entity/establishment.entity";
 import { ClientRequestByEnum } from "@modules/establishment/models/enums/client-request-by.enum";
 import { ClientRequestStatusEnum } from "@modules/establishment/models/enums/client-request-status.enum";
 import { ClientEstablishmentRepository } from "@modules/establishment/repositories/client-establishment.repository";
-import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
 import { UserEntity } from "@modules/users/models/entity/user.entity";
-import { UserRepository } from "@modules/users/repositories/users.repository";
 import { Track } from "@shared/decorators/logs/track.decorator";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
+import { EmailService, WebhookEmailType } from "@shared/utils/email-service.util";
+import { EstablishmentEntity } from "../models/entity/establishment.entity";
+
+
+
+/**
+ * SE O USUÁRIO NÃO ESTIVER CADASTRADO
+ * Mandar um e-mail para o usuário (CLIENTE) para cadastrar-se (APENAS SE FOR SOLICITADO POR E-MAIL NA APLICAÇÃO)
+ * 
+ * 		SE O PROPRIETÁRIO QUEM CONVIDOU
+ * (Seja por QR Code ou por email)
+ * 			-> O CLIENTE SE CADASTRA (caso não esteja cadastrado) E O VINCULO ACONTECE AUTOMATICAMENTE.
+ * -> SE O CLIENTE QUEM SOLICITOU (Ele já está cadastrado)
+ * 			-> O PROPRIETÁRIO É NOTIFICADO PARA APROVAR OU RECUSAR O CONVITE
+ * 
+ * OBSERVAÇÃO:
+ * NA TELA DE CLIENTES DEVE SER ADICIONADO AÇÕES PARA APROVAÇÃO OU RECUSA DE CLIENTES. ALÉM DE PERMITIR DESVINCULAR CLIENTES JÁ APROVADOS.
+ */
+
 
 @Service()
 export class InviteService {
 	constructor() {}
 
+	/**
+	 * O estabelecimento está convidando um cliente
+	 * @param payload 
+	 * @returns 
+	 */
 	@Track()
 	public async client(payload: InviteClientDTO): Promise<ClientEstablishmentResponseDTO> {
 		log.info("Inviting a new client to establishment");
@@ -34,30 +55,41 @@ export class InviteService {
 			throw new BadRequestException("O e-mail do cliente é obrigatório");
 		}
 
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(establishmentId);
-		const client: UserEntity = await UserRepository.findByEmail(clientEmail);
+		const invite = await ClientEstablishmentRepository.findInviteByClientAndEstablishment(clientEmail, establishmentId);
 
-		if (!establishment) {
+		if (!invite.establishment) {
 			log.error(`Establishment not found with ID [${establishmentId}`);
 			throw new BadRequestException("Estabelecimento não encontrado");
 		}
 
-		if (!client) {
-			log.warn(`User not found with email`);
-			//- TODO - Deve enviar e-mail mesmo para clientes que não estão cadastrados na base?
-			//- TODO - Como devemos tratar clientes que não estão cadastrados na aplicação? Devemos criar um usuário temporário para este cliente para poder fazer associação?
-		} else {
-			log.info(`User founded by email`);
-
-			const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findByUserId(client.id);
-			if (invite) {
-				log.warn(`This user has been already invited. Nothing to do now`);
-				throw new BadRequestException("O cliente já foi convidado");
-			}
-
-			//- TODO - Send email to client
-			return this.createInvite(client.id, establishment.id, ClientRequestByEnum.ESTABLISHMENT);
+		if (invite.client) {
+			log.warn(`This user has been already invited. Nothing to do now`);
+			throw new BadRequestException("O cliente já foi convidado");
 		}
+
+		log.info(`Client or invite not registered yet`);
+		//- Cria um novo usuário temporário para relação com o invite.
+		const inviteCreated: ClientEstablishmentEntity = await ClientEstablishmentRepository.save(ClientEstablishmentRepository.create({
+			userId: null,
+			establishmentId: establishmentId,
+			clientEmail,
+			status: ClientRequestStatusEnum.PENDING,
+			requestedBy: ClientRequestByEnum.ESTABLISHMENT,
+			requestedAt: new Date()
+		}));
+
+		log.info("Sending email to client requesting a registration in application");
+		EmailService.sendEmail(
+			EmailService.buildEmailPayload(
+				WebhookEmailType.CONVITE_CLIENTE,
+				invite.establishment.tradeName,
+				[clientEmail],
+				"",
+			)
+		);
+
+		log.info("Invite created successfully");
+		return this.treatResponse(inviteCreated);
 	}
 
 	/** CLIENT REQUEST TO ESTABLISHMENT **/
@@ -77,27 +109,48 @@ export class InviteService {
 			throw new BadRequestException("O ID do cliente é obrigatório");
 		}
 
-		const client: UserEntity = await UserRepository.findById(clientId);
-		const establishment: EstablishmentEntity = await EstablishmentRepository.findOneByIdentifier(establishmentIdentifier);
+		const invite = await ClientEstablishmentRepository.findInviteByClientAndEstablishment(clientId, establishmentIdentifier);
 
-		if (!establishment) {
-			log.error(`Establishment not found with identifier [${establishmentIdentifier}`);
-			throw new BadRequestException("Estabelecimento não encontrado");
-		}
-
-		if (!client) {
-			log.error(`User not found with email`);
-			throw new BadRequestException("Cliente não encontrado");
-		}
-
-		const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findByUserId(client.id);
-		if (invite) {
+		if (invite.invite && invite.invite.userId === clientId) {
 			log.warn(`This user has been already request invite to establishment. Nothing to do now`);
 			throw new BadRequestException("O cliente já solicitou um convite para o estabelecimento");
 		}
 
-		//- TODO - Send email to establishment owner
-		return this.createInvite(client.id, establishment.id, ClientRequestByEnum.CLIENT);
+		if (!invite.establishment) {
+			log.error(`Establishment not found with identifier [${establishmentIdentifier}`);
+			throw new BadRequestException("Estabelecimento não encontrado");
+		}
+
+		if (!invite.client) {
+			log.error(`Client not found with email`);
+			throw new BadRequestException("Cliente não encontrado");
+		}
+
+		log.info(`Client or invite not registered yet`);
+		const client = invite.client as UserEntity;
+		const establishment = invite.establishment as EstablishmentEntity;
+		const inviteToSave = ClientEstablishmentRepository.create({
+			userId: invite.client.id,
+			establishmentId: invite.establishment.id,
+			clientEmail: invite.client.email,
+			status: ClientRequestStatusEnum.PENDING,
+			requestedBy: ClientRequestByEnum.CLIENT,
+			requestedAt: new Date()
+		});
+		const inviteCreated: ClientEstablishmentEntity = await ClientEstablishmentRepository.save(inviteToSave);
+
+		log.info("Sending email to establishment owner requesting a new link");
+		EmailService.sendEmail(
+			EmailService.buildEmailPayload(
+				WebhookEmailType.CLIENTE_SOLICITANDO_VINCULO,
+				invite.establishment.tradeName,
+				[invite.owner.email],
+				client.name,
+			)
+		);
+
+		log.info("Invite created successfully");
+		return this.treatResponse(inviteCreated);
 	}
 
 	@Track()
@@ -110,7 +163,7 @@ export class InviteService {
 			throw new BadRequestException("O ID do convite é obrigatório");
 		}
 
-		if (approve === null || approve !== undefined) {
+		if (approve === null || approve === undefined) {
 			log.error("Reject or approve is required");
 			throw new BadRequestException("A aprovação ou rejeição do convite é obrigatória");
 		}
@@ -121,30 +174,14 @@ export class InviteService {
 			throw new BadRequestException("Convite não encontrado");
 		}
 
-		invite.status = (approve !== null && approve !== undefined) || approve === false ? ClientRequestStatusEnum.REJECTED : ClientRequestStatusEnum.APPROVED;
+		invite.status = approve === false ? ClientRequestStatusEnum.REJECTED : ClientRequestStatusEnum.APPROVED;
 		if (invite.status === ClientRequestStatusEnum.APPROVED) invite.approvedAt = new Date();
 		else invite.rejectedAt = new Date();
 
+		invite.updatedAt = new Date();
 		await ClientEstablishmentRepository.update(invite.id, invite);
 		log.info("Client is responded");
 		return this.treatResponse(invite);
-	}
-
-	private async createInvite(clientId: string, establishmentId: string, requestedBy: ClientRequestByEnum): Promise<ClientEstablishmentResponseDTO> {
-		const newInvite: ClientEstablishmentEntity = new ClientEstablishmentEntity();
-		newInvite.userId = clientId;
-		newInvite.establishmentId = establishmentId;
-		newInvite.status = ClientRequestStatusEnum.PENDING;
-		newInvite.requestedBy = requestedBy;
-		newInvite.requestedAt = new Date();
-		newInvite.approvedAt = null;
-		newInvite.rejectedAt = null;
-
-		const inviteSaved: ClientEstablishmentEntity = await ClientEstablishmentRepository.save(newInvite);
-
-		log.info("User has been invited successfully");
-
-		return this.treatResponse(inviteSaved);
 	}
 
 	private treatResponse(invite: ClientEstablishmentEntity): ClientEstablishmentResponseDTO {
