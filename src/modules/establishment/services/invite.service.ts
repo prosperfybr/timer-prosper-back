@@ -11,7 +11,7 @@ import { UserEntity } from "@modules/users/models/entity/user.entity";
 import { Track } from "@shared/decorators/logs/track.decorator";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
-import { EmailService } from "@shared/utils/email-service.util";
+import { EmailService, WebhookEmailType } from "@shared/utils/email-service.util";
 import { EstablishmentEntity } from "../models/entity/establishment.entity";
 
 
@@ -79,14 +79,15 @@ export class InviteService {
 		}));
 
 		log.info("Sending email to client requesting a registration in application");
-		const subject: string = `O estabelecimento ${invite.establishment.tradeName} está convidando você`;
-		const html: string = "";
-		const emailService = new EmailService();
-		/**
-		 * @TODO -> Implementação de e-mail feita, é necessário configurar modo de acesso, e definir informações para o envio de e-mails
-		 */
-		// emailService.sendEmail(clientEmail, subject, html, null, "invite@timerprosper.com.br");
-		
+		EmailService.sendEmail(
+			EmailService.buildEmailPayload(
+				WebhookEmailType.CONVITE_CLIENTE,
+				invite.establishment.tradeName,
+				[clientEmail],
+				"",
+			)
+		);
+
 		log.info("Invite created successfully");
 		return this.treatResponse(inviteCreated);
 	}
@@ -109,7 +110,6 @@ export class InviteService {
 		}
 
 		const invite = await ClientEstablishmentRepository.findInviteByClientAndEstablishment(clientId, establishmentIdentifier);
-		console.log("INVITE: ", invite);
 
 		if (invite.invite && invite.invite.userId === clientId) {
 			log.warn(`This user has been already request invite to establishment. Nothing to do now`);
@@ -129,9 +129,6 @@ export class InviteService {
 		log.info(`Client or invite not registered yet`);
 		const client = invite.client as UserEntity;
 		const establishment = invite.establishment as EstablishmentEntity;
-		console.log("CLIENT ID: ", client.id);
-		console.log("CLIENT EMAIL: ", client.email);
-		console.log("ESTABLISHMENT ID: ", establishment.id);
 		const inviteToSave = ClientEstablishmentRepository.create({
 			userId: invite.client.id,
 			establishmentId: invite.establishment.id,
@@ -140,19 +137,18 @@ export class InviteService {
 			requestedBy: ClientRequestByEnum.CLIENT,
 			requestedAt: new Date()
 		});
-		console.log(inviteToSave)
 		const inviteCreated: ClientEstablishmentEntity = await ClientEstablishmentRepository.save(inviteToSave);
 
 		log.info("Sending email to establishment owner requesting a new link");
-		const subject: string = `O cliente ${invite.client.name} está solicitando vínculo`;
-		const html: string = "";
-		const text: string = ""
-		const emailService = new EmailService();
-		/**
-		 * @TODO -> Implementação de e-mail feita, é necessário configurar modo de acesso, e definir informações para o envio de e-mails
-		 */
-		// emailService.sendEmail(invite.owner.email, subject, html, text, "invite@timerprosper.com.br");
-		
+		EmailService.sendEmail(
+			EmailService.buildEmailPayload(
+				WebhookEmailType.CLIENTE_SOLICITANDO_VINCULO,
+				invite.establishment.tradeName,
+				[invite.owner.email],
+				client.name,
+			)
+		);
+
 		log.info("Invite created successfully");
 		return this.treatResponse(inviteCreated);
 	}
