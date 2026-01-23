@@ -7,6 +7,7 @@ export interface ClientEstablishmentResponseDTO {
 	id: string;
 	userId: string;
 	user?: UserResponseDTO;
+	clientEmail?: string;
 	establishmentId: string;
 	establishment?: EstablishmentResponseDTO;
 	status: ClientRequestStatusEnum;

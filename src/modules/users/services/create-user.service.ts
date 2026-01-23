@@ -12,6 +12,10 @@ import { UserEntity } from "../models/entity/user.entity";
 import { UserPreferencesRepository } from "../repositories/user-preferences.repository";
 import { UserRepository } from "../repositories/users.repository";
 import { Track } from "@shared/decorators/logs/track.decorator";
+import { ClientEstablishmentRepository } from "@modules/establishment/repositories/client-establishment.repository";
+import { ClientRequestByEnum } from "@modules/establishment/models/enums/client-request-by.enum";
+import { ClientEstablishmentEntity } from "@modules/establishment/models/entity/client-establishment.entity";
+import { ClientRequestStatusEnum } from "@modules/establishment/models/enums/client-request-status.enum";
 
 @Service()
 export class CreateUserService {
@@ -34,7 +38,6 @@ export class CreateUserService {
 		userToSave.role = newUserRole ? newUserRole : RolesEnum.CLIENT;
 		userToSave.cpf = cpf ? this.formatterUtils.removeCPFMask(cpf) : null;
 
-
 		let id: string = null;
 		let role: any = null;
 		try {
@@ -54,6 +57,19 @@ export class CreateUserService {
 		preferences.whatsappNotifications = true;
 
 		await UserPreferencesRepository.save(preferences);
+
+		/** VERIFY IF HAS AN INVITE **/
+		const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findOne({ where : { clientEmail: email }});
+		console.log(invite);
+		if (invite && invite.requestedBy === ClientRequestByEnum.ESTABLISHMENT) {
+			log.info("This user has an invite pending");
+			invite.approvedAt = new Date();
+			invite.status = ClientRequestStatusEnum.APPROVED;
+			invite.updatedAt = new Date();
+			invite.userId = id;
+
+			await ClientEstablishmentRepository.save(invite);
+		}
 
 		return {
 			id,

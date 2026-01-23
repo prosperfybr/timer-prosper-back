@@ -1,4 +1,4 @@
-import { MigrationInterface, QueryRunner, Table, TableForeignKey } from "typeorm";
+import { MigrationInterface, QueryRunner, Table, TableForeignKey, TableUnique } from "typeorm";
 
 export class CreateClientEstablishmentTable1761855826052 implements MigrationInterface {
 	private readonly TABLE_NAME = "client_establishments";
@@ -11,23 +11,29 @@ export class CreateClientEstablishmentTable1761855826052 implements MigrationInt
 				name: this.TABLE_NAME,
 				columns: [
 					{ name: "id", type: "uuid", isPrimary: true, default: "uuid_generate_v4()" },
-					{ name: this.CLIENT_ID_COLUMN, type: "uuid", isNullable: false },
+					{ name: this.CLIENT_ID_COLUMN, type: "uuid", isNullable: true },
 					{ name: this.ESTABLISHMENT_ID_COLUMN, type: "uuid", isNullable: false },
+					{ name: "client_email", type: "varchar", isNullable: false },
 					{ name: "status", type: "varchar", length: "10", default: "'pending'", isNullable: false }, // 'pending' | 'approved' | 'rejected'
-					{ name: "requested_by", type: "varchar", length: "12", isNullable: false }, // 'client' | 'establishment'
+					{ name: "requested_by", type: "varchar", length: "15", isNullable: false }, // 'client' | 'establishment'
 					{ name: "requested_at", type: "timestamp", default: "now()", isNullable: false },
 					{ name: "approved_at", type: "timestamp", isNullable: true },
 					{ name: "rejected_at", type: "timestamp", isNullable: true },
 					{ name: "created_at", type: "timestamp", default: "now()" },
 					{ name: "updated_at", type: "timestamp", isNullable: true },
 				],
-				// Índice composto para garantir que um cliente só se relacione uma vez com um estabelecimento
-				uniques: [{ columnNames: [this.CLIENT_ID_COLUMN, this.ESTABLISHMENT_ID_COLUMN] }],
 			}),
-			true
+			true,
 		);
 
-		// FK para 'client_profiles'
+		await queryRunner.createUniqueConstraint(
+			this.TABLE_NAME,
+			new TableUnique({
+				name: "UK_CLIENT_EMAIL_ESTABLISHMENT",
+				columnNames: ["client_email", this.ESTABLISHMENT_ID_COLUMN],
+			}),
+		);
+
 		await queryRunner.createForeignKey(
 			this.TABLE_NAME,
 			new TableForeignKey({
@@ -35,10 +41,9 @@ export class CreateClientEstablishmentTable1761855826052 implements MigrationInt
 				referencedColumnNames: ["id"],
 				referencedTableName: "users",
 				onDelete: "CASCADE",
-			})
+			}),
 		);
 
-		// FK para 'establishments'
 		await queryRunner.createForeignKey(
 			this.TABLE_NAME,
 			new TableForeignKey({
@@ -46,7 +51,7 @@ export class CreateClientEstablishmentTable1761855826052 implements MigrationInt
 				referencedColumnNames: ["id"],
 				referencedTableName: "establishments",
 				onDelete: "CASCADE",
-			})
+			}),
 		);
 	}
 
