@@ -133,7 +133,7 @@ export class EstablishmentController {
 		try {
 			const payload: UpdateEstablishmentDTO = req.body;
 			const establishment: EstablishmentResponseDTO = await this.updateEstablishmentService.execute(payload);
-			return res.status(HttpStatusCode.Ok).json({ message: "Estabelecimento atualizado com sucesso", payload: establishment });
+			return res.status(HttpStatusCode.Ok).json({ message: "Estabelecimento atualizado com sucesso", payload: establishment});
 		} catch (error) {
 			log.error("An error has occurred while updating a establishment. ERROR: ", error);
 			next(error);
