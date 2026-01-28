@@ -98,7 +98,6 @@ export const EstablishmentRepository = AppDataSource.getRepository(Establishment
 		WHERE establishment.user_id = '${ownerId}'
 		GROUP BY establishment.id, collaborator.id, appointment.id, establishmentHours.id, service.name, client.name;`;
 
-		console.log("SQL: ", sql);
 		const result = await this.query(sql);
 
 		log.info("Collaborators stats for establishment consulted");

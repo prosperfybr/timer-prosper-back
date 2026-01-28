@@ -60,7 +60,6 @@ export class CreateUserService {
 
 		/** VERIFY IF HAS AN INVITE **/
 		const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findOne({ where : { clientEmail: email }});
-		console.log(invite);
 		if (invite && invite.requestedBy === ClientRequestByEnum.ESTABLISHMENT) {
 			log.info("This user has an invite pending");
 			invite.approvedAt = new Date();

@@ -34,9 +34,7 @@ export class UpdateEstablishmentService {
 		.where("id = :id", { id: establishment.id })
 		.returning("*").execute();
 
-
 		const establishmentUpdated = result.raw[0];
-		console.log(establishmentUpdated);
 
 		return {
 					id: establishmentUpdated.id,

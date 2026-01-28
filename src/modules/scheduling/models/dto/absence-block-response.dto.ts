@@ -27,15 +27,15 @@ export class AbsenceBlockResponse {
 	private async fillObject(availability: AbsenceBlockEntity): Promise<AbsenceBlockResponse.DTO> {
 		const collaborator: CollaboratorEntity | null = availability.collaboratorId ? await CollaboratorRepository.findOne({ where: { id: availability.collaboratorId }, relations: ["user"]}) : null;
 		const service: ServicesEntity | null = availability.serviceId ? await ServicesRepository.findById(availability.serviceId) : null;
-
+		const daysOfWeekNumbers = ["0","1","2","3","4","5","6"];
 		return {
 			id: availability.id,
 			collaboratorId: availability.collaboratorId,
 			establishmentId: availability.establishmentId,
 			type: availability.collaboratorId ? AbsenceBlockTypeEnum.BY_COLLABORATOR : AbsenceBlockTypeEnum.BY_SERVICE,
 			serviceId: availability.serviceId,
-			dayOfWeek: null,
-			specificDate: new Date(availability.recurrenceRule),
+			dayOfWeek: daysOfWeekNumbers.includes(availability.recurrenceRule) ? availability.recurrenceRule : null,
+			specificDate: !daysOfWeekNumbers.includes(availability.recurrenceRule) ? new Date(availability.recurrenceRule) : null,
 			startTime: availability.startTime,
 			endTime: availability.endTime,
 			description: availability.description,
@@ -43,7 +43,8 @@ export class AbsenceBlockResponse {
 			createdAt: availability.createdAt,
 			updatedAt: availability.updatedAt,
 			collaboratorName: collaborator ? collaborator.user.name : null,
-			serviceName: service ? service.name : null
+			serviceName: service ? service.name : null,
+			frequency: daysOfWeekNumbers.includes(availability.recurrenceRule) ? "recurring" : null,
 		};
 	}
 }
@@ -55,8 +56,8 @@ export namespace AbsenceBlockResponse {
 		collaboratorId: string;
 		type: AbsenceBlockTypeEnum;
 		serviceId: string;
-		dayOfWeek: DaysOfWeekEnum;
-		specificDate: Date;
+		dayOfWeek: number | string | null;
+		specificDate: Date | null;
 		startTime: string;
 		endTime: string;
 		description: string;
@@ -65,5 +66,6 @@ export namespace AbsenceBlockResponse {
 		updatedAt: Date;
 		collaboratorName: string;
 		serviceName: string;
+		frequency?: "recurring" | null;
 	}
 }

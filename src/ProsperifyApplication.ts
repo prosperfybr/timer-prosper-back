@@ -25,6 +25,7 @@ import { UnauthorizedException } from "@shared/exceptions/UnauthorizedException"
 import { ForbiddenException } from "@shared/exceptions/ForbiddenException";
 import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
 import swaggerUi from "swagger-ui-express";
+import { scheduler } from "@shared/schedulers/scheduler";
 
 class ProsperifyApplication {
 	public async main(): Promise<void> {
@@ -73,6 +74,8 @@ class ProsperifyApplication {
 		log.info("[DATABASE] Iniciando conexão com banco de dados");
 		await AppDataSource.initialize();
 		log.info("[DATABASE] Conexão com banco de dados finalizada com sucesso");
+
+		scheduler();
 
 		const door: string | number = process.env.PORT || 8081;
 		app.listen(door, () => {

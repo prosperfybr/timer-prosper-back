@@ -52,7 +52,6 @@ export const ClientEstablishmentRepository = AppDataSource.getRepository(ClientE
 			"establishment.id = (SELECT id from establishments where code = '%" + establishmentIdentifier + "%')"
 		};`;
 
-		console.log("CONSULTA SQL: ", sql);
 		const result = await this.query(sql);
 		log.info("Invite consulted successfully");
 		return result[0];
