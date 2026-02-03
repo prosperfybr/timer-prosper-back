@@ -17,6 +17,8 @@ export class UpdateUserService {
 	@Track()
 	public async execute(id: string, userToUpdate: UpdateUserDTO): Promise<UserResponseDTO> {
 		const user: UserEntity = await UserRepository.findById(id);
+		userToUpdate.profilePreferences = userToUpdate["preferences"];
+		delete userToUpdate["preferences"];
 
 		if (!user) {
 			log.error(`User not found with id. ID [${id}]`);
