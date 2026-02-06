@@ -28,6 +28,8 @@ export class UpdateEstablishmentService {
 			throw new BadRequestException("Não há nenhuma informação do estabelecimento para atualizar");
 		}
 
+		delete fieldsToUpdate.segmentId; //- Is not possible update segment
+
 		const result = await EstablishmentRepository.createQueryBuilder()
 		.update(EstablishmentEntity)
 		.set({ ...fieldsToUpdate })
