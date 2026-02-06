@@ -1,6 +1,7 @@
 import { AppDataSource } from "@config/ormconfig";
 import { EstablishmentEntity } from "../models/entity/establishment.entity";
 import { log } from "@config/Logger";
+import { validate as validateUUID } from "uuid";
 import moment from "moment";
 
 export const EstablishmentRepository = AppDataSource.getRepository(EstablishmentEntity).extend({
@@ -36,9 +37,13 @@ export const EstablishmentRepository = AppDataSource.getRepository(Establishment
 		return await this.find({ where: { segmentId }, relations: ["user", "segment"] });
 	},
 	async findOneByIdentifier(identifier: string): Promise<EstablishmentEntity> {
-		let isUUID: boolean = identifier.includes("-");
-		if (isUUID) return await this.findById(identifier);
-		else {
+		log.info("Finding establishment by identifier: ", identifier);
+		const isUUID: boolean = validateUUID(identifier)
+		if (isUUID) {
+			log.info("The identifier is an ID: ", identifier);
+			return await this.findOne({ where : { id: identifier }});
+		} else {
+			log.info("The identifier is a code: ", identifier);
 			const searchParam: string = `%${identifier.trim()}%`;
 
 			const establishment: EstablishmentEntity = await this.createQueryBuilder("establishment")
