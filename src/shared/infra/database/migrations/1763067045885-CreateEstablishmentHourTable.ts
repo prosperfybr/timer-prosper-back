@@ -17,7 +17,6 @@ export class CreateEstablishmentHourTable1763067045885 implements MigrationInter
 					{ name: "created_at", type: "timestamp", default: "now()" },
 					{ name: "updated_at", type: "timestamp", default: "now()" },
 				],
-				uniques: [{ columnNames: [this.ESTABLISHMENT_ID_COLUMN, "day_of_week"] }],
 			}),
 			true
 		);

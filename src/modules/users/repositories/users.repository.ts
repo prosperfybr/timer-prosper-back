@@ -7,7 +7,7 @@ export const UserRepository = AppDataSource.getRepository(UserEntity).extend({
 		return await this.findOne({ where: { id }, relations: ["establishments"] });
 	},
 	async findByEmail(email: string): Promise<UserEntity> {
-		return await this.findOne({ where: { email } });
+		return await this.findOne({ where: { email }, relations: ['preferences'] });
 	},
 	async findUserNameByUserId(userId: string): Promise<Pick<UserEntity, "name">> {
 		const user = await this.createQueryBuilder("user").select(["user.name"]).where("user.id = :userId", { userId }).getOne();
