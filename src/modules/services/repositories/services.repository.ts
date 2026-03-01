@@ -13,5 +13,5 @@ export const ServicesRepository = AppDataSource.getRepository(ServicesEntity).ex
 		});
 
 		return services;
-	}
+	},
 });

@@ -96,7 +96,7 @@ export class FindSchedulingService {
 		const [endHour, endMin] = daySlot.closingTime.split(":").map(Number);
 
 		let currentTime = dateMoment.clone().set({ hour: startHour, minute: startMin, second: 0, millisecond: 0 });
-		let endTimeLimit = dateMoment.clone().set({ hour: endHour, minute: endMin, second: 0, millisecond: 0 });
+		const endTimeLimit = dateMoment.clone().set({ hour: endHour, minute: endMin, second: 0, millisecond: 0 });
 
 		const slotDuration = serviceDuration;
 		const momentRange = extendMoment(moment as any);
@@ -158,9 +158,9 @@ export class FindSchedulingService {
 	@Track()
 	public async findAllClientScheduling(id: string): Promise<SchedulingResponse.SLOT[]> {
 		log.info("Finding all schedulings for client or service or collaborator");
-		
+
 		const appointments = await AppointmentRepository.findAppointmentsById(id);
-		
+
 		if (!appointments || appointments.length === 0) {
 			log.info(`No appointments found for identifier: ${id}`);
 			return [];

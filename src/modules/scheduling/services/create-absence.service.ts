@@ -31,7 +31,8 @@ export class CreateAbsenceBlockService {
 	public async execute(payload: CreateAbsenceBlockDTO): Promise<AbsenceBlockResponse.DTO[]> {
 		log.info("Creating a new absence for service or collaborator");
 
-		const { type, isRecurrent, specificDate, dayOfWeek, collaboratorId, serviceId, establishmentId, description, startTime, endTime, active } = payload;
+		const { type, isRecurrent, specificDate, dayOfWeek, collaboratorId, serviceId, establishmentId, description, startTime, endTime, active } =
+			payload;
 
 		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(establishmentId);
 
@@ -42,10 +43,22 @@ export class CreateAbsenceBlockService {
 
 		if (type === AbsenceBlockTypeEnum.BY_COLLABORATOR)
 			return this.mapper.toDto(
-				await this.absenceByCollaborator(isRecurrent, specificDate, dayOfWeek, collaboratorId, establishment.id, description, startTime, endTime, active),
+				await this.absenceByCollaborator(
+					isRecurrent,
+					specificDate,
+					dayOfWeek,
+					collaboratorId,
+					establishment.id,
+					description,
+					startTime,
+					endTime,
+					active,
+				),
 			);
 		else if (type === AbsenceBlockTypeEnum.BY_SERVICE)
-			return this.mapper.toDto(await this.absenceByService(isRecurrent, specificDate, dayOfWeek, serviceId, establishment.id, description, startTime, endTime, active));
+			return this.mapper.toDto(
+				await this.absenceByService(isRecurrent, specificDate, dayOfWeek, serviceId, establishment.id, description, startTime, endTime, active),
+			);
 		else {
 			log.error("Absence type not supported");
 			throw new BadRequestException("Tipo de ausência não suportado");
@@ -68,7 +81,7 @@ export class CreateAbsenceBlockService {
 			throw new InvalidArgumentException("O ID do colaborador é inválido");
 		}
 
-		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: collaboratorId }});
+		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: collaboratorId } });
 
 		if (!collaborator) {
 			log.error(`Collaborator not found by ID [${collaboratorId}]`);
@@ -144,7 +157,7 @@ export class CreateAbsenceBlockService {
 	private findATimeInDescription(description: string): string[] {
 		const timeRegex = /(?:^|\s)(\d{1,2}(?::\d{2}(?::\d{2})?|h\s*\d{2}m(?:\s*\d{2}s)?|h(?!\s)))(\s|$)/gi;
 
-		let rawTimeMatches: string[] = [];
+		const rawTimeMatches: string[] = [];
 		let match;
 
 		while ((match = timeRegex.exec(description)) !== null) {

@@ -55,7 +55,7 @@ export const CollaboratorRepository = AppDataSource.getRepository(CollaboratorEn
 		const dateMoment = moment.utc(new Date(), "YYYY-MM-DD");
 		const startOfDay = dateMoment.clone().startOf("day").format("YYYY-MM-DD HH:mm:ss");
 		const endOfDay = dateMoment.clone().endOf("day").format("YYYY-MM-DD HH:mm:ss");
-		const dayOfWeek: Number = dateMoment.day();
+		const dayOfWeek: number = dateMoment.day();
 
 		log.info("Finding appointments between date: ", startOfDay, " and ", endOfDay);
 

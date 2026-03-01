@@ -19,13 +19,13 @@ export class ServiceTypeEntity {
 	@UpdateDateColumn({ name: "updated_at" })
 	public updatedAt: Date;
 
-	@OneToMany(() => ServicesEntity, services => services.serviceType)
+	@OneToMany(() => ServicesEntity, (services) => services.serviceType)
 	public services: ServicesEntity[];
 
 	@Column({ name: "segment_id", type: "uuid", nullable: false })
 	public segmentId: string;
 
-	@ManyToOne(() => SegmentEntity, segment => segment.establishments)
+	@ManyToOne(() => SegmentEntity, (segment) => segment.establishments)
 	@JoinColumn({ name: "segment_id" })
 	public segment: SegmentEntity;
 }

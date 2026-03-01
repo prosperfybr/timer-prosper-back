@@ -25,7 +25,7 @@ export class CollaboratorController {
 		private readonly createCollaboratorService: CreateCollaboratorService,
 		private readonly findCollaboratorService: FindCollaboratorService,
 		private readonly updateCollaboratorService: UpdateCollaboratorService,
-		private readonly deleteCollaboratorService: DeleteCollaboratorService
+		private readonly deleteCollaboratorService: DeleteCollaboratorService,
 	) {}
 
 	@PostMapping("", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })
@@ -60,7 +60,10 @@ export class CollaboratorController {
 		try {
 			const establishmentId: string = req.params.establishmentId;
 			const userRole: RolesEnum = req.user.role as RolesEnum;
-			if ((userRole === RolesEnum.ADMIN || userRole === RolesEnum.CLIENT || userRole === RolesEnum.COLLABORATOR) && (!establishmentId || establishmentId === 'undefined')) {
+			if (
+				(userRole === RolesEnum.ADMIN || userRole === RolesEnum.CLIENT || userRole === RolesEnum.COLLABORATOR) &&
+				(!establishmentId || establishmentId === "undefined")
+			) {
 				log.info("Is loading in dashboard request, user is not owner.");
 				return res.status(HttpStatusCode.Ok).json({ message: "Não há colaboradores para carregar no momento" });
 			}

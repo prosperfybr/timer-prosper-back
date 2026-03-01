@@ -24,7 +24,7 @@ export class SegmentController {
 		private readonly createSegmentService: CreateSegmentService,
 		private readonly findSegmentService: FindSegmentService,
 		private readonly updateSegmentService: UpdateSegmentService,
-		private readonly deleteSegmentService: DeleteSegmentService
+		private readonly deleteSegmentService: DeleteSegmentService,
 	) {}
 
 	@PostMapping("")

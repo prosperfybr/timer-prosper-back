@@ -9,7 +9,6 @@ import { ServicesEntity } from "@modules/services/models/entity/services.entity"
 
 @Service()
 export class AbsenceBlockResponse {
-
 	constructor() {}
 
 	public async toDto(availability: AbsenceBlockEntity | AbsenceBlockEntity[]): Promise<AbsenceBlockResponse.DTO[]> {
@@ -20,14 +19,15 @@ export class AbsenceBlockResponse {
 			}
 
 			return absences;
-		}
-		else return [await this.fillObject(availability)];
+		} else return [await this.fillObject(availability)];
 	}
 
 	private async fillObject(availability: AbsenceBlockEntity): Promise<AbsenceBlockResponse.DTO> {
-		const collaborator: CollaboratorEntity | null = availability.collaboratorId ? await CollaboratorRepository.findOne({ where: { id: availability.collaboratorId }, relations: ["user"]}) : null;
+		const collaborator: CollaboratorEntity | null = availability.collaboratorId
+			? await CollaboratorRepository.findOne({ where: { id: availability.collaboratorId }, relations: ["user"] })
+			: null;
 		const service: ServicesEntity | null = availability.serviceId ? await ServicesRepository.findById(availability.serviceId) : null;
-		const daysOfWeekNumbers = ["0","1","2","3","4","5","6"];
+		const daysOfWeekNumbers = ["0", "1", "2", "3", "4", "5", "6"];
 		return {
 			id: availability.id,
 			collaboratorId: availability.collaboratorId,

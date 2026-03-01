@@ -8,20 +8,19 @@ import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CancelSchedulingService {
+	constructor() {}
 
-  constructor() {}
+	@Track()
+	public async execute(id: string): Promise<void> {
+		log.info("Excluding a appointment");
+		const appointment: AppointmentEntity = await AppointmentRepository.findOne({ where: { id } });
 
-  @Track()
-  public async execute(id: string): Promise<void> {
-    log.info("Excluding a appointment");
-    const appointment: AppointmentEntity = await AppointmentRepository.findOne({ where: { id }});
+		if (!appointment) {
+			log.error(`Appointment not found by id [${id}]`);
+			throw new BadRequestException("Agendamento não encontrado");
+		}
 
-    if (!appointment) {
-      log.error(`Appointment not found by id [${id}]`);
-      throw new BadRequestException("Agendamento não encontrado");
-    }
-
-    await AppointmentRepository.update(appointment.id, { status: AppointmentStatusEnum.CANCELLED });
-    log.info("Appointment excluded");
-  }
+		await AppointmentRepository.update(appointment.id, { status: AppointmentStatusEnum.CANCELLED });
+		log.info("Appointment excluded");
+	}
 }

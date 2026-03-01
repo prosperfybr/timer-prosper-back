@@ -9,7 +9,6 @@ export interface SchedulingResponseDTO {
 
 @Service()
 export class SchedulingResponse {
-
 	public toSlot(): SchedulingResponse.SLOT[] {
 		return [];
 	}

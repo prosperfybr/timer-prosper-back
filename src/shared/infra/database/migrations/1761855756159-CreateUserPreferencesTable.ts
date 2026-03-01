@@ -19,7 +19,7 @@ export class CreateUserPreferencesTable1761855756159 implements MigrationInterfa
 					{ name: "updated_at", type: "timestamp", isNullable: true },
 				],
 			}),
-			true
+			true,
 		);
 
 		// Chave Estrangeira para a tabela 'users'
@@ -30,7 +30,7 @@ export class CreateUserPreferencesTable1761855756159 implements MigrationInterfa
 				referencedColumnNames: ["id"],
 				referencedTableName: this.USER_TABLE,
 				onDelete: "CASCADE",
-			})
+			}),
 		);
 	}
 

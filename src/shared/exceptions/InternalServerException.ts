@@ -1,10 +1,13 @@
 import { log } from "@config/Logger";
 
-export class InternalServerException implements Error {
-  public name: string = "InternalServerException";
-  public stack?: string;
+export class InternalServerException extends Error {
+	public readonly name = "InternalServerException";
+	public readonly httpStatusCode: number;
 
-  constructor(public message: string, public httpStatusCode: number = 403, stack?: string) {
-    log.error(InternalServerException.name, "constructor");
-  }
+	constructor(message: string, httpStatusCode: number = 500) {
+		super(message);
+		this.httpStatusCode = httpStatusCode;
+		Object.setPrototypeOf(this, InternalServerException.prototype);
+		log.error(InternalServerException.name, "constructor");
+	}
 }

@@ -25,7 +25,7 @@ export const AppointmentRepository = AppDataSource.getRepository(AppointmentEnti
 		});
 	},
 	async findAllByIdentifierClient(id: string): Promise<AppointmentEntity[]> {
-		let querySchedulers = this.createQueryBuilder("appointment")
+		const querySchedulers = this.createQueryBuilder("appointment")
 			.where("appointment.clientId = :id", { id })
 			.orWhere("appointment.serviceId = :id", { id })
 			.orWhere("appointment.collaboratorId = :id", { id });
@@ -61,21 +61,21 @@ export const AppointmentRepository = AppDataSource.getRepository(AppointmentEnti
 	},
 	async findAppointmentsById(id: string) {
 		const query = AppointmentRepository.createQueryBuilder("appointment")
-					.leftJoinAndSelect("appointment.service", "service")
-					.leftJoinAndSelect("appointment.client", "client")
-					.leftJoinAndSelect("appointment.collaborator", "collaborator")
-					.leftJoinAndSelect("collaborator.user", "collabUser")
-					.leftJoinAndSelect("collaborator.establishment", "establishment")
-					.where(
-						"(appointment.clientId = :id OR " +
-							"appointment.collaboratorId = :id OR " +
-							"collaborator.userId = :id OR " +
-							"establishment.id = :id OR " +
-							"establishment.userId = :id)",
-						{ id },
-					);
-		
-				const appointments = await query.getMany();
-				return appointments;
-	}
+			.leftJoinAndSelect("appointment.service", "service")
+			.leftJoinAndSelect("appointment.client", "client")
+			.leftJoinAndSelect("appointment.collaborator", "collaborator")
+			.leftJoinAndSelect("collaborator.user", "collabUser")
+			.leftJoinAndSelect("collaborator.establishment", "establishment")
+			.where(
+				"(appointment.clientId = :id OR " +
+					"appointment.collaboratorId = :id OR " +
+					"collaborator.userId = :id OR " +
+					"establishment.id = :id OR " +
+					"establishment.userId = :id)",
+				{ id },
+			);
+
+		const appointments = await query.getMany();
+		return appointments;
+	},
 });

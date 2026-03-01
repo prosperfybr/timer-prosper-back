@@ -7,18 +7,21 @@ console.log(`[DEBUG] Tentando carregar .env de: ${envPath}`);
 const result = dotenv.config({ path: "/src/.env" }); // Caminho absoluto fixo para garantir no Docker
 
 if (result.error) {
-  console.error("[DEBUG] Erro ao carregar .env:", result.error);
+	console.error("[DEBUG] Erro ao carregar .env:", result.error);
 } else {
-  console.log("[DEBUG] .env carregado com sucesso.");
-  console.log("[DEBUG] DATABASE_URL definida?", !!process.env.DATABASE_URL);
+	console.log("[DEBUG] .env carregado com sucesso.");
+	console.log("[DEBUG] DATABASE_URL definida?", !!process.env.DATABASE_URL);
 }
 
 import cookieParser from "cookie-parser";
 import { HttpStatusCode } from "axios";
 import cors, { CorsOptions } from "cors";
 import express, { NextFunction, Request, Response, Router } from "express";
+import compression from "compression";
+import helmet from "helmet";
 import { AppDataSource } from "@config/ormconfig";
 import { log } from "@config/Logger";
+import { generalLimiter } from "@shared/middlewares/rate-limit.middleware";
 import { router } from "@shared/decorators/router/request-mapping.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { UnauthorizedException } from "@shared/exceptions/UnauthorizedException";
@@ -38,9 +41,12 @@ class ProsperifyApplication {
 		const ALLOWED_ORIGINS: (string | RegExp)[] = ["*"];
 		const corsConfig: CorsOptions = {
 			origin: (origin, callback) => {
-				if (!origin) return callback(null, true);
-
-				callback(null, true);
+				// Permitir requests sem origin (como Postman/curl) ou da lista de permitidos
+				if (!origin || ALLOWED_ORIGINS.includes("*") || ALLOWED_ORIGINS.includes(origin)) {
+					callback(null, true);
+				} else {
+					callback(new Error("Not allowed by CORS"));
+				}
 			},
 			credentials: true,
 			methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
@@ -48,10 +54,26 @@ class ProsperifyApplication {
 			exposedHeaders: "Set-Cookie",
 		};
 
+		app.use(helmet());
 		app.use(cors(corsConfig));
 		app.use(cookieParser());
 		app.use(express.json({ limit: "10mb" }));
 		app.use(express.urlencoded({ limit: "10mb", extended: true, parameterLimit: 10 }));
+
+		app.use(
+			compression({
+				filter: (req, res) => {
+					if (req.headers["x-no-compression"]) {
+						return false;
+					}
+					return compression.filter(req, res);
+				},
+				level: 6,
+			}),
+		);
+
+		// ... inside main
+		app.use(generalLimiter); // Rate limit global
 
 		require("./ProsperifyRoutes");
 		app.use(router);

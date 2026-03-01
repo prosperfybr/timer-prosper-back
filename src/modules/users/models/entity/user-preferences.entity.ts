@@ -9,7 +9,7 @@ export class UserPreferencesEntity {
 	@Column({ type: "uuid", name: "user_id", nullable: false, unique: true })
 	public userId: string;
 
-	@OneToOne(() => UserEntity, user => user.preferences, { onDelete: "CASCADE" })
+	@OneToOne(() => UserEntity, (user) => user.preferences, { onDelete: "CASCADE" })
 	@JoinColumn({ name: "user_id" })
 	public user: UserEntity;
 

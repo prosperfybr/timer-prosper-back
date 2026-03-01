@@ -1,4 +1,4 @@
 export enum AbsenceBlockTypeEnum {
-  BY_COLLABORATOR = 'collaborator',
-  BY_SERVICE = 'service'
+	BY_COLLABORATOR = "collaborator",
+	BY_SERVICE = "service",
 }

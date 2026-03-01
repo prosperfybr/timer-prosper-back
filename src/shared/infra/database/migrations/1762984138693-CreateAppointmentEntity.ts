@@ -25,7 +25,7 @@ export class CreateAppointmentEntity1762984138693 implements MigrationInterface 
 				],
 				indices: [{ columnNames: [this.COLLABORATOR_ID, "start_time", "end_time"] }],
 			}),
-			true
+			true,
 		);
 
 		// FK para Collaborator
@@ -36,7 +36,7 @@ export class CreateAppointmentEntity1762984138693 implements MigrationInterface 
 				referencedColumnNames: ["id"],
 				referencedTableName: "collaborators",
 				onDelete: "RESTRICT", // Não permite deletar o colaborador se ele tiver agendamentos
-			})
+			}),
 		);
 
 		// FK para Client
@@ -47,7 +47,7 @@ export class CreateAppointmentEntity1762984138693 implements MigrationInterface 
 				referencedColumnNames: ["id"],
 				referencedTableName: "users",
 				onDelete: "RESTRICT", // Não permite deletar o cliente se ele tiver agendamentos
-			})
+			}),
 		);
 
 		// FK para Service
@@ -58,7 +58,7 @@ export class CreateAppointmentEntity1762984138693 implements MigrationInterface 
 				referencedColumnNames: ["id"],
 				referencedTableName: "services", // Assumindo 'services' é o nome da tabela
 				onDelete: "RESTRICT",
-			})
+			}),
 		);
 	}
 

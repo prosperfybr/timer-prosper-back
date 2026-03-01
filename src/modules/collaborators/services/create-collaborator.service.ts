@@ -43,7 +43,7 @@ export class CreateCollaboratorService {
 		private readonly updateUserService: UpdateUserService,
 		//- Utils
 		private readonly validatorUtils: ValidatorUtils,
-		private readonly formatterUtils: FormatterUtils
+		private readonly formatterUtils: FormatterUtils,
 	) {}
 
 	@Track()
@@ -57,7 +57,7 @@ export class CreateCollaboratorService {
 			log.error(`No services ids is received [${servicesIds}]`);
 			throw new InvalidArgumentException("O colaborador deve estar associado a pelo menos um serviço");
 		}
-		const services: ServicesEntity[] = await ServicesRepository.find({ where: { id: In(servicesIds) }});
+		const services: ServicesEntity[] = await ServicesRepository.find({ where: { id: In(servicesIds) } });
 		if (!services || services.length === 0) {
 			log.error(`No services found with IDs`);
 			throw new BadRequestException("Não foram encontrados serviços com os IDs informados");
@@ -92,14 +92,18 @@ export class CreateCollaboratorService {
 		collaboratorToSave.hiringDate = hiringDate;
 		const collaboratorSaved: CollaboratorEntity = await CollaboratorRepository.save(collaboratorToSave);
 
-		const collaboratorServicesRelationshipToSave: CollaboratorsServicesEntity[] = services.map(service => new CollaboratorsServicesEntity(collaboratorSaved.id, service.id));
-		const collaboratorServicesRelationshipSaved: CollaboratorsServicesEntity[] = await CollaboratorServicesRepository.save(collaboratorServicesRelationshipToSave);
+		const collaboratorServicesRelationshipToSave: CollaboratorsServicesEntity[] = services.map(
+			(service) => new CollaboratorsServicesEntity(collaboratorSaved.id, service.id),
+		);
+		const collaboratorServicesRelationshipSaved: CollaboratorsServicesEntity[] = await CollaboratorServicesRepository.save(
+			collaboratorServicesRelationshipToSave,
+		);
 
 		return {
 			id: collaboratorSaved.id,
 			userId: collaboratorUserCreated.id,
 			establishmentId: collaboratorSaved.establishmentId,
-			servicesIds: collaboratorServicesRelationshipSaved.map(relation => relation.id),
+			servicesIds: collaboratorServicesRelationshipSaved.map((relation) => relation.id),
 			collaboratorFunction: collaboratorSaved.collaboratorFunction,
 			specialty: collaboratorSaved.specialty,
 			hiringDate: collaboratorSaved.hiringDate,

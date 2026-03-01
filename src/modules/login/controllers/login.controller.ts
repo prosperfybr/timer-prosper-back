@@ -21,7 +21,11 @@ export class LoginController {
 	public async login(req: Request, res: Response, next: NextFunction) {
 		try {
 			const login: DoLoginDTO = req.body as DoLoginDTO;
-			const { token, refreshToken, type, expiresIn, refreshExpiresIn, user, establishment }: LoginResponseDTO = await this.loginService.doLogin(login, req.ip, req.get("User-Agent"));
+			const { token, refreshToken, type, expiresIn, refreshExpiresIn, user, establishment }: LoginResponseDTO = await this.loginService.doLogin(
+				login,
+				req.ip,
+				req.get("User-Agent"),
+			);
 
 			res.cookie("refreshToken", refreshToken, {
 				httpOnly: true,
@@ -41,7 +45,7 @@ export class LoginController {
 					type,
 					expiresIn,
 					user,
-					establishment
+					establishment,
 				},
 			});
 		} catch (error) {
@@ -70,11 +74,8 @@ export class LoginController {
 
 			const { token: newAccessToken, expiresIn }: { token: string; expiresIn: number } = this.loginService.generateAccessToken(tokenEntity.user);
 			await this.loginService.revokeRefreshToken(tokenEntity);
-			const { refreshToken, expiresIn: refreshExpiresIn }: { refreshToken: string; expiresIn: Date } = await this.loginService.generateAndSaveRefreshToken(
-				tokenEntity.user,
-				req.ip,
-				req.get("User-Agent")
-			);
+			const { refreshToken, expiresIn: refreshExpiresIn }: { refreshToken: string; expiresIn: Date } =
+				await this.loginService.generateAndSaveRefreshToken(tokenEntity.user, req.ip, req.get("User-Agent"));
 
 			res.cookie("refreshToken", refreshToken, {
 				httpOnly: true,
@@ -104,8 +105,8 @@ export class LoginController {
 			await this.loginService.logout(id);
 			return res.status(HttpStatusCode.Ok).json({
 				message: "Usuário deslogado com sucesso",
-				payload: null
-			})
+				payload: null,
+			});
 		} catch (error) {
 			log.error(`An error has occurred while logging out user. ERROR: `, error);
 			next(error);

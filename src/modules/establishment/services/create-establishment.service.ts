@@ -32,7 +32,7 @@ export class CreateEstablishmentService {
 	constructor(
 		//- Utils
 		private readonly validatorUtils: ValidatorUtils,
-		private readonly generatorUtils: GeneratorUtils
+		private readonly generatorUtils: GeneratorUtils,
 	) {}
 
 	@Track()
@@ -105,7 +105,8 @@ export class CreateEstablishmentService {
 		/**
 		 * todo -> Revisar esta atualização de perfil depois que o sistema de pagamentos estiver implementado
 		 */
-		if (user.role == RolesEnum.OWNER || user.role == RolesEnum.ADMIN) log.info(`User is already [${RolesEnum.OWNER}], nothing to update in a user role`);
+		if (user.role == RolesEnum.OWNER || user.role == RolesEnum.ADMIN)
+			log.info(`User is already [${RolesEnum.OWNER}], nothing to update in a user role`);
 		else {
 			log.info(`User isn't a [${RolesEnum.OWNER}]. It is a [${user.role}]. Updating a user role`);
 			await UserRepository.update(user.id, { role: RolesEnum.OWNER });

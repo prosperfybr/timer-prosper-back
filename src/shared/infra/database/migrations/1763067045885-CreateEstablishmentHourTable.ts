@@ -18,7 +18,7 @@ export class CreateEstablishmentHourTable1763067045885 implements MigrationInter
 					{ name: "updated_at", type: "timestamp", default: "now()" },
 				],
 			}),
-			true
+			true,
 		);
 
 		// FK para 'establishments'
@@ -29,7 +29,7 @@ export class CreateEstablishmentHourTable1763067045885 implements MigrationInter
 				referencedColumnNames: ["id"],
 				referencedTableName: "establishments",
 				onDelete: "CASCADE",
-			})
+			}),
 		);
 	}
 

@@ -1,14 +1,11 @@
-import { log } from '@config/Logger';
-import { Service } from '@shared/decorators/service.decorator';
-import { InvalidArgumentException } from '@shared/exceptions/InvalidArgumentException';
-import { FormatterUtils } from '@shared/utils/formatter.utils';
-import {
-	EstablishmentHourResponseDTO,
-	HourResponseDTO,
-} from '@modules/establishment/models/dto/establishment/establishment-hour-response.dto';
-import { EstablishmentHourEntity } from '@modules/establishment/models/entity/establishment-hour.entity';
-import { EstablishmentHourRepository } from '@modules/establishment/repositories/establishment-hour.repository';
-import { Track } from '@shared/decorators/logs/track.decorator';
+import { log } from "@config/Logger";
+import { Service } from "@shared/decorators/service.decorator";
+import { InvalidArgumentException } from "@shared/exceptions/InvalidArgumentException";
+import { FormatterUtils } from "@shared/utils/formatter.utils";
+import { EstablishmentHourResponseDTO, HourResponseDTO } from "@modules/establishment/models/dto/establishment/establishment-hour-response.dto";
+import { EstablishmentHourEntity } from "@modules/establishment/models/entity/establishment-hour.entity";
+import { EstablishmentHourRepository } from "@modules/establishment/repositories/establishment-hour.repository";
+import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindEstablishmentHourService {
@@ -21,11 +18,10 @@ export class FindEstablishmentHourService {
 	public async execute(establishmentId: string): Promise<EstablishmentHourResponseDTO> {
 		if (!establishmentId) {
 			log.error(`Establishment ID is required, but received [${establishmentId}]`);
-			throw new InvalidArgumentException('O ID do estabelecimento é obrigatório');
+			throw new InvalidArgumentException("O ID do estabelecimento é obrigatório");
 		}
 
-		const establishmentHours: EstablishmentHourEntity[] =
-			await EstablishmentHourRepository.findAllByEstablishment(establishmentId);
+		const establishmentHours: EstablishmentHourEntity[] = await EstablishmentHourRepository.findAllByEstablishment(establishmentId);
 
 		if (!establishmentHours || establishmentHours.length === 0) {
 			log.warn(`The establishment does not yet have set operating hours`);
@@ -35,9 +31,7 @@ export class FindEstablishmentHourService {
 		return this.treatData(establishmentHours);
 	}
 
-	private treatData(
-		hours: EstablishmentHourEntity[],
-	): EstablishmentHourResponseDTO {
+	private treatData(hours: EstablishmentHourEntity[]): EstablishmentHourResponseDTO {
 		const [{ establishment }] = hours;
 
 		const hoursToResponse: HourResponseDTO[] = [];
@@ -79,7 +73,7 @@ export class FindEstablishmentHourService {
 				updatedAt: establishment.updatedAt,
 				user: null,
 				services: null,
-				segment:null,
+				segment: null,
 			},
 			hours: hoursToResponse,
 		} as EstablishmentHourResponseDTO;

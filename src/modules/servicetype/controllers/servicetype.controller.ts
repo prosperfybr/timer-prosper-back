@@ -24,7 +24,7 @@ export class ServiceTypeController {
 		private readonly createServiceTypeService: CreateServiceTypeService,
 		private readonly findServiceTypeService: FindServiceTypeService,
 		private readonly updateServiceTypeService: UpdateServiceTypeService,
-		private readonly deleteServiceTypeService: DeleteServiceTypeService
+		private readonly deleteServiceTypeService: DeleteServiceTypeService,
 	) {}
 
 	@PostMapping("", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.OWNER] })

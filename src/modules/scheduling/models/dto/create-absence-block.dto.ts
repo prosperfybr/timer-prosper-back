@@ -5,7 +5,7 @@ export interface CreateAbsenceBlockDTO {
 	type: AbsenceBlockTypeEnum;
 	isRecurrent: boolean;
 	dayOfWeek?: DaysOfWeekEnum;
-  specificDate?: Date;
+	specificDate?: Date;
 	collaboratorId?: string;
 	serviceId?: string;
 	establishmentId: string;

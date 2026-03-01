@@ -19,9 +19,9 @@ export class SegmentEntity {
 	@UpdateDateColumn({ name: "updated_at" })
 	public updatedAt: Date;
 
-	@OneToMany(() => EstablishmentEntity, establishment => establishment.segment)
+	@OneToMany(() => EstablishmentEntity, (establishment) => establishment.segment)
 	public establishments: EstablishmentEntity[];
 
-	@OneToMany(() => ServiceTypeEntity, serviceType => serviceType.segment)
+	@OneToMany(() => ServiceTypeEntity, (serviceType) => serviceType.segment)
 	public serviceTypes: ServiceTypeEntity[];
 }

@@ -2,7 +2,7 @@ import { SegmentEntity } from "@modules/segment/models/entity/segment.entity";
 import { ServicesEntity } from "@modules/services/models/entity/services.entity";
 import { UserEntity } from "@modules/users/models/entity/user.entity";
 import { Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from "typeorm";
-import {ClientEstablishmentEntity} from "@modules/establishment/models/entity/client-establishment.entity";
+import { ClientEstablishmentEntity } from "@modules/establishment/models/entity/client-establishment.entity";
 import { CollaboratorEntity } from "@modules/collaborators/models/entity/collaborator.entity";
 import { EstablishmentHourEntity } from "./establishment-hour.entity";
 
@@ -74,23 +74,23 @@ export class EstablishmentEntity {
 	@Column({ name: "segment_id", type: "uuid", nullable: false })
 	public segmentId: string;
 
-	@ManyToOne(() => SegmentEntity, segment => segment.establishments)
+	@ManyToOne(() => SegmentEntity, (segment) => segment.establishments)
 	@JoinColumn({ name: "segment_id" })
 	public segment: SegmentEntity;
 
-	@ManyToOne(() => UserEntity, user => user.establishments)
+	@ManyToOne(() => UserEntity, (user) => user.establishments)
 	@JoinColumn({ name: "user_id" })
 	public user: UserEntity;
 
-	@OneToMany(() => ServicesEntity, service => service.establishment)
+	@OneToMany(() => ServicesEntity, (service) => service.establishment)
 	public services: ServicesEntity[];
 
-	@OneToMany(() => ClientEstablishmentEntity, clientEstablishment => clientEstablishment.establishment)
+	@OneToMany(() => ClientEstablishmentEntity, (clientEstablishment) => clientEstablishment.establishment)
 	public clients: ClientEstablishmentEntity[];
 
-	@OneToMany(() => CollaboratorEntity, collaborator => collaborator.establishment)
+	@OneToMany(() => CollaboratorEntity, (collaborator) => collaborator.establishment)
 	public collaborators: CollaboratorEntity[];
 
-	@OneToMany(() => EstablishmentHourEntity, hour => hour.establishment)
+	@OneToMany(() => EstablishmentHourEntity, (hour) => hour.establishment)
 	public hours: EstablishmentHourEntity[];
 }

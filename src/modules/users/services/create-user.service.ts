@@ -22,7 +22,7 @@ export class CreateUserService {
 	constructor(
 		//- Utils
 		private readonly validatorUtils: ValidatorUtils,
-		private readonly formatterUtils: FormatterUtils
+		private readonly formatterUtils: FormatterUtils,
 	) {}
 
 	@Track()
@@ -59,7 +59,7 @@ export class CreateUserService {
 		await UserPreferencesRepository.save(preferences);
 
 		/** VERIFY IF HAS AN INVITE **/
-		const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findOne({ where : { clientEmail: email }});
+		const invite: ClientEstablishmentEntity = await ClientEstablishmentRepository.findOne({ where: { clientEmail: email } });
 		if (invite && invite.requestedBy === ClientRequestByEnum.ESTABLISHMENT) {
 			log.info("This user has an invite pending");
 			invite.approvedAt = new Date();

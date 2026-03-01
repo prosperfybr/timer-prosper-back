@@ -36,7 +36,7 @@ export class FindServiceTypeService {
 			segmentId: serviceType.segment.id,
 			segmentName: serviceType.segment.name,
 			services: serviceType.services.map(
-				service =>
+				(service) =>
 					({
 						id: service.id,
 						name: service.name,
@@ -44,7 +44,7 @@ export class FindServiceTypeService {
 						price: this.converterUtils.convertCentsToFloat(service.price),
 						duration: service.duration,
 						durationFormated: this.converterUtils.convertMinutesInTime(service.duration),
-					} as ServiceResponseDTO)
+					}) as ServiceResponseDTO,
 			),
 		} as ServiceTypeResponseDTO;
 	}
@@ -66,14 +66,14 @@ export class FindServiceTypeService {
 		}
 
 		return servicesType.map(
-			serviceType =>
+			(serviceType) =>
 				({
 					id: serviceType.id,
 					name: serviceType.name,
 					description: serviceType.description,
 					segmentId: serviceType.segment.id,
 					segmentName: serviceType.segment.name,
-				} as ServiceTypeResponseDTO)
+				}) as ServiceTypeResponseDTO,
 		);
 	}
 
@@ -94,14 +94,14 @@ export class FindServiceTypeService {
 		}
 
 		return servicesType.map(
-			serviceType =>
+			(serviceType) =>
 				({
 					id: serviceType.id,
 					name: serviceType.name,
 					description: serviceType.description,
 					segmentId: serviceType.segment.id,
 					segmentName: serviceType.segment.name,
-				} as ServiceTypeResponseDTO)
+				}) as ServiceTypeResponseDTO,
 		);
 	}
 
@@ -115,14 +115,14 @@ export class FindServiceTypeService {
 		}
 
 		return servicesType.map(
-			serviceType =>
+			(serviceType) =>
 				({
 					id: serviceType.id,
 					name: serviceType.name,
 					description: serviceType.description,
 					segmentId: serviceType.segment.id,
 					segmentName: serviceType.segment.name,
-				} as ServiceTypeResponseDTO)
+				}) as ServiceTypeResponseDTO,
 		);
 	}
 }

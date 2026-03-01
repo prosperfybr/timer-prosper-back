@@ -7,10 +7,7 @@ import moment from "moment";
 export const EstablishmentRepository = AppDataSource.getRepository(EstablishmentEntity).extend({
 	async findByIdOrCode(identifier: string): Promise<EstablishmentEntity> {
 		const establishment = await this.findOne({
-			where: [
-				{ id: identifier },
-				{ code: identifier },
-			],
+			where: [{ id: identifier }, { code: identifier }],
 			relations: ["user", "services", "segment"],
 			order: {
 				services: { name: "ASC" },
@@ -38,10 +35,10 @@ export const EstablishmentRepository = AppDataSource.getRepository(Establishment
 	},
 	async findOneByIdentifier(identifier: string): Promise<EstablishmentEntity> {
 		log.info("Finding establishment by identifier: ", identifier);
-		const isUUID: boolean = validateUUID(identifier)
+		const isUUID: boolean = validateUUID(identifier);
 		if (isUUID) {
 			log.info("The identifier is an ID: ", identifier);
-			return await this.findOne({ where : { id: identifier }});
+			return await this.findOne({ where: { id: identifier } });
 		} else {
 			log.info("The identifier is a code: ", identifier);
 			const searchParam: string = `%${identifier.trim()}%`;
@@ -72,9 +69,9 @@ export const EstablishmentRepository = AppDataSource.getRepository(Establishment
 	async findEstablishmentCollaboratorsStats(ownerId: string): Promise<any[]> {
 		log.info("Finding collaborators stats for establishment");
 
-		const dateMoment = moment.utc(new Date(), 'YYYY-MM-DD');
-		const startOfDay = dateMoment.clone().startOf("day").format('YYYY-MM-DD HH:mm:ss');
-		const endOfDay = dateMoment.clone().endOf("day").format('YYYY-MM-DD HH:mm:ss');
+		const dateMoment = moment.utc(new Date(), "YYYY-MM-DD");
+		const startOfDay = dateMoment.clone().startOf("day").format("YYYY-MM-DD HH:mm:ss");
+		const endOfDay = dateMoment.clone().endOf("day").format("YYYY-MM-DD HH:mm:ss");
 		const dayOfWeek: number = dateMoment.day();
 
 		log.info("Finding appointments between date: ", startOfDay, " and ", endOfDay);
@@ -106,11 +103,13 @@ export const EstablishmentRepository = AppDataSource.getRepository(Establishment
 		const result = await this.query(sql);
 
 		log.info("Collaborators stats for establishment consulted");
-		return result.length > 0 ? result.map(row => {
-			return {
-				...row,
-				totalScheduledDuration: Number(row.totalScheduledDuration || 0)
-			}
-		}) : [];
+		return result.length > 0
+			? result.map((row) => {
+					return {
+						...row,
+						totalScheduledDuration: Number(row.totalScheduledDuration || 0),
+					};
+				})
+			: [];
 	},
 });

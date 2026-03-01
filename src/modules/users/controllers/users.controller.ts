@@ -31,10 +31,10 @@ export class UserController {
 		private readonly deleteUserService: DeleteUserService,
 		//- Preferences
 		private readonly findUserPreferencesService: FindUserPreferencesService,
-		private readonly updateUserPreferencesService: UpdateUserPreferencesService
+		private readonly updateUserPreferencesService: UpdateUserPreferencesService,
 	) {}
 
-	@PostMapping("")
+	@PostMapping("", { validation: CreateUserDTO })
 	@ControllerLog()
 	public async create(req: Request, res: Response, next: NextFunction) {
 		try {

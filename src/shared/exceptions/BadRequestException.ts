@@ -1,10 +1,13 @@
 import { log } from "@config/Logger";
 
-export class BadRequestException implements Error {
-  public name: string = "BadRequestException";
-  public stack?: string;
+export class BadRequestException extends Error {
+	public readonly name = "BadRequestException";
+	public readonly httpStatusCode: number;
 
-  constructor(public message: string, public httpStatusCode: number = 400, stack?: string) {
-    log.error(BadRequestException.name, "constructor");
-  }
+	constructor(message: string, httpStatusCode: number = 400) {
+		super(message);
+		this.httpStatusCode = httpStatusCode;
+		Object.setPrototypeOf(this, BadRequestException.prototype);
+		log.error(BadRequestException.name, "constructor");
+	}
 }

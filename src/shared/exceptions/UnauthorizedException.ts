@@ -1,10 +1,13 @@
 import { log } from "@config/Logger";
 
-export class UnauthorizedException implements Error {
-  public name: string = "UnauthorizedException";
-  public stack?: string;
+export class UnauthorizedException extends Error {
+	public readonly name = "UnauthorizedException";
+	public readonly httpStatusCode: number;
 
-  constructor(public message: string, public httpStatusCode: number = 401, stack?: string) {
-    log.error(UnauthorizedException.name, "constructor");
-  }
+	constructor(message: string, httpStatusCode: number = 401) {
+		super(message);
+		this.httpStatusCode = httpStatusCode;
+		Object.setPrototypeOf(this, UnauthorizedException.prototype);
+		log.error(UnauthorizedException.name, "constructor");
+	}
 }

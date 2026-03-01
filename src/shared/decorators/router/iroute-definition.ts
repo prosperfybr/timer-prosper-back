@@ -1,6 +1,6 @@
 export interface IRouteDefinition {
 	path: string;
-	method: 'get' | 'post' | 'put' | 'delete' | 'patch';
+	method: "get" | "post" | "put" | "delete" | "patch";
 	methodName: string;
-	config?: { authenticated?: boolean; activated?: boolean; roles?: string[] }
+	config?: { authenticated?: boolean; activated?: boolean; roles?: string[]; validation?: any };
 }

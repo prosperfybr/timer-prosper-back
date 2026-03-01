@@ -7,7 +7,7 @@ import { RequestMapping } from "@shared/decorators/router/request-mapping.decora
 import { HttpStatusCode } from "axios";
 import { NextFunction, Request, Response } from "express";
 import { CreateSchedulingService } from "../services/create-scheduling.service";
-import { FindSchedulingService } from '../services/find-scheduling.service';
+import { FindSchedulingService } from "../services/find-scheduling.service";
 import { CancelSchedulingService } from "../services/cancel-scheduling.service";
 import { ControllerLog } from "@shared/decorators/logs/controller.decorator";
 
@@ -17,7 +17,7 @@ export class SchedulingController {
 	constructor(
 		private readonly createSchedulingService: CreateSchedulingService,
 		private readonly findSchedulingService: FindSchedulingService,
-		private readonly cancelSchedulingService: CancelSchedulingService
+		private readonly cancelSchedulingService: CancelSchedulingService,
 	) {}
 
 	@PostMapping("")
@@ -37,7 +37,7 @@ export class SchedulingController {
 	@ControllerLog()
 	public async findById(req: Request, res: Response, next: NextFunction) {
 		try {
-			const {establishmentId, serviceId, collaboratorId, date } = req.params;
+			const { establishmentId, serviceId, collaboratorId, date } = req.params;
 			const slots = await this.findSchedulingService.findAvailableSlots(establishmentId, date, serviceId, collaboratorId);
 			return res.status(HttpStatusCode.Ok).json({ message: "Horários disponíveis para agendamento listados com sucesso", payload: slots });
 		} catch (error) {

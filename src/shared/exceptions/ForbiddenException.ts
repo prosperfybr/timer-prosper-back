@@ -1,10 +1,13 @@
 import { log } from "@config/Logger";
 
-export class ForbiddenException implements Error {
-  public name: string = "ForbiddenException";
-  public stack?: string;
+export class ForbiddenException extends Error {
+	public readonly name = "ForbiddenException";
+	public readonly httpStatusCode: number;
 
-  constructor(public message: string, public httpStatusCode: number = 403, stack?: string) {
-    log.error(ForbiddenException.name, "constructor");
-  }
+	constructor(message: string, httpStatusCode: number = 403) {
+		super(message);
+		this.httpStatusCode = httpStatusCode;
+		Object.setPrototypeOf(this, ForbiddenException.prototype);
+		log.error(ForbiddenException.name, "constructor");
+	}
 }

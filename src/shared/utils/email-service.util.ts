@@ -7,7 +7,7 @@ export enum WebhookEmailType {
 	CONVITE_CLIENTE = "CONVITE_CLIENTE",
 	CLIENTE_SOLICITANDO_VINCULO = "CLIENTE_SOLICITANDO_VINCULO",
 	AGENDAMENTO_ALTERADO = "AGENDAMENTO_ALTERADO",
-	ESTABELECIMENTO_FECHADO = "ESTABELECIMENTO_FECHADO"
+	ESTABELECIMENTO_FECHADO = "ESTABELECIMENTO_FECHADO",
 }
 export interface EmailWebhookPayload {
 	email_type: WebhookEmailType;
@@ -41,13 +41,19 @@ export class EmailService {
 		}
 	}
 
-	public static buildEmailPayload(type: WebhookEmailType, tradeName: string, clientEmails: string[], clientName: string, dateChanged?: Date, register_link?: string): EmailWebhookPayload {
-
+	public static buildEmailPayload(
+		type: WebhookEmailType,
+		tradeName: string,
+		clientEmails: string[],
+		clientName: string,
+		dateChanged?: Date,
+		register_link?: string,
+	): EmailWebhookPayload {
 		return {
 			email_type: type,
 			establishment_register: tradeName,
 			link_cadastro: "https://timerprosper.com.br/finalizar-cadastro?token=a1b2c3d4e5",
-			client_email: clientEmails.map(item => item).join(", "),
+			client_email: clientEmails.map((item) => item).join(", "),
 			client_name: clientName,
 			date_changed: dateChanged,
 		} as EmailWebhookPayload;

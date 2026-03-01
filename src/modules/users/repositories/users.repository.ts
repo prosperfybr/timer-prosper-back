@@ -4,24 +4,21 @@ import { UserEntity } from "../models/entity/user.entity";
 
 export const UserRepository = AppDataSource.getRepository(UserEntity).extend({
 	async findById(id: string): Promise<UserEntity> {
-		return await this.findOne({ where: { id }, relations: ["establishments"] });
+		return await this.createQueryBuilder("user").leftJoinAndSelect("user.establishments", "establishments").where("user.id = :id", { id }).getOne();
 	},
 	async findByEmail(email: string): Promise<UserEntity> {
-		return await this.findOne({ where: { email }, relations: ['preferences'] });
+		return await this.createQueryBuilder("user")
+			.leftJoinAndSelect("user.preferences", "preferences")
+			.where("user.email = :email", { email })
+			.getOne();
 	},
 	async findUserNameByUserId(userId: string): Promise<Pick<UserEntity, "name">> {
 		const user = await this.createQueryBuilder("user").select(["user.name"]).where("user.id = :userId", { userId }).getOne();
 		return user as Pick<UserEntity, "name">;
 	},
 	async findUserEstablishments(id: string): Promise<EstablishmentEntity[]> {
-		const userWithEstablishments: UserEntity = await this.findOne({
-			where: { id },
-			relations: ["establishments"],
-			order: { establishments: { tradeName: "ASC" } },
-		});
-
-		if (!userWithEstablishments) return [];
-		return userWithEstablishments.establishments;
+		// Optimization: Use relation loader instead of loading full user
+		return await this.createQueryBuilder().relation(UserEntity, "establishments").of(id).loadMany();
 	},
 	async getUserDetails(userId: string): Promise<any> {
 		const result = await this.createQueryBuilder("user")
@@ -80,5 +77,5 @@ export const UserRepository = AppDataSource.getRepository(UserEntity).extend({
 			LIMIT 5;`;
 		const recentEstablishmentResult = await this.query(recentEstablishmentSql);
 		return { mainResult: result, recentEstablishments: recentEstablishmentResult };
-	}
+	},
 });
