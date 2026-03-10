@@ -8,7 +8,7 @@ WORKDIR /src
 COPY package*.json ./
 
 # Install all dependencies (including devDependencies for build)
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # Copy all source code
 COPY . .
@@ -21,7 +21,7 @@ FROM node:22.17.0 AS production
 WORKDIR /src
 
 COPY package*.json ./
-RUN npm install --only=production
+RUN npm install --omit=dev --legacy-peer-deps
 
 COPY --from=build /src/dist ./dist
 
