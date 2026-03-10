@@ -18,7 +18,7 @@ export class DeleteCollaboratorService {
 			throw new InvalidArgumentException("O ID do colaborador é obrigatório");
 		}
 
-		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id }});
+		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id } });
 
 		if (!collaborator) {
 			log.error(`Collaborator not found with ID`);

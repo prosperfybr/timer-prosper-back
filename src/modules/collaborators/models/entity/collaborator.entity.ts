@@ -35,7 +35,7 @@ export class CollaboratorEntity {
 	@JoinColumn({ name: "user_id" })
 	public user: UserEntity;
 
-	@ManyToOne(() => EstablishmentEntity, establishment => establishment.collaborators)
+	@ManyToOne(() => EstablishmentEntity, (establishment) => establishment.collaborators)
 	@JoinColumn({ name: "establishment_id" })
 	public establishment: EstablishmentEntity;
 }

@@ -125,10 +125,10 @@ export class CreateEstablishmentTable1761131152868 implements MigrationInterface
 					{
 						name: "updated_at",
 						type: "timestamp",
-						isNullable: true
+						isNullable: true,
 					},
 				],
-			})
+			}),
 		);
 	}
 

@@ -7,6 +7,7 @@ import { InviteService } from "@modules/establishment/services/invite.service";
 import { RolesEnum } from "@modules/users/models/enum/roles.enum";
 import { ControllerLog } from "@shared/decorators/logs/controller.decorator";
 import { RestController } from "@shared/decorators/restcontroller.decorator";
+import { DeleteMapping } from "@shared/decorators/router/delete-mapping.decorator";
 import { GetMapping } from "@shared/decorators/router/get-mapping.decorator";
 import { PatchMapping } from "@shared/decorators/router/patch-mapping.decorator";
 import { PostMapping } from "@shared/decorators/router/post-mapping.decorator";
@@ -17,7 +18,10 @@ import { NextFunction, Request, Response } from "express";
 @RequestMapping("client")
 @RestController()
 export class ClientController {
-	constructor(private readonly findClientEstablishmentService: FindClientEstablishmentService, private readonly inviteService: InviteService) {}
+	constructor(
+		private readonly findClientEstablishmentService: FindClientEstablishmentService,
+		private readonly inviteService: InviteService,
+	) {}
 
 	@GetMapping("/establishments/:clientId", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.CLIENT] })
 	@ControllerLog()
@@ -44,6 +48,19 @@ export class ClientController {
 			return res.status(HttpStatusCode.Created).json({ message: "Convite enviado para o estabelecimento.", payload: invite });
 		} catch (error) {
 			log.error("An error has occurred while assign client to establishment. ERROR: ", error);
+			next(error);
+		}
+	}
+
+	@DeleteMapping("/remove/establishment/:relationshipId", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.CLIENT] })
+	@ControllerLog()
+	public async removeEstablishmentRelationship(req: Request, res: Response, next: NextFunction) {
+		try {
+			const relationshipId: string = req.params.relationshipId;
+			await this.inviteService.removeEstablishmentRelationship(relationshipId);
+			return res.status(HttpStatusCode.Ok).json({ message: "Relacionamento removido com sucesso." });
+		} catch (error) {
+			log.error("An error has occurred while remove establishment relationship. ERROR: ", error);
 			next(error);
 		}
 	}

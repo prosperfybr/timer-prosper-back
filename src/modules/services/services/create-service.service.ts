@@ -15,9 +15,7 @@ import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class CreateServiceService {
-	constructor(
-		private readonly converterUtils: ConverterUtils
-	) {}
+	constructor(private readonly converterUtils: ConverterUtils) {}
 
 	@Track()
 	public async execute(payload: CreateServiceDTO): Promise<ServiceResponseDTO> {

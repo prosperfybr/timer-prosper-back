@@ -19,12 +19,12 @@ import { Track } from "@shared/decorators/logs/track.decorator";
 export class UpdateCollaboratorService {
 	constructor(
 		//- Services
-		private readonly findCollaboratorService: FindCollaboratorService
+		private readonly findCollaboratorService: FindCollaboratorService,
 	) {}
 
 	@Track()
 	public async execute(id: string, collaboratorToUpdate: UpdateCollaboratorDTO): Promise<CollaboratorResponseDTO> {
-		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id }});
+		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id } });
 
 		if (!collaborator) {
 			log.error(`Collaborator not found with id [${id}]`);
@@ -43,6 +43,7 @@ export class UpdateCollaboratorService {
 		user.email = email && email !== user.email ? email : user.email;
 		user.password = password ? await hash(password, 10) : user.password;
 		user.whatsApp = whatsApp && whatsApp !== user.whatsApp ? whatsApp : user.whatsApp;
+		delete user.establishments
 		await UserRepository.update(user.id, user);
 
 		collaborator.collaboratorFunction =
@@ -54,9 +55,9 @@ export class UpdateCollaboratorService {
 		await CollaboratorRepository.update(collaborator.id, collaborator);
 
 		if (servicesIds.length > 0) {
-			log.info("Services has changed, update all");
+			log.info("Verifying if services has changed, update all");
 			const services: CollaboratorsServicesEntity[] = await CollaboratorServicesRepository.findAllServicesByCollaboratorId(collaborator.id);
-			const savedServicesIds: string[] = services.map(service => service.id);
+			const savedServicesIds: string[] = services.map((service) => service.serviceId);
 			const { addedIds, removedIds }: { addedIds: string[]; removedIds: string[] } = this.compareIds(savedServicesIds, servicesIds);
 			log.info("Syncronizing relationship between collaborator and services");
 			await CollaboratorServicesRepository.syncRelationship(collaborator.id, addedIds, removedIds);
@@ -73,7 +74,7 @@ export class UpdateCollaboratorService {
 			throw new InvalidArgumentException("O ID do colaborador é obrigatório");
 		}
 
-		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: collaboratorId }});
+		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: collaboratorId } });
 
 		if (!collaborator) {
 			log.error(`Collaborator not found with ID [${collaboratorId}]`);
@@ -87,8 +88,8 @@ export class UpdateCollaboratorService {
 		const savedSet: Set<string> = new Set(savedIds);
 		const newSet: Set<string> = new Set(newIds);
 
-		const removedIds: string[] = savedIds.filter(id => !newSet.has(id));
-		const addedIds: string[] = newIds.filter(id => !savedSet.has(id));
+		const removedIds: string[] = savedIds.filter((id) => !newSet.has(id));
+		const addedIds: string[] = newIds.filter((id) => !savedSet.has(id));
 
 		return { addedIds, removedIds };
 	}

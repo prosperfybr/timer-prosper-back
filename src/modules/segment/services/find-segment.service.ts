@@ -44,12 +44,12 @@ export class FindSegmentService {
 		}
 
 		return segments.map(
-			segment =>
+			(segment) =>
 				({
 					id: segment.id,
 					name: segment.name,
 					active: segment.isActive,
-				} as SegmentResponseDTO)
+				}) as SegmentResponseDTO,
 		);
 	}
 
@@ -63,12 +63,12 @@ export class FindSegmentService {
 		}
 
 		return segments.map(
-			segment =>
+			(segment) =>
 				({
 					id: segment.id,
 					name: segment.name,
 					active: segment.isActive,
-				} as SegmentResponseDTO)
+				}) as SegmentResponseDTO,
 		);
 	}
 }

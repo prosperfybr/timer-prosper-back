@@ -54,7 +54,7 @@ export class LoginService {
 				const establishment: EstablishmentEntity = await EstablishmentRepository.findByOwnerOrCollaborator(userId);
 				return !establishment ? null : establishment;
 			},
-			cliente: async (userId: string): Promise<void> => {}
+			cliente: async (userId: string): Promise<void> => {},
 		};
 
 		const establishment: EstablishmentEntity | void = await finder[user.role](user.id);

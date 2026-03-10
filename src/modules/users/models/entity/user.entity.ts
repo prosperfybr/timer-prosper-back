@@ -37,9 +37,9 @@ export class UserEntity {
 	public profileComplete: boolean;
 	/** NEW FIELDS TO USER PROFILE **/
 
-	@OneToMany(() => EstablishmentEntity, establishment => establishment.user)
+	@OneToMany(() => EstablishmentEntity, (establishment) => establishment.user)
 	establishments: EstablishmentEntity[];
 
-	@OneToOne(() => UserPreferencesEntity, preferences => preferences.user)
+	@OneToOne(() => UserPreferencesEntity, (preferences) => preferences.user)
 	public preferences: UserPreferencesEntity;
 }

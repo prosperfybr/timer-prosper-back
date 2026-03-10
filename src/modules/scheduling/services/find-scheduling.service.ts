@@ -63,12 +63,12 @@ export class FindSchedulingService {
 			throw new BadRequestException("A data fornecida é inválida");
 		}
 
-		const dayOfWeek = dateMoment.isoWeekday();
+		const dayOfWeek = dateMoment.day();
 		const serviceDuration = service.duration;
 
-		const daySlot = await EstablishmentHourRepository.findByEstablishmentAndWeekDay(establishment.id, dayOfWeek);
+		const daySlots = await EstablishmentHourRepository.findByEstablishmentAndWeekDay(establishment.id, dayOfWeek);
 
-		if (!daySlot) {
+		if (!daySlots || daySlots.length === 0) {
 			log.info(`Establishment not work on this date`);
 			return [];
 		}
@@ -88,67 +88,81 @@ export class FindSchedulingService {
 		const endOfDay: Date = dateMoment.endOf("day").toDate();
 		const collaboratorsIds: string[] = collaboratorsAvailables.map((collaborator) => collaborator.id);
 
-		const absenceBlocks = await AbsenceBlockRepository.findByCollaboratorsAndDate(collaboratorsIds, startOfDay, endOfDay);
+		const absenceBlocks = await AbsenceBlockRepository.findByCollaboratorsAndDate(collaboratorsIds, startOfDay, endOfDay, dayOfWeek);
 		const existingAppointments = await AppointmentRepository.findAllByCollaboratorsIdAndDate(collaboratorsIds, startOfDay, endOfDay);
 
+		console.log("ABSENCE BLOCKS", absenceBlocks);
+		console.log("EXISTING APPOINTMENTS", existingAppointments);
+
 		const allSlots: SchedulingResponse.SLOT[] = [];
-		const [startHour, startMin] = daySlot.openingTime.split(":").map(Number);
-		const [endHour, endMin] = daySlot.closingTime.split(":").map(Number);
 
-		let currentTime = dateMoment.clone().set({ hour: startHour, minute: startMin, second: 0, millisecond: 0 });
-		let endTimeLimit = dateMoment.clone().set({ hour: endHour, minute: endMin, second: 0, millisecond: 0 });
+		for (const daySlot of daySlots) {
+			const [startHour, startMin] = daySlot.openingTime.split(":").map(Number);
+			const [endHour, endMin] = daySlot.closingTime.split(":").map(Number);
 
-		const slotDuration = serviceDuration;
-		const momentRange = extendMoment(moment as any);
+			let currentTime = dateMoment.clone().set({ hour: startHour, minute: startMin, second: 0, millisecond: 0 });
+			const endTimeLimit = dateMoment.clone().set({ hour: endHour, minute: endMin, second: 0, millisecond: 0 });
 
-		while (currentTime.isBefore(endTimeLimit)) {
-			const slotEnd = currentTime.clone().add(serviceDuration, "minutes");
+			const slotDuration = serviceDuration;
+			const momentRange = extendMoment(moment as any);
 
-			if (slotEnd.isAfter(endTimeLimit)) {
-				break;
+			while (currentTime.isBefore(endTimeLimit)) {
+				const slotEnd = currentTime.clone().add(serviceDuration, "minutes");
+
+				if (slotEnd.isAfter(endTimeLimit)) {
+					break;
+				}
+
+				if (currentTime.isBefore(moment())) {
+					currentTime = currentTime.add(slotDuration, "minutes");
+					continue;
+				}
+
+				const timeStr = currentTime.format("HH:mm");
+				for (const collaborator of collaboratorsAvailables) {
+					let isAvailable: boolean = true;
+					const proposeRange: DateRange = momentRange.range(currentTime, slotEnd);
+
+					const hasPersonalBlock = absenceBlocks.some((block) => {
+						if (block.collaboratorId === collaborator.id) {
+							if (!block.startTime || !block.endTime) {
+								return true;
+							}
+							const blockRange = momentRange.range(moment(block.startTime), moment(block.endTime));
+							return proposeRange.overlaps(blockRange);
+						}
+						return false;
+					});
+
+					isAvailable = isAvailable && !hasPersonalBlock;
+					const isBooked = existingAppointments.some((appointment) => {
+						if (appointment.collaboratorId === collaborator.id) {
+							const apptRange = momentRange.range(moment(appointment.startTime), moment(appointment.endTime));
+							return proposeRange.overlaps(apptRange);
+						}
+						return false;
+					});
+
+					isAvailable = isAvailable && !isBooked;
+
+					const { name: collaboratorName } = await UserRepository.findUserNameByUserId(collaborator.userId);
+
+					allSlots.push({
+						date,
+						time: timeStr,
+						collaboratorId: collaborator.id,
+						collaboratorName,
+						available: isAvailable,
+						serviceId: service.id,
+						serviceName: service.name,
+						servicePrice: service.price,
+						serviceDuration: service.duration,
+						establishmentName: establishment.tradeName,
+					});
+				}
+
+				currentTime = currentTime.add(slotDuration, "minutes");
 			}
-
-			const timeStr = currentTime.format("HH:mm");
-			for (const collaborator of collaboratorsAvailables) {
-				let isAvailable: boolean = true;
-				const proposeRange: DateRange = momentRange.range(currentTime, slotEnd);
-
-				const hasPersonalBlock = absenceBlocks.some((block) => {
-					if (block.collaboratorId === collaborator.id) {
-						const blockRange = momentRange.range(moment(block.startTime), moment(block.endTime));
-						return proposeRange.overlaps(blockRange);
-					}
-					return false;
-				});
-
-				isAvailable = !hasPersonalBlock;
-				const isBooked = existingAppointments.some((appointment) => {
-					if (appointment.collaboratorId === collaborator.id) {
-						const apptRange = momentRange.range(moment(appointment.startTime), moment(appointment.endTime));
-						return proposeRange.overlaps(apptRange);
-					}
-					return false;
-				});
-
-				isAvailable = !isBooked;
-
-				const { name: collaboratorName } = await UserRepository.findUserNameByUserId(collaborator.userId);
-
-				allSlots.push({
-					date,
-					time: timeStr,
-					collaboratorId: collaborator.id,
-					collaboratorName,
-					available: isAvailable,
-					serviceId: service.id,
-					serviceName: service.name,
-					servicePrice: service.price,
-					serviceDuration: service.duration,
-					establishmentName: establishment.tradeName,
-				});
-			}
-
-			currentTime = currentTime.add(slotDuration, "minutes");
 		}
 
 		log.info(`Slots founded`);
@@ -158,9 +172,9 @@ export class FindSchedulingService {
 	@Track()
 	public async findAllClientScheduling(id: string): Promise<SchedulingResponse.SLOT[]> {
 		log.info("Finding all schedulings for client or service or collaborator");
-		
+
 		const appointments = await AppointmentRepository.findAppointmentsById(id);
-		
+
 		if (!appointments || appointments.length === 0) {
 			log.info(`No appointments found for identifier: ${id}`);
 			return [];
@@ -172,7 +186,7 @@ export class FindSchedulingService {
 			const est = collab?.establishment;
 
 			return {
-				date: moment(app.startTime).format("YYYY-MM-DD"),
+				date: moment(app.startTime).format("DD/MM/YYYY"),
 				time: null,
 				collaboratorId: collab?.id,
 				collaboratorName: collab?.user?.name,

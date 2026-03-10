@@ -13,8 +13,7 @@ import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
 export class FindUserService {
-	constructor(private readonly formatterUtils: FormatterUtils,
-	) {}
+	constructor(private readonly formatterUtils: FormatterUtils) {}
 
 	@Track()
 	public async getUser(id: string): Promise<UserResponseDTO> {
@@ -40,20 +39,21 @@ export class FindUserService {
 			cpf: user.cpf ? this.formatterUtils.addCPFMask(user.cpf) : null,
 			profileComplete: user.profileComplete,
 			profilePreferences: user.profilePreferences,
-			settingsPreferences: user.preferences ? {
-				id: user.preferences.id,
-				userId: user.id,
-				darkMode: user.preferences.darkMode,
-				emailNotifications: user.preferences.emailNotifications,
-				whatsappNotifications: user.preferences.whatsappNotifications,
-			} : 
-			{
-				id: null,
-				userId: user.id,
-				darkMode: null,
-				emailNotifications: null,
-				whatsappNotifications: null,
-			},
+			settingsPreferences: user.preferences
+				? {
+						id: user.preferences.id,
+						userId: user.id,
+						darkMode: user.preferences.darkMode,
+						emailNotifications: user.preferences.emailNotifications,
+						whatsappNotifications: user.preferences.whatsappNotifications,
+					}
+				: {
+						id: null,
+						userId: user.id,
+						darkMode: null,
+						emailNotifications: null,
+						whatsappNotifications: null,
+					},
 			establsihmentId: user.establishments && user.establishments.length > 0 ? user.establishments[0].id : null,
 			establishments: user.establishments && user.establishments.length > 0 ? user.establishments : [],
 		} as UserResponseDTO;
@@ -62,7 +62,7 @@ export class FindUserService {
 	@Track()
 	public async getAllUsers(): Promise<UserResponseDTO[]> {
 		const users: UserEntity[] = await UserRepository.find();
-		return users.map(user => ({
+		return users.map((user) => ({
 			id: user.id,
 			name: user.name,
 			email: user.email,
@@ -92,23 +92,23 @@ export class FindUserService {
 			establishmentsByPlan: {
 				basic: 0,
 				professional: 0,
-				enterprise: 0
+				enterprise: 0,
 			},
-			recentEstablishments: recentEstablishments.map(est => ({
+			recentEstablishments: recentEstablishments.map((est) => ({
 				id: est.id,
 				tradeName: est.trade_name,
 				ownerName: est.owner_name,
 				planId: randomUUID(),
-				status: 'active',
+				status: "active",
 				createdAt: est.created_at,
 				city: est.city,
 			})),
-			growthData: mainResult.map(main => ({
+			growthData: mainResult.map((main) => ({
 				month: moment().format("MMM"),
 				establishments: main.growth_establishments_pct,
 				users: main.growth_users_pct,
-				revenue: 0
-			}))
+				revenue: 0,
+			})),
 		};
 
 		return stats;

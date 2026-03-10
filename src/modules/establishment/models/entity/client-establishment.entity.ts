@@ -19,7 +19,7 @@ export class ClientEstablishmentEntity {
 	@Column({ type: "uuid", name: "establishment_id", nullable: false })
 	public establishmentId: string;
 
-	@ManyToOne(() => EstablishmentEntity, establishment => establishment.clients)
+	@ManyToOne(() => EstablishmentEntity, (establishment) => establishment.clients)
 	@JoinColumn({ name: "establishment_id" })
 	public establishment: EstablishmentEntity;
 

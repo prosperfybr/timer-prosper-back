@@ -14,22 +14,19 @@ import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { EmailService, WebhookEmailType } from "@shared/utils/email-service.util";
 import { EstablishmentEntity } from "../models/entity/establishment.entity";
 
-
-
 /**
  * SE O USUÁRIO NÃO ESTIVER CADASTRADO
  * Mandar um e-mail para o usuário (CLIENTE) para cadastrar-se (APENAS SE FOR SOLICITADO POR E-MAIL NA APLICAÇÃO)
- * 
+ *
  * 		SE O PROPRIETÁRIO QUEM CONVIDOU
  * (Seja por QR Code ou por email)
  * 			-> O CLIENTE SE CADASTRA (caso não esteja cadastrado) E O VINCULO ACONTECE AUTOMATICAMENTE.
  * -> SE O CLIENTE QUEM SOLICITOU (Ele já está cadastrado)
  * 			-> O PROPRIETÁRIO É NOTIFICADO PARA APROVAR OU RECUSAR O CONVITE
- * 
+ *
  * OBSERVAÇÃO:
  * NA TELA DE CLIENTES DEVE SER ADICIONADO AÇÕES PARA APROVAÇÃO OU RECUSA DE CLIENTES. ALÉM DE PERMITIR DESVINCULAR CLIENTES JÁ APROVADOS.
  */
-
 
 @Service()
 export class InviteService {
@@ -37,8 +34,8 @@ export class InviteService {
 
 	/**
 	 * O estabelecimento está convidando um cliente
-	 * @param payload 
-	 * @returns 
+	 * @param payload
+	 * @returns
 	 */
 	@Track()
 	public async client(payload: InviteClientDTO): Promise<ClientEstablishmentResponseDTO> {
@@ -69,24 +66,19 @@ export class InviteService {
 
 		log.info(`Client or invite not registered yet`);
 		//- Cria um novo usuário temporário para relação com o invite.
-		const inviteCreated: ClientEstablishmentEntity = await ClientEstablishmentRepository.save(ClientEstablishmentRepository.create({
-			userId: null,
-			establishmentId: establishmentId,
-			clientEmail,
-			status: ClientRequestStatusEnum.PENDING,
-			requestedBy: ClientRequestByEnum.ESTABLISHMENT,
-			requestedAt: new Date()
-		}));
+		const inviteCreated: ClientEstablishmentEntity = await ClientEstablishmentRepository.save(
+			ClientEstablishmentRepository.create({
+				userId: null,
+				establishmentId: establishmentId,
+				clientEmail,
+				status: ClientRequestStatusEnum.PENDING,
+				requestedBy: ClientRequestByEnum.ESTABLISHMENT,
+				requestedAt: new Date(),
+			}),
+		);
 
 		log.info("Sending email to client requesting a registration in application");
-		EmailService.sendEmail(
-			EmailService.buildEmailPayload(
-				WebhookEmailType.CONVITE_CLIENTE,
-				invite.establishment.tradeName,
-				[clientEmail],
-				"",
-			)
-		);
+		EmailService.sendEmail(EmailService.buildEmailPayload(WebhookEmailType.CONVITE_CLIENTE, (invite.establishment as any).trade_name, [clientEmail], ""));
 
 		log.info("Invite created successfully");
 		return this.treatResponse(inviteCreated);
@@ -128,25 +120,20 @@ export class InviteService {
 
 		log.info(`Client or invite not registered yet`);
 		const client = invite.client as UserEntity;
-		const establishment = invite.establishment as EstablishmentEntity;
+		const establishment = invite.establishment as any;
 		const inviteToSave = ClientEstablishmentRepository.create({
 			userId: invite.client.id,
 			establishmentId: invite.establishment.id,
 			clientEmail: invite.client.email,
 			status: ClientRequestStatusEnum.PENDING,
 			requestedBy: ClientRequestByEnum.CLIENT,
-			requestedAt: new Date()
+			requestedAt: new Date(),
 		});
 		const inviteCreated: ClientEstablishmentEntity = await ClientEstablishmentRepository.save(inviteToSave);
 
 		log.info("Sending email to establishment owner requesting a new link");
 		EmailService.sendEmail(
-			EmailService.buildEmailPayload(
-				WebhookEmailType.CLIENTE_SOLICITANDO_VINCULO,
-				invite.establishment.tradeName,
-				[invite.owner.email],
-				client.name,
-			)
+			EmailService.buildEmailPayload(WebhookEmailType.CLIENTE_SOLICITANDO_VINCULO, establishment.trade_name, [invite.owner.email], client.name),
 		);
 
 		log.info("Invite created successfully");
@@ -182,6 +169,13 @@ export class InviteService {
 		await ClientEstablishmentRepository.update(invite.id, invite);
 		log.info("Client is responded");
 		return this.treatResponse(invite);
+	}
+
+	@Track()
+	public async removeEstablishmentRelationship(relationshipId: string): Promise<void> {
+		log.info("Removing establishment relationship");
+		await ClientEstablishmentRepository.delete(relationshipId);
+		log.info("Establishment relationship removed successfully");
 	}
 
 	private treatResponse(invite: ClientEstablishmentEntity): ClientEstablishmentResponseDTO {

@@ -48,7 +48,7 @@ export class CreateRefreshTokensTable1761169239527 implements MigrationInterface
 						isNullable: false,
 					},
 				],
-			})
+			}),
 		);
 
 		await queryRunner.createForeignKey(
@@ -59,13 +59,13 @@ export class CreateRefreshTokensTable1761169239527 implements MigrationInterface
 				referencedTableName: "users",
 				onDelete: "CASCADE",
 				onUpdate: "CASCADE",
-			})
+			}),
 		);
 	}
 
 	public async down(queryRunner: QueryRunner): Promise<void> {
 		const table = await queryRunner.getTable("refresh_tokens");
-		const foreignKey = table?.foreignKeys.find(fk => fk.columnNames.indexOf("user_id") !== -1);
+		const foreignKey = table?.foreignKeys.find((fk) => fk.columnNames.indexOf("user_id") !== -1);
 
 		if (foreignKey) {
 			await queryRunner.dropForeignKey("refresh_tokens", foreignKey);

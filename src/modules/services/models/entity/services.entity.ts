@@ -31,11 +31,11 @@ export class ServicesEntity {
 	@UpdateDateColumn({ name: "updated_at" })
 	public updatedAt: Date;
 
-	@ManyToOne(() => ServiceTypeEntity, serviceType => serviceType.services)
+	@ManyToOne(() => ServiceTypeEntity, (serviceType) => serviceType.services)
 	@JoinColumn({ name: "service_type_id" })
 	public serviceType: ServiceTypeEntity;
 
-	@ManyToOne(() => EstablishmentEntity, establishment => establishment.services)
+	@ManyToOne(() => EstablishmentEntity, (establishment) => establishment.services)
 	@JoinColumn({ name: "establishment_id" })
 	public establishment: EstablishmentEntity;
 }

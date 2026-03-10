@@ -23,10 +23,13 @@
 			"@shared/*": ["src/shared/*"],
 			"@config/*": ["src/config/*"]
 		},
-		"typeRoots": ["/node_modules/@types", "src/config/@types"],
+		"typeRoots": ["./node_modules/@types", "./src/config/@types"],
 	},
 	"include": [
 		"src/**/*",
 		"docs/**/*"
-	]
+	],
+	"ts-node": {
+		"files": true
+	}
 }

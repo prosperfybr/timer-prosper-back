@@ -99,11 +99,11 @@ export class FindEstablishmentService {
 						name: user.email,
 						email: user.email,
 						role: user.role,
-				  } as UserResponseDTO)
+					} as UserResponseDTO)
 				: null,
 			services: services
 				? services.map(
-						service =>
+						(service) =>
 							({
 								id: service.id,
 								name: service.name,
@@ -111,15 +111,15 @@ export class FindEstablishmentService {
 								price: this.converterUtils.convertCentsToFloat(service.price),
 								duration: service.duration,
 								durationFormated: this.converterUtils.convertMinutesInTime(service.duration),
-							} as ServiceResponseDTO)
-				  )
+							}) as ServiceResponseDTO,
+					)
 				: null,
 			segment: estabSegment
 				? ({
 						id: estabSegment.id,
 						name: estabSegment.name,
 						active: estabSegment.isActive,
-				  } as SegmentResponseDTO)
+					} as SegmentResponseDTO)
 				: null,
 		} as EstablishmentResponseDTO;
 	}

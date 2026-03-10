@@ -1,10 +1,13 @@
 import { log } from "@config/Logger";
 
-export class InvalidArgumentException implements Error {
-  public name: string = "InvalidArgumentException";
-  public stack?: string;
+export class InvalidArgumentException extends Error {
+	public readonly name = "InvalidArgumentException";
+	public readonly httpStatusCode: number;
 
-  constructor(public message: string, public httpStatusCode: number = 400, stack?: string) {
-    log.error(InvalidArgumentException.name, "constructor");
-  }
+	constructor(message: string, httpStatusCode: number = 400) {
+		super(message);
+		this.httpStatusCode = httpStatusCode;
+		Object.setPrototypeOf(this, InvalidArgumentException.prototype);
+		log.error(InvalidArgumentException.name, "constructor");
+	}
 }

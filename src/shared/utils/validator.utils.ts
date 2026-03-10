@@ -4,10 +4,9 @@ import moment from "moment";
 
 @Service()
 export class ValidatorUtils {
-
 	constructor(private readonly formatterUtils: FormatterUtils) {}
 
-  public validateEmail(email: string): boolean {
+	public validateEmail(email: string): boolean {
 		const usuario = email.substring(0, email.indexOf("@"));
 		const dominio = email.substring(email.indexOf("@") + 1, email.length);
 
@@ -32,7 +31,7 @@ export class ValidatorUtils {
 		const updatedFields: Partial<T> = {};
 
 		for (const key in updateData) {
-			if (updateData[key] == null || updateData[key] == undefined || key === 'userId') {
+			if (updateData[key] == null || updateData[key] == undefined || key === "userId") {
 				continue;
 			}
 
@@ -87,7 +86,7 @@ export class ValidatorUtils {
 
 	public sanitizeZipCode(zipCode: string): string {
 		if (!zipCode) return "";
-		return zipCode.replace(/\D/g, '').trim();
+		return zipCode.replace(/\D/g, "").trim();
 	}
 
 	public validateCPF(cpf: string): boolean {
@@ -138,14 +137,14 @@ export class ValidatorUtils {
 		const hourString: string = String(hour).trim();
 		//- Lista de formatos aceitos
 		const acceptedFormats = [
-			'HH',        // 20
-			'H',         // "20"
-			'HH:mm',     // "20:00"
-			'HHh:mm',    // "20h:10" (se for o caso)
-			'HHhmm',     // "20h10m" (sem separador)
-			'HH[h] mm[m]', // "20h 10m" (com espaço)
-			'HH[h] mm[m] ss[s]', // "20h 10m 30s"
-			'HH:mm:ss',  // "20:10:30"
+			"HH", // 20
+			"H", // "20"
+			"HH:mm", // "20:00"
+			"HHh:mm", // "20h:10" (se for o caso)
+			"HHhmm", // "20h10m" (sem separador)
+			"HH[h] mm[m]", // "20h 10m" (com espaço)
+			"HH[h] mm[m] ss[s]", // "20h 10m 30s"
+			"HH:mm:ss", // "20:10:30"
 		];
 
 		const parsedTime = moment(hourString, acceptedFormats, true);
@@ -159,127 +158,127 @@ export class ValidatorUtils {
 		const validDDDs: string[] = [
 			/** Região Sudeste **/
 			/* São Paulo (SP) */
-			"(11)",//– Região Metropolitana de São Paulo
-			"(12)",//– São José dos Campos e Vale do Paraíba
-			"(13)",//– Santos e Baixada Santista
-			"(14)",//– Bauru, Jaú, Marília e Botucatu
-			"(15)",//– Sorocaba e Itapetininga
-			"(16)",//– Ribeirão Preto, Franca e São Carlos
-			"(17)",//– São José do Rio Preto e Barretos
-			"(18)",//– Presidente Prudente, Araçatuba e Assis
-			"(19)",//– Campinas, Piracicaba e Americana
+			"(11)", //– Região Metropolitana de São Paulo
+			"(12)", //– São José dos Campos e Vale do Paraíba
+			"(13)", //– Santos e Baixada Santista
+			"(14)", //– Bauru, Jaú, Marília e Botucatu
+			"(15)", //– Sorocaba e Itapetininga
+			"(16)", //– Ribeirão Preto, Franca e São Carlos
+			"(17)", //– São José do Rio Preto e Barretos
+			"(18)", //– Presidente Prudente, Araçatuba e Assis
+			"(19)", //– Campinas, Piracicaba e Americana
 
 			/* Rio de Janeiro (RJ) */
-			"(21)",//– Rio de Janeiro e Região Metropolitana
-			"(22)",//– Campos dos Goytacazes, Macaé e Cabo Frio
-			"(24)",//– Petrópolis, Volta Redonda e Angra dos Reis
+			"(21)", //– Rio de Janeiro e Região Metropolitana
+			"(22)", //– Campos dos Goytacazes, Macaé e Cabo Frio
+			"(24)", //– Petrópolis, Volta Redonda e Angra dos Reis
 
 			/* Espírito Santo (ES) */
-			"(27)",//– Vitória e Região Metropolitana
-			"(28)",//– Cachoeiro de Itapemirim e Sul do Estado
-			
+			"(27)", //– Vitória e Região Metropolitana
+			"(28)", //– Cachoeiro de Itapemirim e Sul do Estado
+
 			/* Minas Gerais (MG) */
-			"(31)",//– Belo Horizonte e Região Metropolitana
-			"(32)",//– Juiz de Fora e Barbacena
-			"(33)",//– Governador Valadares e Teófilo Otoni
-			"(34)",//– Uberlândia e Uberaba (Triângulo Mineiro)
-			"(35)",//– Poços de Caldas e Pouso Alegre
-			"(37)",//– Divinópolis e Itaúna
-			"(38)",//– Montes Claros e Norte de Minas
+			"(31)", //– Belo Horizonte e Região Metropolitana
+			"(32)", //– Juiz de Fora e Barbacena
+			"(33)", //– Governador Valadares e Teófilo Otoni
+			"(34)", //– Uberlândia e Uberaba (Triângulo Mineiro)
+			"(35)", //– Poços de Caldas e Pouso Alegre
+			"(37)", //– Divinópolis e Itaúna
+			"(38)", //– Montes Claros e Norte de Minas
 
 			/** Região Sul **/
 			/* Paraná (PR) */
-			"(41)",//– Curitiba e Região Metropolitana
-			"(42)",//– Ponta Grossa e Guarapuava
-			"(43)",//– Londrina e Apucarana
-			"(44)",//– Maringá e Campo Mourão
-			"(45)",//– Foz do Iguaçu e Cascavel
-			"(46)",//– Francisco Beltrão e Pato Branco
+			"(41)", //– Curitiba e Região Metropolitana
+			"(42)", //– Ponta Grossa e Guarapuava
+			"(43)", //– Londrina e Apucarana
+			"(44)", //– Maringá e Campo Mourão
+			"(45)", //– Foz do Iguaçu e Cascavel
+			"(46)", //– Francisco Beltrão e Pato Branco
 
 			/* Santa Catarina (SC) */
-			"(47)",//– Joinville, Blumenau e Balneário Camboriú
-			"(48)",//– Florianópolis e Região Metropolitana
-			"(49)",//– Chapecó e Lages
+			"(47)", //– Joinville, Blumenau e Balneário Camboriú
+			"(48)", //– Florianópolis e Região Metropolitana
+			"(49)", //– Chapecó e Lages
 
 			/* Rio Grande do Sul (RS) */
-			"(51)",//– Porto Alegre e Região Metropolitana
-			"(53)",//– Pelotas e Rio Grande
-			"(54)",//– Caxias do Sul e Passo Fundo
-			"(55)",//– Santa Maria e Uruguaiana
+			"(51)", //– Porto Alegre e Região Metropolitana
+			"(53)", //– Pelotas e Rio Grande
+			"(54)", //– Caxias do Sul e Passo Fundo
+			"(55)", //– Santa Maria e Uruguaiana
 
 			/** Região Centro-Oeste **/
 			/* Distrito Federal (DF) e Goiás (GO) */
-			"(61)",//– Brasília e entorno
-			"(62)",//– Goiânia e Região Metropolitana
-			"(64)",//– Rio Verde, Itumbiara e Catalão
+			"(61)", //– Brasília e entorno
+			"(62)", //– Goiânia e Região Metropolitana
+			"(64)", //– Rio Verde, Itumbiara e Catalão
 
 			/* Mato Grosso (MT) */
-			"(65)",//– Cuiabá e Região Metropolitana
-			"(66)",//– Rondonópolis e Sinop
+			"(65)", //– Cuiabá e Região Metropolitana
+			"(66)", //– Rondonópolis e Sinop
 
 			/* Mato Grosso do Sul (MS) */
-			"(67)",//– Campo Grande e todo o estado
+			"(67)", //– Campo Grande e todo o estado
 
 			/** Região Norte **/
 			/* Acre (AC) */
-			"(68)",//– Rio Branco e todo o estado
+			"(68)", //– Rio Branco e todo o estado
 
 			/* Rondônia (RO) */
-			"(69)",//– Porto Velho e todo o estado
+			"(69)", //– Porto Velho e todo o estado
 
 			/* Tocantins (TO) */
-			"(63)",//– Palmas e todo o estado
+			"(63)", //– Palmas e todo o estado
 
 			/* Amazonas (AM) */
-			"(92)",//– Manaus e Região Metropolitana
-			"(97)",//– Interior do Amazonas
+			"(92)", //– Manaus e Região Metropolitana
+			"(97)", //– Interior do Amazonas
 
 			/* Roraima (RR) */
-			"(95)",//– Boa Vista e todo o estado
+			"(95)", //– Boa Vista e todo o estado
 
 			/* Pará (PA) */
-			"(91)",//– Belém e Região Metropolitana
-			"(93)",//– Santarém e Altamira
-			"(94)",//– Marabá e Carajás
+			"(91)", //– Belém e Região Metropolitana
+			"(93)", //– Santarém e Altamira
+			"(94)", //– Marabá e Carajás
 
 			/* Amapá (AP) */
-			"(96)",//– Macapá e todo o estado
+			"(96)", //– Macapá e todo o estado
 
 			/** Região Nordeste **/
 			/* Bahia (BA) */
-			"(71)",//– Salvador e Região Metropolitana
-			"(73)",//– Ilhéus, Itabuna e Porto Seguro
-			"(74)",//– Juazeiro e Jacobina
-			"(75)",//– Feira de Santana e Alagoinhas
-			"(77)",//– Vitória da Conquista e Barreiras
+			"(71)", //– Salvador e Região Metropolitana
+			"(73)", //– Ilhéus, Itabuna e Porto Seguro
+			"(74)", //– Juazeiro e Jacobina
+			"(75)", //– Feira de Santana e Alagoinhas
+			"(77)", //– Vitória da Conquista e Barreiras
 
 			/* Sergipe (SE) */
-			"(79)",//– Aracaju e todo o estado
+			"(79)", //– Aracaju e todo o estado
 
 			/* Pernambuco (PE) */
-			"(81)",//– Recife e Região Metropolitana
-			"(87)",//– Petrolina e Caruaru
+			"(81)", //– Recife e Região Metropolitana
+			"(87)", //– Petrolina e Caruaru
 
 			/* Alagoas (AL) */
-			"(82)",//– Maceió e todo o estado
+			"(82)", //– Maceió e todo o estado
 
 			/* Paraíba (PB) */
-			"(83)",//– João Pessoa e Campina Grande
+			"(83)", //– João Pessoa e Campina Grande
 
-			/* Rio Grande do Norte (RN) */ 
-			"(84)",//– Natal e Mossoró
+			/* Rio Grande do Norte (RN) */
+			"(84)", //– Natal e Mossoró
 
 			/* Ceará (CE) */
-			"(85)",//– Fortaleza e Região Metropolitana
-			"(88)",//– Juazeiro do Norte e Sobral
+			"(85)", //– Fortaleza e Região Metropolitana
+			"(88)", //– Juazeiro do Norte e Sobral
 
 			/* Piauí (PI) */
-			"(86)",//– Teresina e Parnaíba
-			"(89)",//– Picos e Floriano
+			"(86)", //– Teresina e Parnaíba
+			"(89)", //– Picos e Floriano
 
 			/* Maranhão (MA) */
-			"(98)",//– São Luís e Região Metropolitana
-			"(99)",//– Imperatriz e Caxias
+			"(98)", //– São Luís e Região Metropolitana
+			"(99)", //– Imperatriz e Caxias
 		];
 
 		return validDDDs.includes(ddd);

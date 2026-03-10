@@ -1,5 +1,5 @@
-import {Service as ServiceTypeDi } from "typedi";
+import { Service as ServiceTypeDi } from "typedi";
 
 export function Service() {
-  return ServiceTypeDi();
+	return ServiceTypeDi();
 }

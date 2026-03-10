@@ -17,7 +17,7 @@ export class CreateRelations1761680619322 implements MigrationInterface {
 				referencedTableName: this.USERS_TABLE,
 				onDelete: "CASCADE",
 				onUpdate: "CASCADE",
-			})
+			}),
 		);
 
 		await queryRunner.createForeignKey(
@@ -28,7 +28,7 @@ export class CreateRelations1761680619322 implements MigrationInterface {
 				referencedTableName: this.SEGMENTS_TABLE,
 				onDelete: "SET NULL",
 				onUpdate: "CASCADE",
-			})
+			}),
 		);
 
 		await queryRunner.createForeignKey(
@@ -38,7 +38,7 @@ export class CreateRelations1761680619322 implements MigrationInterface {
 				referencedColumnNames: ["id"],
 				referencedTableName: this.SEGMENTS_TABLE,
 				onDelete: "CASCADE",
-			})
+			}),
 		);
 	}
 
@@ -49,7 +49,7 @@ export class CreateRelations1761680619322 implements MigrationInterface {
 				columnNames: [this.SEGMENT_FK_COLUMN],
 				referencedColumnNames: ["id"],
 				referencedTableName: this.SEGMENTS_TABLE,
-			})
+			}),
 		);
 
 		await queryRunner.dropColumn(this.SERVICE_TYPES_TABLE, this.SEGMENT_FK_COLUMN);
@@ -60,7 +60,7 @@ export class CreateRelations1761680619322 implements MigrationInterface {
 				columnNames: [this.SEGMENT_FK_COLUMN],
 				referencedColumnNames: ["id"],
 				referencedTableName: this.SEGMENTS_TABLE,
-			})
+			}),
 		);
 
 		await queryRunner.dropColumn(this.ESTABLISHMENTS_TABLE, this.SEGMENT_FK_COLUMN);

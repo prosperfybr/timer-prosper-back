@@ -18,12 +18,11 @@ export interface CollaboratorResponseDTO {
 	updatedAt?: Date;
 }
 
-
 export interface CollaboratorStats {
-  collaboratorId: string;
-  appointmentsToday: number;
-  totalClients: number;
-  occupationRate: number;
-  scheduledHours: number;
-	appointmentsForToday?: { time: string; client: string; service: string; }[];
+	collaboratorId: string;
+	appointmentsToday: number;
+	totalClients: number;
+	occupationRate: number;
+	scheduledHours: number;
+	appointmentsForToday?: { time: string; client: string; service: string }[];
 }

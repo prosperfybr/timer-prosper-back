@@ -31,37 +31,38 @@ export class UpdateEstablishmentService {
 		delete fieldsToUpdate.segmentId; //- Is not possible update segment
 
 		const result = await EstablishmentRepository.createQueryBuilder()
-		.update(EstablishmentEntity)
-		.set({ ...fieldsToUpdate })
-		.where("id = :id", { id: establishment.id })
-		.returning("*").execute();
+			.update(EstablishmentEntity)
+			.set({ ...fieldsToUpdate })
+			.where("id = :id", { id: establishment.id })
+			.returning("*")
+			.execute();
 
 		const establishmentUpdated = result.raw[0];
 
 		return {
-					id: establishmentUpdated.id,
-					userId: establishmentUpdated.user_id,
-					code: establishmentUpdated.code,
-					tradeName: establishmentUpdated.trade_name,
-					logo: establishmentUpdated.logo,
-					logoDark: establishmentUpdated.logo_dark,
-					zipCode: establishmentUpdated.zip_code,
-					street: establishmentUpdated.street,
-					number: establishmentUpdated.number,
-					complement: establishmentUpdated.complement,
-					neighborhood: establishmentUpdated.neighborhood,
-					city: establishmentUpdated.city,
-					state: establishmentUpdated.state,
-					mainPhone: establishmentUpdated.main_phone,
-					website: establishmentUpdated.website,
-					instagram: establishmentUpdated.instagram,
-					linkedin: establishmentUpdated.linkedin,
-					tiktok: establishmentUpdated.tiktok,
-					youtube: establishmentUpdated.youtube,
-					createdAt: establishmentUpdated.created_at,
-					user: null,
-					services: [],
-					segment: null,
-				} as EstablishmentResponseDTO;
+			id: establishmentUpdated.id,
+			userId: establishmentUpdated.user_id,
+			code: establishmentUpdated.code,
+			tradeName: establishmentUpdated.trade_name,
+			logo: establishmentUpdated.logo,
+			logoDark: establishmentUpdated.logo_dark,
+			zipCode: establishmentUpdated.zip_code,
+			street: establishmentUpdated.street,
+			number: establishmentUpdated.number,
+			complement: establishmentUpdated.complement,
+			neighborhood: establishmentUpdated.neighborhood,
+			city: establishmentUpdated.city,
+			state: establishmentUpdated.state,
+			mainPhone: establishmentUpdated.main_phone,
+			website: establishmentUpdated.website,
+			instagram: establishmentUpdated.instagram,
+			linkedin: establishmentUpdated.linkedin,
+			tiktok: establishmentUpdated.tiktok,
+			youtube: establishmentUpdated.youtube,
+			createdAt: establishmentUpdated.created_at,
+			user: null,
+			services: [],
+			segment: null,
+		} as EstablishmentResponseDTO;
 	}
 }

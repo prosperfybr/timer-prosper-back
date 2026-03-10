@@ -27,11 +27,11 @@ export class AbsenceBlockEntity {
 	@JoinColumn({ name: "service_id" })
 	public service: ServicesEntity;
 
-	@Column({ type: "uuid", name: "establishment_id", nullable: false})
+	@Column({ type: "uuid", name: "establishment_id", nullable: false })
 	public establishmentId: string;
 
 	@ManyToOne(() => EstablishmentEntity)
-	@JoinColumn({ name: "establishment_id"})
+	@JoinColumn({ name: "establishment_id" })
 	public establishment: EstablishmentEntity;
 
 	@Column({ type: "varchar", name: "start_time", nullable: true })

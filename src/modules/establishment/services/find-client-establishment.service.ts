@@ -6,7 +6,7 @@ import { Track } from "@shared/decorators/logs/track.decorator";
 import { Service } from "@shared/decorators/service.decorator";
 import { BadRequestException } from "@shared/exceptions/BadRequestException";
 import { FormatterUtils } from "@shared/utils/formatter.utils";
-import { validate as validateUUID } from 'uuid';
+import { validate as validateUUID } from "uuid";
 
 @Service()
 export class FindClientEstablishmentService {
@@ -34,20 +34,22 @@ export class FindClientEstablishmentService {
 					id: client.id,
 					clientEmail: client.clientEmail,
 					userId: client.userId,
-					user: client.user ? {
-						id: client.user.id,
-						name: client.user.name,
-						email: client.user.email,
-						role: client.user.role,
-						birthDate: client.user.birthDate,
-						whatsApp: client.user.whatsApp,
-						cpf: client.user.cpf ? this.formatterUtils.addCPFMask(client.user.cpf) : null,
-						profileComplete: client.user.profileComplete,
-						profilePreferences: client.user.profilePreferences,
-						settingsPreferences: null,
-						establsihmentId: null,
-						establishments: null
-					} : null,
+					user: client.user
+						? {
+								id: client.user.id,
+								name: client.user.name,
+								email: client.user.email,
+								role: client.user.role,
+								birthDate: client.user.birthDate,
+								whatsApp: client.user.whatsApp,
+								cpf: client.user.cpf ? this.formatterUtils.addCPFMask(client.user.cpf) : null,
+								profileComplete: client.user.profileComplete,
+								profilePreferences: client.user.profilePreferences,
+								settingsPreferences: null,
+								establsihmentId: null,
+								establishments: null,
+							}
+						: null,
 					establishmentId: client.establishmentId,
 					establishment: {
 						id: client.establishment.id,
@@ -103,7 +105,7 @@ export class FindClientEstablishmentService {
 			return [];
 		} else {
 			log.info("Establishments founded");
-			return clientEstablishments.map(clientEstablishment => ({
+			return clientEstablishments.map((clientEstablishment) => ({
 				id: clientEstablishment.id,
 				userId: clientEstablishment.userId,
 				establishmentId: clientEstablishment.establishmentId,

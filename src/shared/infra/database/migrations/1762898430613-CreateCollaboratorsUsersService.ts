@@ -25,7 +25,7 @@ export class CreateCollaboratorsUsersService1762898430613 implements MigrationIn
 						isNullable: false,
 					},
 				],
-			})
+			}),
 		);
 
 		await queryRunner.createForeignKey(
@@ -36,10 +36,10 @@ export class CreateCollaboratorsUsersService1762898430613 implements MigrationIn
 				referencedTableName: "collaborators",
 				onDelete: "CASCADE",
 				onUpdate: "CASCADE",
-			})
+			}),
 		);
 
-        await queryRunner.createForeignKey(
+		await queryRunner.createForeignKey(
 			"collaborators_services",
 			new TableForeignKey({
 				columnNames: ["service_id"],
@@ -47,21 +47,21 @@ export class CreateCollaboratorsUsersService1762898430613 implements MigrationIn
 				referencedTableName: "services",
 				onDelete: "CASCADE",
 				onUpdate: "CASCADE",
-			})
+			}),
 		);
 	}
 
 	public async down(queryRunner: QueryRunner): Promise<void> {
-        const table: Table = await queryRunner.getTable('collaborators_services');
+		const table: Table = await queryRunner.getTable("collaborators_services");
 
-        if (table) {
-            const serviceTypeForeignKey = table.foreignKeys.find(fk => fk.columnNames.includes('collaborator_id'));
-            if (serviceTypeForeignKey) await queryRunner.dropForeignKey('collaborators_services', serviceTypeForeignKey);
+		if (table) {
+			const serviceTypeForeignKey = table.foreignKeys.find((fk) => fk.columnNames.includes("collaborator_id"));
+			if (serviceTypeForeignKey) await queryRunner.dropForeignKey("collaborators_services", serviceTypeForeignKey);
 
-            const establishmentForeignKey = table.foreignKeys.find(fk => fk.columnNames.includes('service_id'));
-            if (establishmentForeignKey) await queryRunner.dropForeignKey('collaborators_services', establishmentForeignKey);
-        }
+			const establishmentForeignKey = table.foreignKeys.find((fk) => fk.columnNames.includes("service_id"));
+			if (establishmentForeignKey) await queryRunner.dropForeignKey("collaborators_services", establishmentForeignKey);
+		}
 
-        await queryRunner.dropTable('collaborators_services');
-    }
+		await queryRunner.dropTable("collaborators_services");
+	}
 }

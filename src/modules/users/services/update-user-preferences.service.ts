@@ -23,7 +23,7 @@ export class UpdateUserPreferencesService {
 			throw new BadRequestException("Usuário não encontrado");
 		}
 
-		let preferences: UserPreferencesEntity = await UserPreferencesRepository.findByUserId(user.id);
+		const preferences: UserPreferencesEntity = await UserPreferencesRepository.findByUserId(user.id);
 		const fieldsToUpdate = this.validatorUtils.filterUpdatedFields(preferences, preferencesToUpdate);
 
 		if (Object.keys(fieldsToUpdate).length === 0) {

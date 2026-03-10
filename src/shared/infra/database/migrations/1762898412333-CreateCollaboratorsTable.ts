@@ -1,7 +1,6 @@
 import { MigrationInterface, QueryRunner, Table, TableColumn, TableForeignKey } from "typeorm";
 
 export class CreateCollaboratosTable1762898412333 implements MigrationInterface {
-
 	public async up(queryRunner: QueryRunner): Promise<void> {
 		await queryRunner.createTable(
 			new Table({
@@ -17,7 +16,7 @@ export class CreateCollaboratosTable1762898412333 implements MigrationInterface 
 					{ name: "created_at", type: "timestamp", default: "now()" },
 					{ name: "updated_at", type: "timestamp", isNullable: true },
 				],
-			})
+			}),
 		);
 
 		await queryRunner.createForeignKey(
@@ -27,7 +26,7 @@ export class CreateCollaboratosTable1762898412333 implements MigrationInterface 
 				referencedColumnNames: ["id"],
 				referencedTableName: "users",
 				onDelete: "CASCADE",
-			})
+			}),
 		);
 
 		await queryRunner.createForeignKey(
@@ -37,7 +36,7 @@ export class CreateCollaboratosTable1762898412333 implements MigrationInterface 
 				referencedColumnNames: ["id"],
 				referencedTableName: "establishments",
 				onDelete: "CASCADE",
-			})
+			}),
 		);
 	}
 

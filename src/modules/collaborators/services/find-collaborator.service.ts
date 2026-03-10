@@ -7,7 +7,7 @@ import { validate as validateUUID } from "uuid";
 import { CollaboratorResponseDTO, CollaboratorStats } from "../models/dto/collaborator-response.dto";
 import { CollaboratorRepository } from "../repositories/collaborator.repository";
 import { EstablishmentRepository } from "@modules/establishment/repositories/establishment.repository";
-import moment from "moment"
+import moment from "moment";
 import { Track } from "@shared/decorators/logs/track.decorator";
 
 @Service()
@@ -46,7 +46,7 @@ export class FindCollaboratorService {
 		} else {
 			const collaborators: CollaboratorResponseDTO[] = [];
 			const collaboratorsGrouped = this.groupCollaborators(establishmentCollaborators);
-			collaboratorsGrouped.forEach(collaborator => collaborators.push(this.treatResponse(collaborator)))
+			collaboratorsGrouped.forEach((collaborator) => collaborators.push(this.treatResponse(collaborator)));
 			return collaborators;
 		}
 	}
@@ -67,12 +67,12 @@ export class FindCollaboratorService {
 			collaboratorsRawStats.pop();
 
 			const collaboratorStats: CollaboratorStats = {
-				collaboratorId: 'ALL',
+				collaboratorId: "ALL",
 				appointmentsToday: 0,
 				totalClients: 0,
 				occupationRate: 0,
 				scheduledHours: 0,
-				appointmentsForToday: []
+				appointmentsForToday: [],
 			};
 
 			return this.treatStatsResponse(collaboratorStats, collaboratorsRawStats);
@@ -82,14 +82,13 @@ export class FindCollaboratorService {
 		const collaboratorRawStats: any[] = await CollaboratorRepository.findCollaboratorStats(collaboratorId);
 
 		const collaboratorStats: CollaboratorStats = {
-				collaboratorId,
-				appointmentsToday: 0,
-				totalClients: Number(collaboratorRawStats[0].total_clients),
-				occupationRate: 0,
-				scheduledHours: 0,
-				appointmentsForToday: []
-			};
-
+			collaboratorId,
+			appointmentsToday: 0,
+			totalClients: Number(collaboratorRawStats[0].total_clients),
+			occupationRate: 0,
+			scheduledHours: 0,
+			appointmentsForToday: [],
+		};
 
 		return this.treatStatsResponse(collaboratorStats, collaboratorRawStats);
 	}
@@ -98,7 +97,7 @@ export class FindCollaboratorService {
 		const servicesIds: string[] = [];
 		const services = [];
 
-		collaboratorInformations.forEach(item => {
+		collaboratorInformations.forEach((item) => {
 			servicesIds.push(item.service_id);
 			services.push({
 				id: item.service_id,
@@ -129,7 +128,7 @@ export class FindCollaboratorService {
 				birthDate: collaboratorInformations[0].user_birth_date,
 				whatsApp: collaboratorInformations[0].user_whatsapp,
 				cpf: collaboratorInformations[0].user_cpf,
-				profilePreferences: collaboratorInformations[0].user_preferences
+				profilePreferences: collaboratorInformations[0].user_preferences,
 			} as UserResponseDTO,
 			establishment: {
 				id: collaboratorInformations[0].establishment_id,
@@ -172,8 +171,8 @@ export class FindCollaboratorService {
 	}
 
 	private timeStringToMinutes(timeStr: string): number {
-		if (!timeStr || typeof timeStr !== 'string') return 0;
-		const [ hours, minutes ] = timeStr.split(':').map(Number);
+		if (!timeStr || typeof timeStr !== "string") return 0;
+		const [hours, minutes] = timeStr.split(":").map(Number);
 		return hours * 60 + minutes;
 	}
 
@@ -184,7 +183,7 @@ export class FindCollaboratorService {
 		const openingMinutes = this.timeStringToMinutes(firstRow.establishment_opening_time);
 		const closingMinutes = this.timeStringToMinutes(firstRow.establishment_closing_time);
 		//- Se houver um total de colaboradores é o esabelecimento que está buscando, caso não haja é a informação do colaborador.
-		const totalCollaborators = firstRow.total_collaborators ? Number(firstRow.total_collaborators) : 1; 
+		const totalCollaborators = firstRow.total_collaborators ? Number(firstRow.total_collaborators) : 1;
 
 		const capacityMinutesPerCollaborator = closingMinutes - openingMinutes;
 		const totalCapacityMinutes = capacityMinutesPerCollaborator * totalCollaborators;
@@ -196,37 +195,44 @@ export class FindCollaboratorService {
 			return acc + durationMinutes;
 		}, 0);
 
-		const occupancyPercentage = totalCapacityMinutes > 0
-			? (totalBlockedMinutes / totalCapacityMinutes) * 100
-			: 0;
+		const occupancyPercentage = totalCapacityMinutes > 0 ? (totalBlockedMinutes / totalCapacityMinutes) * 100 : 0;
 
 		return parseFloat(occupancyPercentage.toFixed(2));
 	}
 
 	private treatStatsResponse(collaboratorStats: CollaboratorStats, raw: any): CollaboratorStats {
-		raw.forEach(stats => {
-				const { total_appointments, total_scheduled_duration, total_clients } = stats;
-				collaboratorStats.appointmentsToday += Number(total_appointments);
-				collaboratorStats.scheduledHours += Number(total_scheduled_duration) / 60;
-				collaboratorStats.totalClients += Number(total_clients);
+		if (raw && raw.length > 0) {
+			const firstRow = raw[0];
+			collaboratorStats.appointmentsToday = Number(firstRow.total_appointments) || 0;
+			collaboratorStats.scheduledHours = (Number(firstRow.total_scheduled_duration) || 0) / 60;
+			collaboratorStats.totalClients = Number(firstRow.total_clients) || 0;
+		}
 
-				if (stats.appointment_start_time && stats.client_name && stats.service_name) {
+		raw.forEach((stats) => {
+			if (stats.appointment_start_time && stats.client_name && stats.service_name) {
+				// avoid duplicates by checking if it already exists
+				const exists = collaboratorStats.appointmentsForToday.some(
+					(apt) => apt.time === moment(stats.appointment_start_time).format("HH:mm") && apt.client === stats.client_name
+				);
+
+				if (!exists) {
 					collaboratorStats.appointmentsForToday.push({
 						time: moment(stats.appointment_start_time).format("HH:mm"),
 						client: stats.client_name,
-						service: stats.service_name
-					})
+						service: stats.service_name,
+					});
 				}
-			});
+			}
+		});
 
-			let occupationRate: number = this.calculateOccupationRate(raw);
-			collaboratorStats.occupationRate = occupationRate;
-			collaboratorStats.appointmentsForToday.sort((a, b) => {
-				if (a.time < b.time) return -1;
-				if (a.time > b.time) return 1;
-				return 0;
-			});
+		const occupationRate: number = this.calculateOccupationRate(raw);
+		collaboratorStats.occupationRate = occupationRate;
+		collaboratorStats.appointmentsForToday.sort((a, b) => {
+			if (a.time < b.time) return -1;
+			if (a.time > b.time) return 1;
+			return 0;
+		});
 
-			return collaboratorStats;
+		return collaboratorStats;
 	}
 }
