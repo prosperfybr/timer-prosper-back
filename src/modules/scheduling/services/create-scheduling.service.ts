@@ -108,23 +108,31 @@ export class CreateSchedulingService {
 		const proposedRange = momentRange.range(selectedDateTime, endTime); //- Cria o range do agendamento proposto
 		/* 4. Verifica o horário de funcionamento do estabelecimento */
 		//- Verifica se o dia escolhido o estabelecimento funciona
-		const establishmentOpeningHours: EstablishmentHourEntity = await EstablishmentHourRepository.findByEstablishmentAndWeekDay(
+		const establishmentOpeningHours: EstablishmentHourEntity[] = await EstablishmentHourRepository.findByEstablishmentAndWeekDay(
 			establishment.id,
 			dayOfWeek,
 		);
 
-		if (!establishmentOpeningHours) {
+		if (!establishmentOpeningHours || establishmentOpeningHours.length === 0) {
 			log.error(`Establishmento not work this date`);
 			throw new BadRequestException("O estabelecimento é fechado neste dia");
 		}
 
 		//- Verifica o horário (Cria o range do estabelecimento)
 		//- Cria os objetos Moment para a data escolhida, usando os horários de string do Banco de dados
-		const openTime: moment.Moment = selectedDateTime.clone().startOf("day").add(moment.duration(establishmentOpeningHours.openingTime));
-		const closeTime: moment.Moment = selectedDateTime.clone().startOf("day").add(moment.duration(establishmentOpeningHours.closingTime));
-		const establishmentRange = momentRange.range(openTime, closeTime);
+		let isWithinOperatingHours = false;
+		for (const hour of establishmentOpeningHours) {
+			const openTime: moment.Moment = selectedDateTime.clone().startOf("day").add(moment.duration(hour.openingTime));
+			const closeTime: moment.Moment = selectedDateTime.clone().startOf("day").add(moment.duration(hour.closingTime));
+			const establishmentRange = momentRange.range(openTime, closeTime);
 
-		if (!establishmentRange.contains(proposedRange)) {
+			if (establishmentRange.contains(proposedRange)) {
+				isWithinOperatingHours = true;
+				break;
+			}
+		}
+
+		if (!isWithinOperatingHours) {
 			log.error(`Outside of the establishment's operating hours.`);
 			throw new BadRequestException("Horário fora do funcionamento do estabelecimento");
 		}

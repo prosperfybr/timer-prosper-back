@@ -37,15 +37,31 @@ export const AbsenceBlockRepository = AppDataSource.getRepository(AbsenceBlockEn
 			},
 		});
 	},
-	async findByCollaboratorsAndDate(collaboratorsIds: string[], startOfDay: Date, endOfDay: Date): Promise<AbsenceBlockEntity[]> {
+	async findByCollaboratorsAndDate(collaboratorsIds: string[], startOfDay: Date, endOfDay: Date, dayOfWeek: number): Promise<AbsenceBlockEntity[]> {
+		const momentModule = require("moment");
+		const dateMomentString = momentModule(startOfDay).toString();
+		
 		return await this.find({
-			where: {
-				collaboratorId: In(collaboratorsIds),
-				isRecurrent: false,
-				isActive: true,
-				startTime: LessThan(endOfDay.toString()),
-				endTime: MoreThan(startOfDay.toString()),
-			},
+			where: [
+				{
+					collaboratorId: In(collaboratorsIds),
+					isRecurrent: false,
+					isActive: true,
+					startTime: LessThan(endOfDay.toISOString()),
+					endTime: MoreThan(startOfDay.toISOString()),
+				},
+				{
+					collaboratorId: In(collaboratorsIds),
+					isRecurrent: false,
+					isActive: true,
+					recurrenceRule: dateMomentString,
+				},
+				{
+					collaboratorId: In(collaboratorsIds),
+					isActive: true,
+					recurrenceRule: dayOfWeek.toString(),
+				}
+			]
 		});
 	},
 });

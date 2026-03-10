@@ -201,18 +201,27 @@ export class FindCollaboratorService {
 	}
 
 	private treatStatsResponse(collaboratorStats: CollaboratorStats, raw: any): CollaboratorStats {
-		raw.forEach((stats) => {
-			const { total_appointments, total_scheduled_duration, total_clients } = stats;
-			collaboratorStats.appointmentsToday += Number(total_appointments);
-			collaboratorStats.scheduledHours += Number(total_scheduled_duration) / 60;
-			collaboratorStats.totalClients += Number(total_clients);
+		if (raw && raw.length > 0) {
+			const firstRow = raw[0];
+			collaboratorStats.appointmentsToday = Number(firstRow.total_appointments) || 0;
+			collaboratorStats.scheduledHours = (Number(firstRow.total_scheduled_duration) || 0) / 60;
+			collaboratorStats.totalClients = Number(firstRow.total_clients) || 0;
+		}
 
+		raw.forEach((stats) => {
 			if (stats.appointment_start_time && stats.client_name && stats.service_name) {
-				collaboratorStats.appointmentsForToday.push({
-					time: moment(stats.appointment_start_time).format("HH:mm"),
-					client: stats.client_name,
-					service: stats.service_name,
-				});
+				// avoid duplicates by checking if it already exists
+				const exists = collaboratorStats.appointmentsForToday.some(
+					(apt) => apt.time === moment(stats.appointment_start_time).format("HH:mm") && apt.client === stats.client_name
+				);
+
+				if (!exists) {
+					collaboratorStats.appointmentsForToday.push({
+						time: moment(stats.appointment_start_time).format("HH:mm"),
+						client: stats.client_name,
+						service: stats.service_name,
+					});
+				}
 			}
 		});
 

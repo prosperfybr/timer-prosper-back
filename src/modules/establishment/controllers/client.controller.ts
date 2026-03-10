@@ -52,7 +52,7 @@ export class ClientController {
 		}
 	}
 
-	@DeleteMapping("/remove/establishment/relationshipId", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.CLIENT] })
+	@DeleteMapping("/remove/establishment/:relationshipId", { authenticated: true, roles: [RolesEnum.ADMIN, RolesEnum.CLIENT] })
 	@ControllerLog()
 	public async removeEstablishmentRelationship(req: Request, res: Response, next: NextFunction) {
 		try {

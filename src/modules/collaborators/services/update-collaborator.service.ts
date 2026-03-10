@@ -43,6 +43,7 @@ export class UpdateCollaboratorService {
 		user.email = email && email !== user.email ? email : user.email;
 		user.password = password ? await hash(password, 10) : user.password;
 		user.whatsApp = whatsApp && whatsApp !== user.whatsApp ? whatsApp : user.whatsApp;
+		delete user.establishments
 		await UserRepository.update(user.id, user);
 
 		collaborator.collaboratorFunction =
@@ -54,9 +55,9 @@ export class UpdateCollaboratorService {
 		await CollaboratorRepository.update(collaborator.id, collaborator);
 
 		if (servicesIds.length > 0) {
-			log.info("Services has changed, update all");
+			log.info("Verifying if services has changed, update all");
 			const services: CollaboratorsServicesEntity[] = await CollaboratorServicesRepository.findAllServicesByCollaboratorId(collaborator.id);
-			const savedServicesIds: string[] = services.map((service) => service.id);
+			const savedServicesIds: string[] = services.map((service) => service.serviceId);
 			const { addedIds, removedIds }: { addedIds: string[]; removedIds: string[] } = this.compareIds(savedServicesIds, servicesIds);
 			log.info("Syncronizing relationship between collaborator and services");
 			await CollaboratorServicesRepository.syncRelationship(collaborator.id, addedIds, removedIds);

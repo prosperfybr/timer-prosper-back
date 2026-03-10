@@ -30,7 +30,7 @@ export class EmailService {
 		try {
 			let timestamp = new Date().toISOString();
 			console.info(`[${timestamp}] [INFO] :: Trigger to Webhook to send email to [${payload.client_email}]`);
-			const { data } = await axios.post("", payload);
+			const { data } = await this.http.post("", payload);
 			timestamp = new Date().toISOString();
 			console.info(`[${timestamp}] [INFO] :: Webhook triggered successfully. Hook Response `, data);
 			return true;
@@ -52,7 +52,7 @@ export class EmailService {
 		return {
 			email_type: type,
 			establishment_register: tradeName,
-			link_cadastro: "https://timerprosper.com.br/finalizar-cadastro?token=a1b2c3d4e5",
+			link_cadastro: "https://timerprosper.com.br/login",
 			client_email: clientEmails.map((item) => item).join(", "),
 			client_name: clientName,
 			date_changed: dateChanged,

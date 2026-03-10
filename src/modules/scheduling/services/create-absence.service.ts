@@ -34,6 +34,8 @@ export class CreateAbsenceBlockService {
 		const { type, isRecurrent, specificDate, dayOfWeek, collaboratorId, serviceId, establishmentId, description, startTime, endTime, active } =
 			payload;
 
+		console.log(payload);
+
 		const establishment: EstablishmentEntity = await EstablishmentRepository.findByIdOrCode(establishmentId);
 
 		if (!establishment) {
@@ -75,35 +77,46 @@ export class CreateAbsenceBlockService {
 		startTime: string,
 		endTime: string,
 		active: boolean,
-	): Promise<AbsenceBlockEntity> {
+	): Promise<AbsenceBlockEntity | AbsenceBlockEntity[]> {
 		if (!collaboratorId) {
 			log.error(`Collaborator ID is required, but received [${collaboratorId}]`);
 			throw new InvalidArgumentException("O ID do colaborador é inválido");
 		}
 
-		const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: collaboratorId } });
+		if (collaboratorId === 'ALL') {
+			const collaborators: CollaboratorEntity[] = await CollaboratorRepository.find({ where: { establishmentId } });
+			const absences: AbsenceBlockEntity[] = [];
 
-		if (!collaborator) {
-			log.error(`Collaborator not found by ID [${collaboratorId}]`);
-			throw new BadRequestException("Colaborador não encontrado");
+			for (const collaborator of collaborators) {
+				absences.push(await this.absenceFlow(isRecurrent, specificDate, dayOfWeek, description, startTime, endTime, active, establishmentId, null, collaborator.id));
+			}
+
+			return absences;
+		} else {
+			const collaborator: CollaboratorEntity = await CollaboratorRepository.findOne({ where: { id: collaboratorId } });
+
+			if (!collaborator) {
+				log.error(`Collaborator not found by ID [${collaboratorId}]`);
+				throw new BadRequestException("Colaborador não encontrado");
+			}
+
+			//- Verify if already exists an absence
+			const absenceAlreadyExists = await AbsenceBlockRepository.findExisting(
+				collaboratorId,
+				startTime,
+				endTime,
+				isRecurrent,
+				dayOfWeek,
+				specificDate?.toString(),
+			);
+
+			if (absenceAlreadyExists && absenceAlreadyExists.length > 0) {
+				log.warn("Absence already exists");
+				throw new BadRequestException("Ausência já cadastrada");
+			}
+
+			return await this.absenceFlow(isRecurrent, specificDate, dayOfWeek, description, startTime, endTime, active, establishmentId, null, collaboratorId);
 		}
-
-		//- Verify if already exists an absence
-		const absenceAlreadyExists = await AbsenceBlockRepository.findExisting(
-			collaboratorId,
-			startTime,
-			endTime,
-			isRecurrent,
-			dayOfWeek,
-			specificDate?.toString(),
-		);
-
-		if (absenceAlreadyExists && absenceAlreadyExists.length > 0) {
-			log.warn("Absence already exists");
-			throw new BadRequestException("Ausência já cadastrada");
-		}
-
-		return this.absenceFlow(isRecurrent, specificDate, dayOfWeek, description, startTime, endTime, active, establishmentId, null, collaboratorId);
 	}
 
 	private async absenceByService(
@@ -144,7 +157,7 @@ export class CreateAbsenceBlockService {
 			throw new BadRequestException("Ausência já cadastrada");
 		}
 
-		return this.absenceFlow(isRecurrent, specificDate, dayOfWeek, description, startTime, endTime, active, establishmentId, serviceId);
+		return await this.absenceFlow(isRecurrent, specificDate, dayOfWeek, description, startTime, endTime, active, establishmentId, serviceId);
 	}
 
 	/**

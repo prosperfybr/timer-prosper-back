@@ -60,27 +60,26 @@ export const CollaboratorRepository = AppDataSource.getRepository(CollaboratorEn
 		log.info("Finding appointments between date: ", startOfDay, " and ", endOfDay);
 
 		const sql: string = `
-		SELECT
-		COUNT(appointment.id) as total_appointments,
-		SUM(CASE WHEN appointment.status = 'completed' THEN 1 ELSE 0 END) AS total_completed_appointments,
-		SUM(CASE WHEN appointment.status = 'cancelled' THEN 1 ELSE 0 END) AS total_cancelled_appointments,
-		SUM(CASE WHEN clientEstablishment.status = 'approved' THEN 1 ELSE 0 END) AS total_clients,
-		COALESCE(SUM(service.duration), 0) AS total_scheduled_duration,
+	SELECT
+		(SELECT COUNT(a.id) FROM appointments a WHERE a.collaborator_id = collaborator.id AND a.start_time BETWEEN '${startOfDay}' AND '${endOfDay}') as total_appointments,
+		(SELECT COUNT(a.id) FROM appointments a WHERE a.collaborator_id = collaborator.id AND a.status = 'completed' AND a.start_time BETWEEN '${startOfDay}' AND '${endOfDay}') AS total_completed_appointments,
+		(SELECT COUNT(a.id) FROM appointments a WHERE a.collaborator_id = collaborator.id AND a.status = 'cancelled' AND a.start_time BETWEEN '${startOfDay}' AND '${endOfDay}') AS total_cancelled_appointments,
+		(SELECT COUNT(ce.id) FROM client_establishments ce WHERE ce.establishment_id = collaborator.establishment_id AND ce.status = 'approved') AS total_clients,
+		(SELECT COALESCE(SUM(s.duration), 0) FROM appointments a INNER JOIN services s ON a.service_id = s.id WHERE a.collaborator_id = collaborator.id AND a.start_time BETWEEN '${startOfDay}' AND '${endOfDay}') AS total_scheduled_duration,
+		(SELECT COUNT(c2.id) FROM collaborators c2 WHERE c2.establishment_id = collaborator.establishment_id) as total_collaborators,
 		establishmentHours.opening_time AS establishment_opening_time,
 		establishmentHours.closing_time AS establishment_closing_time,
 		appointment.start_time AS appointment_start_time,
 		appointment.end_time AS appointment_end_time,
 		service.name AS service_name,
 		client.name AS client_name
-		FROM collaborators collaborator
-						LEFT JOIN establishments establishment ON collaborator.establishment_id = establishment.id
-						LEFT JOIN appointments appointment ON appointment.collaborator_id = collaborator.id AND appointment.start_time BETWEEN '${startOfDay}' AND '${endOfDay}'
-						LEFT JOIN services service ON appointment.service_id = service.id
-						LEFT JOIN client_establishments clientEstablishment ON clientEstablishment.establishment_id = establishment.id
-						LEFT JOIN users client ON client.id = clientEstablishment.user_id
-						LEFT JOIN establishment_hours establishmentHours ON establishmentHours.establishment_id = establishment.id AND establishmentHours.day_of_week = '${dayOfWeek}'
-		WHERE collaborator.user_id = '${collaboratorId}'
-		GROUP BY collaborator.id, establishment.id, appointment.id, establishmentHours.id, service.name, client.name;`;
+	FROM collaborators collaborator
+		LEFT JOIN establishments establishment ON collaborator.establishment_id = establishment.id
+		LEFT JOIN appointments appointment ON appointment.collaborator_id = collaborator.id AND appointment.start_time BETWEEN '${startOfDay}' AND '${endOfDay}'
+		LEFT JOIN services service ON appointment.service_id = service.id
+		LEFT JOIN users client ON client.id = appointment.client_id
+		LEFT JOIN establishment_hours establishmentHours ON establishmentHours.establishment_id = establishment.id AND establishmentHours.day_of_week = '${dayOfWeek}'
+	WHERE collaborator.user_id = '${collaboratorId}';`;
 
 		const result = await this.query(sql);
 		log.info(`Stats for collaborator [${collaboratorId}] consulted`);

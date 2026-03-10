@@ -1,5 +1,5 @@
 import { Repository as RepositoryDec } from "@shared/decorators/repository.decorator";
-import { In, Repository, UpdateResult } from "typeorm";
+import { EntityManager, In, Repository, UpdateResult } from "typeorm";
 import { AppDataSource } from "../../../config/ormconfig";
 import { CollaboratorsServicesEntity } from "../models/entity/collaborator-services.entity";
 
@@ -12,7 +12,7 @@ export const CollaboratorServicesRepository = AppDataSource.getRepository(Collab
 			return;
 		}
 
-		await this.manager.transaction(async (transactionEntityManager) => {
+		await this.manager.transaction(async (transactionEntityManager: EntityManager) => {
 			if (removedIds.length > 0) {
 				await transactionEntityManager.delete(CollaboratorsServicesEntity, {
 					collaboratorId,
@@ -22,7 +22,7 @@ export const CollaboratorServicesRepository = AppDataSource.getRepository(Collab
 
 			if (addedIds.length > 0) {
 				const newRelationships = addedIds.map((id) => {
-					transactionEntityManager.create(CollaboratorsServicesEntity, {
+					return transactionEntityManager.create(CollaboratorsServicesEntity, {
 						collaboratorId,
 						serviceId: id,
 					});

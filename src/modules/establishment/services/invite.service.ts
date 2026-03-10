@@ -78,7 +78,7 @@ export class InviteService {
 		);
 
 		log.info("Sending email to client requesting a registration in application");
-		EmailService.sendEmail(EmailService.buildEmailPayload(WebhookEmailType.CONVITE_CLIENTE, invite.establishment.tradeName, [clientEmail], ""));
+		EmailService.sendEmail(EmailService.buildEmailPayload(WebhookEmailType.CONVITE_CLIENTE, (invite.establishment as any).trade_name, [clientEmail], ""));
 
 		log.info("Invite created successfully");
 		return this.treatResponse(inviteCreated);
@@ -120,7 +120,7 @@ export class InviteService {
 
 		log.info(`Client or invite not registered yet`);
 		const client = invite.client as UserEntity;
-		const establishment = invite.establishment as EstablishmentEntity;
+		const establishment = invite.establishment as any;
 		const inviteToSave = ClientEstablishmentRepository.create({
 			userId: invite.client.id,
 			establishmentId: invite.establishment.id,
@@ -133,7 +133,7 @@ export class InviteService {
 
 		log.info("Sending email to establishment owner requesting a new link");
 		EmailService.sendEmail(
-			EmailService.buildEmailPayload(WebhookEmailType.CLIENTE_SOLICITANDO_VINCULO, invite.establishment.tradeName, [invite.owner.email], client.name),
+			EmailService.buildEmailPayload(WebhookEmailType.CLIENTE_SOLICITANDO_VINCULO, establishment.trade_name, [invite.owner.email], client.name),
 		);
 
 		log.info("Invite created successfully");
