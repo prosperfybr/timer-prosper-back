@@ -11,3 +11,4 @@ import "@modules/establishment/controllers/establishment.controller"; //- Establ
 import "@modules/collaborators/controllers/collaborator.controller"; //- Collaborator Controller
 import "@modules/plans/controllers/plans.controller"; //- Plans Controller
 import "@modules/promotions/controllers/promotions.controller"; //- Promotions Controller
+import "@modules/subscriptions/controllers/subscriptions.controller"; //- Subscriptions Controller

@@ -778,6 +778,28 @@ export const swaggerDocs = {
 				},
 			},
 		},
+
+		// ─── Subscriptions ───────────────────────────────────────────────────
+
+		"/subscriptions/subscribe": {
+			post: {
+				tags: ["Assinaturas"],
+				summary: "Assina um plano para o estabelecimento (OWNER)",
+				description: "Cria uma nova assinatura e processa o pagamento via gateway genérico. Requer autenticação de OWNER.",
+				security: [{ BearerAuth: [] }],
+				requestBody: {
+					required: true,
+					content: { "application/json": { schema: { $ref: "#/components/schemas/CreateSubscriptionDTO" } } },
+				},
+				responses: {
+					"201": {
+						description: "Plano assinado com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/SubscriptionResponseWrapper" } } },
+					},
+					"400": { description: "Erro na assinatura (ex: plano inválido ou pagamento recusado)." },
+				},
+			},
+		},
 	},
 	components: {
 		securitySchemes: {
@@ -1201,6 +1223,54 @@ export const swaggerDocs = {
 				properties: {
 					message: { type: "string" },
 					payload: { type: "array", items: { $ref: "#/components/schemas/PromotionResponseDTO" } },
+				},
+			},
+
+			// ─── Subscriptions Schemas ───────────────────────────────────────
+
+			SubscriptionResponseDTO: {
+				type: "object",
+				properties: {
+					id: { type: "string", format: "uuid" },
+					establishmentId: { type: "string", format: "uuid" },
+					planId: { type: "string", format: "uuid" },
+					billingPeriod: { type: "string", enum: ["MONTHLY", "ANNUAL"] },
+					status: { type: "string", enum: ["ACTIVE", "PAST_DUE", "CANCELED", "EXPIRED"] },
+					startDate: { type: "string", format: "date-time" },
+					endDate: { type: "string", format: "date-time", nullable: true },
+					nextBillingDate: { type: "string", format: "date-time", nullable: true },
+				},
+			},
+			CreateSubscriptionDTO: {
+				type: "object",
+				required: ["establishmentId", "planId", "billingPeriod", "paymentMethod"],
+				properties: {
+					establishmentId: { type: "string", format: "uuid" },
+					planId: { type: "string", format: "uuid" },
+					billingPeriod: { type: "string", enum: ["MONTHLY", "ANNUAL"] },
+					paymentMethod: {
+						type: "object",
+						required: ["type"],
+						properties: {
+							type: { type: "string", enum: ["credit_card", "debit_card", "pix"] },
+							token: { type: "string", description: "Token do cartão (opcional para simulação)" },
+						},
+					},
+					customer: {
+						type: "object",
+						properties: {
+							name: { type: "string" },
+							email: { type: "string" },
+							document: { type: "string" },
+						},
+					},
+				},
+			},
+			SubscriptionResponseWrapper: {
+				type: "object",
+				properties: {
+					message: { type: "string" },
+					payload: { $ref: "#/components/schemas/SubscriptionResponseDTO" },
 				},
 			},
 		},
