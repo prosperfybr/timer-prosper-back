@@ -598,6 +598,186 @@ export const swaggerDocs = {
 				},
 			},
 		},
+
+		// ─── Plans ───────────────────────────────────────────────────────────
+
+		"/plans": {
+			get: {
+				tags: ["Planos"],
+				summary: "Lista todos os planos ativos",
+				description: "Retorna os planos disponíveis para assinatura (endpoint público, sem autenticação).",
+				responses: {
+					"200": {
+						description: "Planos listados com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/PlanArrayResponseWrapper" } } },
+					},
+				},
+			},
+			post: {
+				tags: ["Planos"],
+				summary: "Cria um novo plano (ADMIN)",
+				description: "Cria um plano de assinatura. Requer perfil ADMIN.",
+				security: [{ BearerAuth: [] }],
+				requestBody: {
+					required: true,
+					content: { "application/json": { schema: { $ref: "#/components/schemas/CreatePlanDTO" } } },
+				},
+				responses: {
+					"201": {
+						description: "Plano criado com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/PlanResponseWrapper" } } },
+					},
+					"400": { description: "Dados inválidos ou plano com mesmo nome já existe." },
+					"403": { description: "Acesso negado (perfil insuficiente)." },
+				},
+			},
+		},
+		"/plans/{id}": {
+			get: {
+				tags: ["Planos"],
+				summary: "Detalha um plano pelo ID",
+				description: "Retorna os detalhes de um plano específico (endpoint público, sem autenticação).",
+				parameters: [
+					{ in: "path", name: "id", schema: { type: "string", format: "uuid" }, required: true, description: "UUID do plano." },
+				],
+				responses: {
+					"200": {
+						description: "Plano detalhado com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/PlanResponseWrapper" } } },
+					},
+					"400": { description: "Plano não encontrado." },
+				},
+			},
+			patch: {
+				tags: ["Planos"],
+				summary: "Atualiza um plano (ADMIN)",
+				description: "Atualiza campos de um plano existente. Requer perfil ADMIN.",
+				security: [{ BearerAuth: [] }],
+				parameters: [
+					{ in: "path", name: "id", schema: { type: "string", format: "uuid" }, required: true, description: "UUID do plano." },
+				],
+				requestBody: {
+					required: true,
+					content: { "application/json": { schema: { $ref: "#/components/schemas/UpdatePlanDTO" } } },
+				},
+				responses: {
+					"200": {
+						description: "Plano atualizado com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/PlanResponseWrapper" } } },
+					},
+					"400": { description: "Plano não encontrado." },
+					"403": { description: "Acesso negado (perfil insuficiente)." },
+				},
+			},
+			delete: {
+				tags: ["Planos"],
+				summary: "Desativa um plano (ADMIN)",
+				description: "Soft-delete: marca o plano como inativo. Requer perfil ADMIN.",
+				security: [{ BearerAuth: [] }],
+				parameters: [
+					{ in: "path", name: "id", schema: { type: "string", format: "uuid" }, required: true, description: "UUID do plano." },
+				],
+				responses: {
+					"200": { description: "Plano desativado com sucesso." },
+					"400": { description: "Plano não encontrado." },
+					"403": { description: "Acesso negado (perfil insuficiente)." },
+				},
+			},
+		},
+
+		// ─── Promotions ──────────────────────────────────────────────────────
+
+		"/promotions": {
+			post: {
+				tags: ["Promoções"],
+				summary: "Cria uma promoção (OWNER)",
+				description: "Proprietário cria uma promoção com desconto temporário em um ou mais serviços (ex: Semana do Consumidor). Requer perfil OWNER.",
+				security: [{ BearerAuth: [] }],
+				requestBody: {
+					required: true,
+					content: { "application/json": { schema: { $ref: "#/components/schemas/CreatePromotionDTO" } } },
+				},
+				responses: {
+					"201": {
+						description: "Promoção criada com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/PromotionResponseWrapper" } } },
+					},
+					"400": { description: "Dados inválidos (ex: data de início >= data de término)." },
+					"403": { description: "Acesso negado (perfil insuficiente)." },
+				},
+			},
+		},
+		"/promotions/establishment/{establishmentId}": {
+			get: {
+				tags: ["Promoções"],
+				summary: "Lista todas as promoções do estabelecimento (OWNER/COLLABORATOR)",
+				description: "Retorna todas as promoções (ativas e inativas) cadastradas pelo estabelecimento. Requer perfil OWNER ou COLLABORATOR.",
+				security: [{ BearerAuth: [] }],
+				parameters: [
+					{ in: "path", name: "establishmentId", schema: { type: "string", format: "uuid" }, required: true, description: "UUID do estabelecimento." },
+				],
+				responses: {
+					"200": {
+						description: "Promoções listadas com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/PromotionArrayResponseWrapper" } } },
+					},
+					"403": { description: "Acesso negado (perfil insuficiente)." },
+				},
+			},
+		},
+		"/promotions/active/{establishmentId}": {
+			get: {
+				tags: ["Promoções"],
+				summary: "Lista promoções ATIVAS do estabelecimento (público)",
+				description: "Retorna apenas as promoções em vigência no momento (now() BETWEEN starts_at AND ends_at). Endpoint público, sem autenticação, para uso na página de agendamento.",
+				parameters: [
+					{ in: "path", name: "establishmentId", schema: { type: "string", format: "uuid" }, required: true, description: "UUID do estabelecimento." },
+				],
+				responses: {
+					"200": {
+						description: "Promoções ativas listadas com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/PromotionArrayResponseWrapper" } } },
+					},
+				},
+			},
+		},
+		"/promotions/{id}": {
+			patch: {
+				tags: ["Promoções"],
+				summary: "Atualiza uma promoção (OWNER)",
+				description: "Atualiza título, desconto, datas ou serviços de uma promoção. Requer perfil OWNER.",
+				security: [{ BearerAuth: [] }],
+				parameters: [
+					{ in: "path", name: "id", schema: { type: "string", format: "uuid" }, required: true, description: "UUID da promoção." },
+				],
+				requestBody: {
+					required: true,
+					content: { "application/json": { schema: { $ref: "#/components/schemas/UpdatePromotionDTO" } } },
+				},
+				responses: {
+					"200": {
+						description: "Promoção atualizada com sucesso.",
+						content: { "application/json": { schema: { $ref: "#/components/schemas/PromotionResponseWrapper" } } },
+					},
+					"400": { description: "Promoção não encontrada ou dados inválidos." },
+					"403": { description: "Acesso negado (perfil insuficiente)." },
+				},
+			},
+			delete: {
+				tags: ["Promoções"],
+				summary: "Desativa uma promoção (OWNER)",
+				description: "Soft-delete: marca a promoção como inativa. Requer perfil OWNER.",
+				security: [{ BearerAuth: [] }],
+				parameters: [
+					{ in: "path", name: "id", schema: { type: "string", format: "uuid" }, required: true, description: "UUID da promoção." },
+				],
+				responses: {
+					"200": { description: "Promoção desativada com sucesso." },
+					"400": { description: "Promoção não encontrada." },
+					"403": { description: "Acesso negado (perfil insuficiente)." },
+				},
+			},
+		},
 	},
 	components: {
 		securitySchemes: {
@@ -887,6 +1067,140 @@ export const swaggerDocs = {
 				properties: {
 					message: { type: "string" },
 					payload: { type: "array", items: { $ref: "#/components/schemas/EstablishmentResponseDTO" } },
+				},
+			},
+
+			// ─── Plans Schemas ───────────────────────────────────────────────
+
+			PlanResponseDTO: {
+				type: "object",
+				properties: {
+					id: { type: "string", format: "uuid" },
+					name: { type: "string", enum: ["BASIC", "PROFESSIONAL", "ENTERPRISE"], example: "PROFESSIONAL" },
+					description: { type: "string", example: "Para negócios em crescimento" },
+					monthlyPrice: { type: "integer", description: "Preço mensal em centavos (R$357 = 35700)", example: 35700 },
+					annualDiscount: { type: "number", format: "float", description: "Desconto anual decimal (0.17 = 17%)", example: 0.17 },
+					maxClients: { type: "integer", nullable: true, description: "Máximo de clientes ativos. null = ilimitado", example: 500 },
+					hasAIScheduler: { type: "boolean", example: true },
+					hasFeedbackCollector: { type: "boolean", example: true },
+					hasCustomWebsite: { type: "boolean", example: false },
+					popular: { type: "boolean", description: "Marca o plano como 'Mais Popular'", example: true },
+					features: { type: "array", items: { type: "string" }, example: ["Até 500 clientes", "Suporte prioritário"] },
+					active: { type: "boolean", example: true },
+				},
+			},
+			CreatePlanDTO: {
+				type: "object",
+				required: ["name", "description", "monthlyPrice", "annualDiscount"],
+				properties: {
+					name: { type: "string", enum: ["BASIC", "PROFESSIONAL", "ENTERPRISE"] },
+					description: { type: "string", example: "Para negócios em crescimento" },
+					monthlyPrice: { type: "integer", description: "Preço mensal em centavos", example: 35700 },
+					annualDiscount: { type: "number", format: "float", example: 0.17 },
+					maxClients: { type: "integer", nullable: true, example: 500 },
+					hasAIScheduler: { type: "boolean", example: true },
+					hasFeedbackCollector: { type: "boolean", example: true },
+					hasCustomWebsite: { type: "boolean", example: false },
+					popular: { type: "boolean", example: true },
+					features: { type: "array", items: { type: "string" } },
+				},
+			},
+			UpdatePlanDTO: {
+				type: "object",
+				properties: {
+					name: { type: "string", enum: ["BASIC", "PROFESSIONAL", "ENTERPRISE"], nullable: true },
+					description: { type: "string", nullable: true },
+					monthlyPrice: { type: "integer", nullable: true },
+					annualDiscount: { type: "number", nullable: true },
+					maxClients: { type: "integer", nullable: true },
+					hasAIScheduler: { type: "boolean", nullable: true },
+					hasFeedbackCollector: { type: "boolean", nullable: true },
+					hasCustomWebsite: { type: "boolean", nullable: true },
+					popular: { type: "boolean", nullable: true },
+					features: { type: "array", items: { type: "string" }, nullable: true },
+					active: { type: "boolean", nullable: true },
+				},
+			},
+			PlanResponseWrapper: {
+				type: "object",
+				properties: {
+					message: { type: "string" },
+					payload: { $ref: "#/components/schemas/PlanResponseDTO" },
+				},
+			},
+			PlanArrayResponseWrapper: {
+				type: "object",
+				properties: {
+					message: { type: "string" },
+					payload: { type: "array", items: { $ref: "#/components/schemas/PlanResponseDTO" } },
+				},
+			},
+
+			// ─── Promotions Schemas ──────────────────────────────────────────
+
+			PromotionServiceDTO: {
+				type: "object",
+				properties: {
+					id: { type: "string", format: "uuid" },
+					name: { type: "string" },
+					price: { type: "integer", description: "Preço em centavos" },
+					duration: { type: "integer", description: "Duração em minutos" },
+				},
+			},
+			PromotionResponseDTO: {
+				type: "object",
+				properties: {
+					id: { type: "string", format: "uuid" },
+					establishmentId: { type: "string", format: "uuid" },
+					title: { type: "string", example: "Semana do Consumidor" },
+					description: { type: "string", example: "20% de desconto em cortes masculinos" },
+					discountType: { type: "string", enum: ["PERCENTAGE", "FIXED"], example: "PERCENTAGE" },
+					discountValue: { type: "integer", description: "20 para 20% ou 1000 para R$10,00", example: 20 },
+					startsAt: { type: "string", format: "date-time", example: "2026-03-17T00:00:00.000Z" },
+					endsAt: { type: "string", format: "date-time", example: "2026-03-23T23:59:59.999Z" },
+					active: { type: "boolean", example: true },
+					services: { type: "array", items: { $ref: "#/components/schemas/PromotionServiceDTO" } },
+				},
+			},
+			CreatePromotionDTO: {
+				type: "object",
+				required: ["establishmentId", "title", "discountType", "discountValue", "startsAt", "endsAt", "serviceIds"],
+				properties: {
+					establishmentId: { type: "string", format: "uuid" },
+					title: { type: "string", example: "Semana do Consumidor" },
+					description: { type: "string", nullable: true, example: "20% de desconto em toda a linha de cortes" },
+					discountType: { type: "string", enum: ["PERCENTAGE", "FIXED"], example: "PERCENTAGE" },
+					discountValue: { type: "integer", description: "20 para 20% ou 1000 para R$10 fixo", example: 20 },
+					startsAt: { type: "string", format: "date-time", example: "2026-03-17T00:00:00.000Z" },
+					endsAt: { type: "string", format: "date-time", example: "2026-03-23T23:59:59.999Z" },
+					serviceIds: { type: "array", items: { type: "string", format: "uuid" }, description: "IDs dos serviços cobertos pela promoção" },
+				},
+			},
+			UpdatePromotionDTO: {
+				type: "object",
+				properties: {
+					title: { type: "string", nullable: true },
+					description: { type: "string", nullable: true },
+					discountType: { type: "string", enum: ["PERCENTAGE", "FIXED"], nullable: true },
+					discountValue: { type: "integer", nullable: true },
+					startsAt: { type: "string", format: "date-time", nullable: true },
+					endsAt: { type: "string", format: "date-time", nullable: true },
+					serviceIds: { type: "array", items: { type: "string", format: "uuid" }, nullable: true },
+					active: { type: "boolean", nullable: true },
+				},
+			},
+			PromotionResponseWrapper: {
+				type: "object",
+				properties: {
+					message: { type: "string" },
+					payload: { $ref: "#/components/schemas/PromotionResponseDTO" },
+				},
+			},
+			PromotionArrayResponseWrapper: {
+				type: "object",
+				properties: {
+					message: { type: "string" },
+					payload: { type: "array", items: { $ref: "#/components/schemas/PromotionResponseDTO" } },
 				},
 			},
 		},

@@ -9,3 +9,5 @@ import "@modules/establishment/controllers/client.controller"; //- Client Contro
 import "@modules/establishment/controllers/establishment-hour.controller"; //- Establishment hour Controller
 import "@modules/establishment/controllers/establishment.controller"; //- Establishment Controller
 import "@modules/collaborators/controllers/collaborator.controller"; //- Collaborator Controller
+import "@modules/plans/controllers/plans.controller"; //- Plans Controller
+import "@modules/promotions/controllers/promotions.controller"; //- Promotions Controller

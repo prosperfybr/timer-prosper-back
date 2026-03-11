@@ -32,7 +32,7 @@ import { scheduler } from "@shared/schedulers/scheduler";
 
 class ProsperifyApplication {
 	public async main(): Promise<void> {
-		log.info("Starting Prosperify API");
+		log.info("Starting TimerProsper API");
 
 		log.info("Iniciando configurações da aplicação...");
 		log.info("[EXPRESS] Configuração de roteamento da aplicação.");
@@ -90,6 +90,7 @@ class ProsperifyApplication {
 
 		log.info("[SWAGGER] Import swagger schema and define documentation route");
 		const { swaggerDocs } = await import("../docs/swagger/swagger");
+		console.log(swaggerDocs)
 		app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 		log.info("[SWAGGER] Routed defined: '/api/docs to see Swagger documentation");
 
@@ -100,9 +101,30 @@ class ProsperifyApplication {
 		scheduler();
 
 		const door: string | number = process.env.PORT || 8081;
-		app.listen(door, () => {
+		const server = app.listen(door, () => {
 			log.info(`🚀 Server is running on: http://localhost:${door}`);
 		});
+
+		const shutdown = async (signal: string) => {
+			log.info(`[${signal}] recebido. Iniciando encerramento do TimerProsper API...`);
+
+			server.close(() => {
+				log.info("[EXPRESS] Servidor HTTP encerrado.");
+			});
+
+			// 3. Fecha a conexão com o banco de dados
+			if (AppDataSource.isInitialized) {
+				log.info("[DATABASE] Encerrando conexão com o banco de dados...");
+				await AppDataSource.destroy();
+				log.info("[DATABASE] Conexão encerrada com sucesso.");
+			}
+
+			log.info("👋 Aplicação finalizada com sucesso. Até logo!");
+			process.exit(0);
+		};
+
+		process.on("SIGINT", () => shutdown("SIGINT"));
+		process.on("SIGTERM", () => shutdown("SIGTERM"));
 	}
 }
 
