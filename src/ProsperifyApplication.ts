@@ -90,7 +90,6 @@ class ProsperifyApplication {
 
 		log.info("[SWAGGER] Import swagger schema and define documentation route");
 		const { swaggerDocs } = await import("../docs/swagger/swagger");
-		console.log(swaggerDocs)
 		app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 		log.info("[SWAGGER] Routed defined: '/api/docs to see Swagger documentation");
 

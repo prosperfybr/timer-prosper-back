@@ -12,7 +12,6 @@ export class AddPerformanceIndexes1770842105021 implements MigrationInterface {
 
 		// Appointments
 		await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_appointments_dates ON appointments(start_time, end_time)`);
-		await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_appointments_establishment ON appointments(establishment_id, start_time)`);
 		await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_appointments_collaborator ON appointments(collaborator_id, start_time)`);
 		await queryRunner.query(`CREATE INDEX IF NOT EXISTS idx_appointments_client ON appointments(client_id, start_time)`);
 
@@ -29,7 +28,6 @@ export class AddPerformanceIndexes1770842105021 implements MigrationInterface {
 		await queryRunner.query(`DROP INDEX IF EXISTS idx_establishments_code`);
 		await queryRunner.query(`DROP INDEX IF EXISTS idx_establishments_segment_id`);
 		await queryRunner.query(`DROP INDEX IF EXISTS idx_appointments_dates`);
-		await queryRunner.query(`DROP INDEX IF EXISTS idx_appointments_establishment`);
 		await queryRunner.query(`DROP INDEX IF EXISTS idx_appointments_collaborator`);
 		await queryRunner.query(`DROP INDEX IF EXISTS idx_appointments_client`);
 		await queryRunner.query(`DROP INDEX IF EXISTS idx_services_establishment`);

@@ -1,4 +1,5 @@
 export enum PlanNameEnum {
+	FREE = "FREE",
 	BASIC = "BASIC",
 	PROFESSIONAL = "PROFESSIONAL",
 	ENTERPRISE = "ENTERPRISE",

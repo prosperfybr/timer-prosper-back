@@ -14,7 +14,7 @@ import { ControllerLog } from "@shared/decorators/logs/controller.decorator";
 export class SubscriptionsController {
 	constructor(private readonly createSubscriptionService: CreateSubscriptionService) {}
 
-	@PostMapping("/subscribe", { authenticated: true, roles: [RolesEnum.OWNER, RolesEnum.ADMIN] })
+	@PostMapping("/subscribe")
 	@ControllerLog()
 	public async subscribe(req: Request, res: Response, next: NextFunction) {
 		try {

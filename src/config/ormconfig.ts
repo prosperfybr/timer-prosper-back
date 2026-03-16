@@ -13,6 +13,7 @@ export const AppDataSource: DataSource = new DataSource({
 	url: DATABASE_URL,
 	entities: [`${entitiesPath}/**/models/entity/*.entity.{ts,js}`],
 	migrations: [`${migrationsPath}/*{.ts, .js}`],
+	migrationsTransactionMode: "each",
 	synchronize: false,
 	//logging: NODE_ENV === 'dev' ? ['query', 'error'] : ['error'],
 	logging: ["error"],

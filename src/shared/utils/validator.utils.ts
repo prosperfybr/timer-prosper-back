@@ -61,7 +61,7 @@ export class ValidatorUtils {
 			const telephone1part: string = telephoneSplitted[0];
 			const telephone2part: string = telephoneSplitted[1];
 
-			if (telephone1part.length < 5 || telephone2part.length < 4) return false;
+			if (telephone1part.length < 4 || telephone2part.length < 4) return false;
 			return true;
 		} else {
 			//- Atualização
@@ -70,7 +70,7 @@ export class ValidatorUtils {
 
 			//- Valida o DDD
 			if (!this.validateTelephoneDDD(`(${ddd})`)) throw new Error("DDD Inválido");
-			if (telephone.length < 9) return false;
+			if (telephone.length < 8) return false;
 			return true;
 		}
 	}

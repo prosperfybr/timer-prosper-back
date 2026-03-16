@@ -13,6 +13,7 @@ import { BillingPeriodEnum } from "../models/enum/billing-period.enum";
 import { SubscriptionStatusEnum } from "../models/enum/subscription-status.enum";
 import { PaymentStatusEnum } from "@modules/payments/models/enum/payment-status.enum";
 import { GenericPaymentProvider } from "@modules/payments/providers/implementations/generic-payment.provider";
+import { PlanNameEnum } from "@modules/plans/models/enum/plan-name.enum";
 
 @Service()
 export class CreateSubscriptionService {
@@ -36,37 +37,65 @@ export class CreateSubscriptionService {
 		const plan = await PlansRepository.findById(payload.planId);
 		if (!plan) throw new InvalidArgumentException("Plano não encontrado");
 
+		// 1. Trava de Reativação para Plano Gratuito
+		if (plan.name === PlanNameEnum.FREE) {
+			const hasUsedFreePlan = await AppDataSource.getRepository(SubscriptionEntity).findOne({
+				where: { 
+					establishmentId: payload.establishmentId,
+					plan: { name: PlanNameEnum.FREE }
+				},
+				relations: ["plan"]
+			});
+
+			if (hasUsedFreePlan) {
+				throw new InvalidArgumentException(
+					"Você já utilizou o período de teste gratuito. Por favor, renove sua assinatura em um dos planos pagos para continuar usufruindo da plataforma."
+				);
+			}
+		}
+
 		// Calcular valor
 		let amount = plan.monthlyPrice;
 		if (payload.billingPeriod === BillingPeriodEnum.ANNUAL) {
 			amount = Math.round(plan.monthlyPrice * 12 * (1 - plan.annualDiscount));
 		}
 
-		// Processar pagamento
-		const paymentResult = await this.paymentProvider.processPayment({
-			amount,
-			currency: "BRL",
-			customer: {
-				name: payload.customer?.name || establishment.user.name,
-				email: payload.customer?.email || establishment.user.email,
-				document: payload.customer?.document,
-			},
-			paymentMethod: payload.paymentMethod,
-		});
+		// 2. Processar pagamento apenas se o preço for maior que zero
+		let paymentResult = { transactionId: "FREE_PLAN", status: "PAID" };
 
-		if (paymentResult.status !== "PAID") {
-			throw new InvalidArgumentException("Pagamento não autorizado pelo gateway");
+		if (plan.monthlyPrice > 0) {
+			paymentResult = await this.paymentProvider.processPayment({
+				amount,
+				currency: "BRL",
+				customer: {
+					name: payload.customer?.name || establishment.user.name,
+					email: payload.customer?.email || establishment.user.email,
+					document: payload.customer?.document,
+				},
+				paymentMethod: payload.paymentMethod,
+			});
+
+			if (paymentResult.status !== "PAID") {
+				throw new InvalidArgumentException("Pagamento não autorizado pelo gateway");
+			}
 		}
 
 		// Transação para salvar assinatura e pagamento
 		return await AppDataSource.transaction(async (manager) => {
-			// Datas
 			const now = new Date();
-			const nextBilling = new Date();
-			if (payload.billingPeriod === BillingPeriodEnum.MONTHLY) {
-				nextBilling.setMonth(now.getMonth() + 1);
+			let nextBilling: Date | null = new Date();
+			let endDate: Date | null = null;
+
+			if (plan.name === PlanNameEnum.FREE) {
+				endDate = new Date();
+				endDate.setDate(now.getDate() + 14);
+				nextBilling = null;
 			} else {
-				nextBilling.setFullYear(now.getFullYear() + 1);
+				if (payload.billingPeriod === BillingPeriodEnum.MONTHLY) {
+					nextBilling.setMonth(now.getMonth() + 1);
+				} else {
+					nextBilling.setFullYear(now.getFullYear() + 1);
+				}
 			}
 
 			const subscription = manager.create(SubscriptionEntity, {
@@ -75,6 +104,7 @@ export class CreateSubscriptionService {
 				billingPeriod: payload.billingPeriod,
 				status: SubscriptionStatusEnum.ACTIVE,
 				startDate: now,
+				endDate,
 				nextBillingDate: nextBilling,
 			});
 
